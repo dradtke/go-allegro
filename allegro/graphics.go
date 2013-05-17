@@ -18,8 +18,9 @@ type Bitmap struct {
 
 type DrawFlags int
 const (
+	FlipNone       DrawFlags = 0
 	FlipHorizontal DrawFlags = C.ALLEGRO_FLIP_HORIZONTAL
-	FlipVertical DrawFlags = C.ALLEGRO_FLIP_VERTICAL
+	FlipVertical   DrawFlags = C.ALLEGRO_FLIP_VERTICAL
 )
 
 func (bmp *Bitmap) Destroy() {

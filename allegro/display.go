@@ -13,6 +13,16 @@ func init() {
 	displayList = list.New()
 }
 
+func findDisplay(d *C.ALLEGRO_DISPLAY) *Display {
+	for e := displayList.Front(); e != nil; e = e.Next() {
+		display := e.Value.(*Display)
+		if display.ptr == d {
+			return display
+		}
+	}
+	return nil
+}
+
 type Display struct {
 	Width, Height int
 	ptr *C.ALLEGRO_DISPLAY

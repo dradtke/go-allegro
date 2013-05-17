@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	allegro.SetNewDisplayFlags(allegro.Windowed|allegro.Resizable)
+	allegro.SetNewDisplayFlags(allegro.Windowed)
 	if display = allegro.CreateDisplay(640, 480); display != nil {
 		defer display.Destroy()
 		display.SetWindowTitle("Hello, Go!")
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	image.Init()
-	gordon := allegro.LoadBitmap("gordon-the-gopher.png") ; defer gordon.Destroy()
+	gordon := allegro.LoadBitmap("img/gordon-the-gopher.png") ; defer gordon.Destroy()
 	eventQueue.RegisterEventSource(display.GetEventSource())
 
 	allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
@@ -53,9 +53,7 @@ func main() {
 		event, found := eventQueue.WaitForEventUntil(allegro.NewTimeout(0.06))
 		if found {
 			switch event.Type {
-				case allegro.DisplayResize:
-					event.Display.Source.AcknowledgeResize()
-				case allegro.DisplayClose:
+				case allegro.DisplayCloseEvent:
 					running = false
 					break
 			}

@@ -19,6 +19,14 @@ double get_event_timestamp(ALLEGRO_EVENT *event) {
 ALLEGRO_DISPLAY *get_event_display_source(ALLEGRO_EVENT *event) {
 	return event->display.source;
 }
+
+int get_event_keyboard_keycode(ALLEGRO_EVENT *event) {
+	return event->keyboard.keycode;
+}
+
+ALLEGRO_DISPLAY *get_event_keyboard_display(ALLEGRO_EVENT *event) {
+	return event->keyboard.display;
+}
 */
 import "C"
 
@@ -30,16 +38,24 @@ type Event struct {
 	Timestamp float64
 	// TODO: add the other event types
 	Display DisplayEvent
+	Keyboard KeyboardEvent
 }
 
 type DisplayEvent struct {
 	Source *Display
 }
 
+type KeyboardEvent struct {
+	KeyCode KeyCode
+	Display *Display
+}
+
 type EventType int
 const (
-	DisplayResize EventType = C.ALLEGRO_EVENT_DISPLAY_RESIZE
-	DisplayClose EventType = C.ALLEGRO_EVENT_DISPLAY_CLOSE
+	DisplayResizeEvent EventType = C.ALLEGRO_EVENT_DISPLAY_RESIZE
+	DisplayCloseEvent  EventType = C.ALLEGRO_EVENT_DISPLAY_CLOSE
+	KeyDownEvent       EventType = C.ALLEGRO_EVENT_KEY_DOWN
+	KeyUpEvent         EventType = C.ALLEGRO_EVENT_KEY_UP
 )
 
 type EventSource struct {
@@ -105,16 +121,13 @@ func newEvent() *Event {
 		Timestamp: godouble(C.get_event_timestamp(&event)),
 	}
 	switch ev.Type {
-		case DisplayResize, DisplayClose:
+		case DisplayResizeEvent, DisplayCloseEvent:
 			source := C.get_event_display_source(&event)
-			for e := displayList.Front(); e != nil; e = e.Next() {
-				display := e.Value.(*Display)
-				if display.ptr == source {
-					ev.Display = DisplayEvent{Source:display}
-					break
-				}
-			}
-			//e.Display = DisplayEvent{Source:&Display{ptr:C.get_event_display_source(&event)}}
+			ev.Display = DisplayEvent{Source:findDisplay(source)}
+		case KeyDownEvent, KeyUpEvent:
+			keycode := C.get_event_keyboard_keycode(&event)
+			display := C.get_event_keyboard_display(&event)
+			ev.Keyboard = KeyboardEvent{KeyCode:(KeyCode)(keycode), Display:findDisplay(display)}
 	}
 	return &ev
 }
