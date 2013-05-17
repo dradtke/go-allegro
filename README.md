@@ -7,4 +7,4 @@ I assume that you have a working Allegro 5 development environment set up. If no
 
 Screenshot of the included example (must be run with `example` as your working directory):
 
-![screenshot](https://github.com/dradtke/go-allegro/raw/master/example/screenshot.png)
+![screenshot](https://github.com/dradtke/go-allegro/raw/master/example/img/screenshot.png)
