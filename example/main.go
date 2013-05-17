@@ -1,8 +1,8 @@
 package main
 
 import (
-	"allegro"
-	"allegro/image"
+	"github.com/dradtke/go-allegro/allegro"
+	"github.com/dradtke/go-allegro/allegro/image"
 	"fmt"
 	"os"
 )
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	image.Init()
-	gordon := allegro.LoadBitmap("example/gordon-the-gopher.png") ; defer gordon.Destroy()
+	gordon := allegro.LoadBitmap("gordon-the-gopher.png") ; defer gordon.Destroy()
 	eventQueue.RegisterEventSource(display.GetEventSource())
 
 	allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
