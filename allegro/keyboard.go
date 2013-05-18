@@ -136,7 +136,7 @@ const (
 //}}}
 
 //{{{ key modifiers
-type KeyModifier int
+type KeyModifier uint
 const (
 	KeymodShift         KeyModifier = C.ALLEGRO_KEYMOD_SHIFT
 	KeymodCtrl          KeyModifier = C.ALLEGRO_KEYMOD_CTRL

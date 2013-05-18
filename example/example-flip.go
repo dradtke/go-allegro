@@ -1,8 +1,12 @@
 package main
 
 import (
+	/*
 	"github.com/dradtke/go-allegro/allegro"
 	"github.com/dradtke/go-allegro/allegro/image"
+	*/
+	"allegro"
+	"allegro/image"
 	"fmt"
 	"os"
 )

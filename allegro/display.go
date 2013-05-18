@@ -37,6 +37,16 @@ const (
 	// TODO: add the rest of these flags
 )
 
+type DisplayOrientation int
+const (
+	ZeroDegrees                 DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_0_DEGREES
+	NinetyDegrees               DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_90_DEGREES
+	OneHundredEightyDegrees     DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_180_DEGREES
+	TwoHundredSeventyDegrees    DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_270_DEGREES
+	FaceUp                      DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_UP
+	FaceDown                    DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_DOWN
+)
+
 func CreateDisplay(w, h int) *Display {
 	d := C.al_create_display(cint(w), cint(h))
 	if d == nil {
