@@ -9,7 +9,11 @@ bool init() {
 }
 */
 import "C"
+import "errors"
 
-func Init() bool {
-	return gobool(C.init())
+func Init() error {
+	if !gobool(C.init()) {
+		return errors.New("failed to initialize allegro!")
+	}
+	return nil
 }

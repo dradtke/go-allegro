@@ -21,8 +21,8 @@ func main() {
 		running bool = true
 	)
 
-	if !allegro.Init() {
-		fmt.Fprintf(os.Stderr, "failed to initialize allegro\n")
+	if err := allegro.Init(); err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
 
