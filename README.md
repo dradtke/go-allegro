@@ -5,6 +5,6 @@ This repository contains experimental bindings for writing [Allegro 5](http://al
 
 I assume that you have a working Allegro 5 development environment set up. If not, go do that first.
 
-Screenshot of the included example (must be run with `example` as your working directory):
+Screenshot of one of the included examples (open the `example` folder for more details on the included examples):
 
 ![screenshot](https://github.com/dradtke/go-allegro/raw/master/example/img/screenshot.png)
