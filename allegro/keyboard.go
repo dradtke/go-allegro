@@ -5,6 +5,9 @@ package allegro
 #include <allegro5/allegro.h>
 */
 import "C"
+import (
+	"errors"
+)
 
 type KeyboardState struct {
 	Display *Display // TODO: figure out how to fill this in
@@ -172,7 +175,7 @@ func UninstallKeyboard() {
 // equivalent to allegro's al_get_keyboard_state
 func (state *KeyboardState) Update() {
 	C.al_get_keyboard_state(&state.ptr)
-	state.Display = findDisplay(state.ptr.display)
+	state.Display = (*Display)(state.ptr.display)
 }
 
 func (state *KeyboardState) IsDown(key KeyCode) bool {
@@ -184,10 +187,10 @@ func (key KeyCode) Name() string {
 	return C.GoString(name)
 }
 
-func GetKeyboardEventSource() *EventSource {
+func GetKeyboardEventSource() (*EventSource, error) {
 	source := C.al_get_keyboard_event_source()
 	if source == nil {
-		return nil
+		return nil, errors.New("cannot get keyboard event source; did you call InstallKeyboard() first?")
 	}
-	return &EventSource{ptr:source}
+	return (*EventSource)(source), nil
 }

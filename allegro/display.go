@@ -5,28 +5,11 @@ package allegro
 #include <allegro5/allegro.h>
 */
 import "C"
-import "container/list"
+import (
+	"errors"
+)
 
-var displayList *list.List
-
-func init() {
-	displayList = list.New()
-}
-
-func findDisplay(d *C.ALLEGRO_DISPLAY) *Display {
-	for e := displayList.Front(); e != nil; e = e.Next() {
-		display := e.Value.(*Display)
-		if display.ptr == d {
-			return display
-		}
-	}
-	return nil
-}
-
-type Display struct {
-	Width, Height int
-	ptr *C.ALLEGRO_DISPLAY
-}
+type Display C.ALLEGRO_DISPLAY
 
 type DisplayFlags int
 const (
@@ -47,31 +30,16 @@ const (
 	FaceDown                    DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_DOWN
 )
 
-func CreateDisplay(w, h int) *Display {
+func CreateDisplay(w, h int) (*Display, error) {
 	d := C.al_create_display(cint(w), cint(h))
 	if d == nil {
-		return nil
+		return nil, errors.New("failed to create display!")
 	}
-	display := &Display{Width:w, Height:h, ptr:d}
-	displayList.PushBack(display)
-	return display
+	return (*Display)(d), nil
 }
 
-func (display *Display) Destroy() {
-	for e := displayList.Front(); e != nil; e = e.Next() {
-		if e.Value.(*Display) == display {
-			displayList.Remove(e)
-			break
-		}
-	}
-	C.al_destroy_display(display.ptr)
-}
-
-// utility function to update struct values after the display changes,
-// e.g. changing Width and Height after a resize
-func (display *Display) Update() {
-	display.Width = int(C.al_get_display_width(display.ptr))
-	display.Height = int(C.al_get_display_height(display.ptr))
+func (d *Display) Destroy() {
+	C.al_destroy_display((*C.ALLEGRO_DISPLAY)(d))
 }
 
 func FlipDisplay() {
@@ -90,23 +58,23 @@ func ResetDisplayFlags() {
 	C.al_set_new_display_flags(cint(0))
 }
 
-func (display *Display) GetEventSource() *EventSource {
-	source := C.al_get_display_event_source(display.ptr)
-	if source == nil {
-		return nil
-	}
-	return &EventSource{ptr:source}
+func (d *Display) GetEventSource() *EventSource {
+	return (*EventSource)(C.al_get_display_event_source((*C.ALLEGRO_DISPLAY)(d)))
 }
 
-func (display *Display) AcknowledgeResize() bool {
-	success := gobool(C.al_acknowledge_resize(display.ptr))
-	if success {
-		display.Update()
-	}
-	return success
+func (d *Display) Width() int {
+	return (int)(C.al_get_display_width((*C.ALLEGRO_DISPLAY)(d)))
 }
 
-func (display *Display) SetWindowTitle(title string) {
+func (d *Display) Height() int {
+	return (int)(C.al_get_display_height((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) AcknowledgeResize() bool {
+	return gobool(C.al_acknowledge_resize((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) SetWindowTitle(title string) {
 	title_ := C.CString(title) ; defer FreeString(title_)
-	C.al_set_window_title(display.ptr, title_)
+	C.al_set_window_title((*C.ALLEGRO_DISPLAY)(d), title_)
 }

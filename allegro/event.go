@@ -3,7 +3,7 @@ package allegro
 /*
 #cgo pkg-config: allegro-5.0
 #include <allegro5/allegro.h>
-
+//{{{ event getters
 // Common
 
 unsigned int get_event_type(ALLEGRO_EVENT *event) {
@@ -140,8 +140,12 @@ int get_event_display_orientation(ALLEGRO_EVENT *event) {
 	return event->display.orientation;
 }
 
+//}}}
 */
 import "C"
+import (
+	"errors"
+)
 
 type Event struct {
 	Type EventType
@@ -212,21 +216,19 @@ const (
 	DisplayOrientationEvent     EventType = C.ALLEGRO_EVENT_DISPLAY_ORIENTATION
 )
 
-type EventSource struct {
-	ptr *C.ALLEGRO_EVENT_SOURCE
-}
+type EventSource C.ALLEGRO_EVENT_SOURCE
 
 type EventQueue struct {
 	ptr *C.ALLEGRO_EVENT_QUEUE
 	event C.ALLEGRO_EVENT
 }
 
-func CreateEventQueue() *EventQueue {
+func CreateEventQueue() (*EventQueue, error) {
 	queue := C.al_create_event_queue()
 	if queue == nil {
-		return nil
+		return nil, errors.New("failed to create event queue!")
 	}
-	return &EventQueue{ptr:queue}
+	return &EventQueue{ptr:queue}, nil
 }
 
 func (queue *EventQueue) Destroy() {
@@ -234,7 +236,7 @@ func (queue *EventQueue) Destroy() {
 }
 
 func (queue *EventQueue) RegisterEventSource(source *EventSource) {
-	C.al_register_event_source(queue.ptr, source.ptr)
+	C.al_register_event_source(queue.ptr, (*C.ALLEGRO_EVENT_SOURCE)(source))
 }
 
 func (queue *EventQueue) GetNextEvent() (*Event, bool) {
@@ -272,7 +274,7 @@ func (queue *EventQueue) JustWaitForEventUntil(timeout *Timeout) bool {
 func (queue *EventQueue) newEvent() *Event {
 	ev := Event{
 		Type: (EventType)(C.get_event_type(&queue.event)),
-		Source: &EventSource{ptr:C.get_event_source(&queue.event)},
+		Source: (*EventSource)(C.get_event_source(&queue.event)),
 		Timestamp: godouble(C.get_event_timestamp(&queue.event)),
 	}
 	switch ev.Type {
@@ -293,7 +295,7 @@ func (queue *EventQueue) newEvent() *Event {
 
 		case KeyDownEvent, KeyUpEvent:
 			keycode := (KeyCode)(C.get_event_keyboard_keycode(&queue.event))
-			display := findDisplay(C.get_event_keyboard_display(&queue.event))
+			display := (*Display)(C.get_event_keyboard_display(&queue.event))
 			ev.Keyboard = KeyboardEventInfo{KeyCode:keycode, Display:display}
 
 		case KeyCharEvent:
@@ -301,7 +303,7 @@ func (queue *EventQueue) newEvent() *Event {
 			unichar := int(C.get_event_keyboard_unichar(&queue.event))
 			modifiers := KeyModifier(C.get_event_keyboard_modifiers(&queue.event))
 			repeat := bool(C.get_event_keyboard_repeat(&queue.event))
-			display := findDisplay(C.get_event_keyboard_display(&queue.event))
+			display := (*Display)(C.get_event_keyboard_display(&queue.event))
 			ev.Keyboard = KeyboardEventInfo{KeyCode:keycode, Unichar:unichar, Modifiers:modifiers, Repeat:repeat, Display:display}
 
 		case MouseAxesEvent:
@@ -313,7 +315,7 @@ func (queue *EventQueue) newEvent() *Event {
 			dy := int(C.get_event_mouse_dy(&queue.event))
 			dz := int(C.get_event_mouse_dz(&queue.event))
 			dw := int(C.get_event_mouse_dw(&queue.event))
-			display := findDisplay(C.get_event_mouse_display(&queue.event))
+			display := (*Display)(C.get_event_mouse_display(&queue.event))
 			ev.Mouse = MouseEventInfo{X:x, Y:y, Z:z, W:w, Dx:dx, Dy:dy, Dz:dz, Dw:dw, Display:display}
 
 		case MouseButtonDownEvent, MouseButtonUpEvent:
@@ -322,7 +324,7 @@ func (queue *EventQueue) newEvent() *Event {
 			z := int(C.get_event_mouse_z(&queue.event))
 			w := int(C.get_event_mouse_w(&queue.event))
 			button := uint(C.get_event_mouse_button(&queue.event))
-			display := findDisplay(C.get_event_mouse_display(&queue.event))
+			display := (*Display)(C.get_event_mouse_display(&queue.event))
 			ev.Mouse = MouseEventInfo{X:x, Y:y, Z:z, W:w, Button:button, Display:display}
 
 		case MouseWarpedEvent:
@@ -333,7 +335,7 @@ func (queue *EventQueue) newEvent() *Event {
 			y := int(C.get_event_mouse_y(&queue.event))
 			z := int(C.get_event_mouse_z(&queue.event))
 			w := int(C.get_event_mouse_w(&queue.event))
-			display := findDisplay(C.get_event_mouse_display(&queue.event))
+			display := (*Display)(C.get_event_mouse_display(&queue.event))
 			ev.Mouse = MouseEventInfo{X:x, Y:y, Z:z, W:w, Display:display}
 
 		case TimerEvent:
@@ -342,7 +344,7 @@ func (queue *EventQueue) newEvent() *Event {
 			ev.Timer = TimerEventInfo{Source:source, Count:count}
 
 		case DisplayExposeEvent, DisplayResizeEvent:
-			source := findDisplay(C.get_event_display_source(&queue.event))
+			source := (*Display)(C.get_event_display_source(&queue.event))
 			x := int(C.get_event_display_x(&queue.event))
 			y := int(C.get_event_display_y(&queue.event))
 			width := int(C.get_event_display_width(&queue.event))
@@ -350,11 +352,11 @@ func (queue *EventQueue) newEvent() *Event {
 			ev.Display = DisplayEventInfo{Source:source, X:x, Y:y, Width:width, Height:height}
 
 		case DisplayCloseEvent, DisplayLostEvent, DisplayFoundEvent, DisplaySwitchOutEvent, DisplaySwitchInEvent:
-			source := findDisplay(C.get_event_display_source(&queue.event))
+			source := (*Display)(C.get_event_display_source(&queue.event))
 			ev.Display = DisplayEventInfo{Source:source}
 
 		case DisplayOrientationEvent:
-			source := findDisplay(C.get_event_display_source(&queue.event))
+			source := (*Display)(C.get_event_display_source(&queue.event))
 			orientation := (DisplayOrientation)(C.get_event_display_orientation(&queue.event))
 			ev.Display = DisplayEventInfo{Source:source, Orientation:orientation}
 	}

@@ -9,7 +9,9 @@ bool init() {
 }
 */
 import "C"
-import "errors"
+import (
+	"errors"
+)
 
 func Init() error {
 	if !gobool(C.init()) {

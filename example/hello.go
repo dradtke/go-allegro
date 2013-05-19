@@ -18,34 +18,39 @@ func main() {
 	var (
 		display *allegro.Display
 		eventQueue *allegro.EventQueue
+		gordon *allegro.Bitmap
 		running bool = true
+		err error
 	)
 
-	if err := allegro.Init(); err != nil {
+	if err = allegro.Init(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
 
 	allegro.SetNewDisplayFlags(allegro.Windowed)
-	if display = allegro.CreateDisplay(640, 480); display != nil {
+	if display, err = allegro.CreateDisplay(640, 480); err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		return
+	} else {
 		defer display.Destroy()
 		display.SetWindowTitle("Hello, Go!")
-	} else {
-		fmt.Fprintf(os.Stderr, "failed to create display\n")
-		return
 	}
 
-	if eventQueue = allegro.CreateEventQueue(); eventQueue != nil {
-		defer eventQueue.Destroy()
-	} else {
-		fmt.Fprintf(os.Stderr, "failed to create event queue\n")
+	if eventQueue, err = allegro.CreateEventQueue(); err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
 		return
+	} else {
+		defer eventQueue.Destroy()
 	}
 
 	image.Init()
-	gordon := allegro.LoadBitmap("img/gordon-the-gopher.png") ; defer gordon.Destroy()
-	eventQueue.RegisterEventSource(display.GetEventSource())
+	if gordon, err = allegro.LoadBitmap("img/gordon-the-gopher.png"); err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		return
+	}
 
+	eventQueue.RegisterEventSource(display.GetEventSource())
 	allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
 	allegro.FlipDisplay()
 
@@ -64,7 +69,9 @@ func main() {
 		}
 
 		allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
-		gordon.Draw(float32((display.Width-gordon.Width)/2), float32((display.Height-gordon.Height)/2), 0)
+
+		gordon.Draw(float32((display.Width()-gordon.Width())/2), float32((display.Height()-gordon.Height())/2), 0)
+
 		allegro.FlipDisplay()
 	}
 }
