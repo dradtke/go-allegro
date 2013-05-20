@@ -6,14 +6,12 @@ package allegro
 */
 import "C"
 
-type Timeout struct {
-	ptr C.ALLEGRO_TIMEOUT
-}
+type Timeout C.ALLEGRO_TIMEOUT
 
 func NewTimeout(seconds float64) *Timeout {
 	var timeout C.ALLEGRO_TIMEOUT
 	C.al_init_timeout(&timeout, cdouble(seconds))
-	return &Timeout{ptr:timeout}
+	return (*Timeout)(&timeout)
 }
 
 func Rest(seconds float64) {

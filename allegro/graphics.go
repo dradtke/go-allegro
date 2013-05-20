@@ -9,10 +9,7 @@ import (
 	"errors"
 )
 
-type Color struct {
-	ptr C.ALLEGRO_COLOR
-}
-
+type Color C.ALLEGRO_COLOR
 type Bitmap C.ALLEGRO_BITMAP
 
 type DrawFlags int
@@ -35,11 +32,12 @@ func (bmp *Bitmap) Height() int {
 }
 
 func MapRGB(r, g, b byte) *Color {
-	return &Color{ptr:C.al_map_rgb(cbyte(r), cbyte(g), cbyte(b))};
+	color := (Color)(C.al_map_rgb(cbyte(r), cbyte(g), cbyte(b)))
+	return &color
 }
 
 func ClearToColor(c *Color) {
-	C.al_clear_to_color(c.ptr)
+	C.al_clear_to_color(*(*C.ALLEGRO_COLOR)(c))
 }
 
 func (bmp *Bitmap) Draw(dx, dy float32, flags DrawFlags) {

@@ -259,7 +259,7 @@ func (queue *EventQueue) JustWaitForEvent() {
 }
 
 func (queue *EventQueue) WaitForEventUntil(timeout *Timeout) (*Event, bool) {
-	success := C.al_wait_for_event_until(queue.ptr, &queue.event, &timeout.ptr)
+	success := C.al_wait_for_event_until(queue.ptr, &queue.event, (*C.ALLEGRO_TIMEOUT)(timeout))
 	if !success {
 		return nil, false
 	}
@@ -268,7 +268,7 @@ func (queue *EventQueue) WaitForEventUntil(timeout *Timeout) (*Event, bool) {
 
 // like WaitForEventUntil, but don't return an event and leave everything on the queue
 func (queue *EventQueue) JustWaitForEventUntil(timeout *Timeout) bool {
-	return gobool(C.al_wait_for_event_until(queue.ptr, nil, &timeout.ptr))
+	return gobool(C.al_wait_for_event_until(queue.ptr, nil, (*C.ALLEGRO_TIMEOUT)(timeout)))
 }
 
 func (queue *EventQueue) newEvent() *Event {
@@ -279,14 +279,14 @@ func (queue *EventQueue) newEvent() *Event {
 	}
 	switch ev.Type {
 		case JoystickAxisEvent:
-			id := &Joystick{ptr:C.get_event_joystick_id(&queue.event)}
+			id := (*Joystick)(C.get_event_joystick_id(&queue.event))
 			stick := int(C.get_event_joystick_stick(&queue.event))
 			axis := int(C.get_event_joystick_axis(&queue.event))
 			pos := float32(C.get_event_joystick_pos(&queue.event))
 			ev.Joystick = JoystickEventInfo{Id:id, Stick:stick, Axis:axis, Pos:pos}
 
 		case JoystickButtonDownEvent, JoystickButtonUpEvent:
-			id := &Joystick{C.get_event_joystick_id(&queue.event)}
+			id := (*Joystick)(C.get_event_joystick_id(&queue.event))
 			button := int(C.get_event_joystick_button(&queue.event))
 			ev.Joystick = JoystickEventInfo{Id:id, Button:button}
 

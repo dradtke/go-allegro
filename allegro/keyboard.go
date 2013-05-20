@@ -9,10 +9,7 @@ import (
 	"errors"
 )
 
-type KeyboardState struct {
-	Display *Display // TODO: figure out how to fill this in
-	ptr C.ALLEGRO_KEYBOARD_STATE
-}
+type KeyboardState C.ALLEGRO_KEYBOARD_STATE
 
 //{{{ key codes
 type KeyCode int
@@ -160,8 +157,12 @@ const (
 )
 //}}}
 
-func InstallKeyboard() bool {
-	return gobool(C.al_install_keyboard())
+func InstallKeyboard() error {
+	success := gobool(C.al_install_keyboard())
+	if !success {
+		return errors.New("failed to install keyboard!")
+	}
+	return nil
 }
 
 func IsKeyboardInstalled() bool {
@@ -172,14 +173,12 @@ func UninstallKeyboard() {
 	C.al_uninstall_keyboard()
 }
 
-// equivalent to allegro's al_get_keyboard_state
-func (state *KeyboardState) Update() {
-	C.al_get_keyboard_state(&state.ptr)
-	state.Display = (*Display)(state.ptr.display)
+func (state *KeyboardState) Get() {
+	C.al_get_keyboard_state((*C.ALLEGRO_KEYBOARD_STATE)(state))
 }
 
 func (state *KeyboardState) IsDown(key KeyCode) bool {
-	return gobool(C.al_key_down(&state.ptr, cint(int(key))))
+	return gobool(C.al_key_down((*C.ALLEGRO_KEYBOARD_STATE)(state), cint(int(key))))
 }
 
 func (key KeyCode) Name() string {
@@ -187,7 +186,11 @@ func (key KeyCode) Name() string {
 	return C.GoString(name)
 }
 
-func GetKeyboardEventSource() (*EventSource, error) {
+func SetKeyboardLeds(leds int) bool {
+	return gobool(C.al_set_keyboard_leds(cint(leds)))
+}
+
+func KeyboardEventSource() (*EventSource, error) {
 	source := C.al_get_keyboard_event_source()
 	if source == nil {
 		return nil, errors.New("cannot get keyboard event source; did you call InstallKeyboard() first?")
