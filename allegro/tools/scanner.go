@@ -20,8 +20,8 @@ var alFunc = buildRegex("AL_FUNC")
 
 var modules = []mod{
 	mod{name: "image", regex: buildRegex("ALLEGRO_IIO_FUNC")},
-	mod{name: "audio", regex: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
-	mod{name: "ttf", regex: buildRegex("ALLEGRO_TTF_FUNC")},
+	//mod{name: "audio", regex: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
+	//mod{name: "ttf", regex: buildRegex("ALLEGRO_TTF_FUNC")},
 	// TODO: add whatever other modules need to be included
 }
 
@@ -31,9 +31,8 @@ func buildRegex(macro string) *regexp.Regexp {
 
 func getSource(packageRoot string) ([]byte, error) {
 	var buf bytes.Buffer
-	fmt.Println("root: " + packageRoot)
 	err := filepath.Walk(packageRoot, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
+		if info.IsDir() && path != packageRoot {
 			return filepath.SkipDir
 		} else if !strings.HasSuffix(info.Name(), ".go") {
 			return nil
@@ -45,6 +44,9 @@ func getSource(packageRoot string) ([]byte, error) {
 		buf.Write(data)
 		return nil
 	})
+	if err != nil {
+		panic(err)
+	}
 	return buf.Bytes(), err
 }
 
