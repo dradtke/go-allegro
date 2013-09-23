@@ -14,3 +14,7 @@ func Init() {
 func Shutdown() {
 	C.al_shutdown_image_addon()
 }
+
+func Version() uint32 {
+	return uint32(C.al_get_allegro_image_version())
+}
