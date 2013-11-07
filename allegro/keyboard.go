@@ -158,7 +158,7 @@ const (
 //}}}
 
 func InstallKeyboard() error {
-	success := gobool(C.al_install_keyboard())
+	success := bool(C.al_install_keyboard())
 	if !success {
 		return errors.New("failed to install keyboard!")
 	}
@@ -166,7 +166,7 @@ func InstallKeyboard() error {
 }
 
 func IsKeyboardInstalled() bool {
-	return gobool(C.al_is_keyboard_installed())
+	return bool(C.al_is_keyboard_installed())
 }
 
 func UninstallKeyboard() {
@@ -178,16 +178,16 @@ func (state *KeyboardState) Get() {
 }
 
 func (state *KeyboardState) IsDown(key KeyCode) bool {
-	return gobool(C.al_key_down((*C.ALLEGRO_KEYBOARD_STATE)(state), cint(int(key))))
+	return bool(C.al_key_down((*C.ALLEGRO_KEYBOARD_STATE)(state), C.int(key)))
 }
 
 func (key KeyCode) Name() string {
-	name := C.al_keycode_to_name(cint(int(key)))
+	name := C.al_keycode_to_name(C.int(key))
 	return C.GoString(name)
 }
 
 func SetKeyboardLeds(leds int) bool {
-	return gobool(C.al_set_keyboard_leds(cint(leds)))
+	return bool(C.al_set_keyboard_leds(C.int(leds)))
 }
 
 func KeyboardEventSource() (*EventSource, error) {

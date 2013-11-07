@@ -31,7 +31,7 @@ const (
 )
 
 func CreateDisplay(w, h int) (*Display, error) {
-	d := C.al_create_display(cint(w), cint(h))
+	d := C.al_create_display(C.int(w), C.int(h))
 	if d == nil {
 		return nil, errors.New("failed to create display!")
 	}
@@ -51,11 +51,11 @@ func GetNewDisplayFlags() DisplayFlags {
 }
 
 func SetNewDisplayFlags(flags DisplayFlags) {
-	C.al_set_new_display_flags(cint(int(flags)))
+	C.al_set_new_display_flags(C.int(flags))
 }
 
 func ResetDisplayFlags() {
-	C.al_set_new_display_flags(cint(0))
+	C.al_set_new_display_flags(C.int(0))
 }
 
 func (d *Display) GetEventSource() *EventSource {
@@ -63,15 +63,15 @@ func (d *Display) GetEventSource() *EventSource {
 }
 
 func (d *Display) Width() int {
-	return (int)(C.al_get_display_width((*C.ALLEGRO_DISPLAY)(d)))
+	return int(C.al_get_display_width((*C.ALLEGRO_DISPLAY)(d)))
 }
 
 func (d *Display) Height() int {
-	return (int)(C.al_get_display_height((*C.ALLEGRO_DISPLAY)(d)))
+	return int(C.al_get_display_height((*C.ALLEGRO_DISPLAY)(d)))
 }
 
 func (d *Display) AcknowledgeResize() bool {
-	return gobool(C.al_acknowledge_resize((*C.ALLEGRO_DISPLAY)(d)))
+	return bool(C.al_acknowledge_resize((*C.ALLEGRO_DISPLAY)(d)))
 }
 
 func (d *Display) SetWindowTitle(title string) {

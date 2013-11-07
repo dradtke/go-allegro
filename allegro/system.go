@@ -14,8 +14,12 @@ import (
 )
 
 func Init() error {
-	if !gobool(C.init()) {
+	if !bool(C.init()) {
 		return errors.New("failed to initialize allegro!")
 	}
 	return nil
+}
+
+func Version() uint32 {
+	return uint32(C.al_get_allegro_version())
 }

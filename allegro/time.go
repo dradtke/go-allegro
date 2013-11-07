@@ -10,10 +10,14 @@ type Timeout C.ALLEGRO_TIMEOUT
 
 func NewTimeout(seconds float64) *Timeout {
 	var timeout C.ALLEGRO_TIMEOUT
-	C.al_init_timeout(&timeout, cdouble(seconds))
+	C.al_init_timeout(&timeout, C.double(seconds))
 	return (*Timeout)(&timeout)
 }
 
 func Rest(seconds float64) {
-	C.al_rest(cdouble(seconds))
+	C.al_rest(C.double(seconds))
+}
+
+func Time() float64 {
+	return float64(C.al_get_time())
 }
