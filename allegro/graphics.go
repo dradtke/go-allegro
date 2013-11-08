@@ -23,6 +23,7 @@ int locked_region_get_pixel_size(ALLEGRO_LOCKED_REGION *region) {
 import "C"
 import (
 	"errors"
+	"fmt"
 )
 
 /* Types and Enums */
@@ -133,7 +134,7 @@ func LoadBitmap(filename string) (*Bitmap, error) {
 	defer FreeString(filename_)
 	bmp := C.al_load_bitmap(filename_)
 	if bmp == nil {
-		return nil, errors.New("failed to load bitmap at '" + filename + "'")
+		return nil, fmt.Errorf("failed to load bitmap at '%s'", filename)
 	}
 	return (*Bitmap)(bmp), nil
 }
@@ -146,7 +147,25 @@ func IsDrawingHeld() bool {
 	return bool(C.al_is_bitmap_drawing_held())
 }
 
+func SetTargetBitmap(bmp *Bitmap) {
+	C.al_set_target_bitmap((*C.ALLEGRO_BITMAP)(bmp))
+}
+
+func TargetBitmap() *Bitmap {
+	return (*Bitmap)(C.al_get_target_bitmap())
+}
+
 /* Bitmap Instance Methods */
+
+func (bmp *Bitmap) Save(filename string) error {
+	filename_ := C.CString(filename)
+	defer FreeString(filename_)
+	ok := C.al_save_bitmap(filename_, (*C.ALLEGRO_BITMAP)(bmp))
+	if !ok {
+		return fmt.Errorf("failed to save bitmap at '%s'", filename)
+	}
+	return nil
+}
 
 func (bmp *Bitmap) Format() PixelFormat {
 	return PixelFormat(C.al_get_bitmap_format((*C.ALLEGRO_BITMAP)(bmp)))
@@ -307,6 +326,39 @@ func (bmp *Bitmap) IsLocked() bool {
 
 func (bmp *Bitmap) Unlock() {
 	C.al_unlock_bitmap((*C.ALLEGRO_BITMAP)(bmp))
+}
+
+func (bmp *Bitmap) CreateSubBitmap(x, y, w, h int) (*Bitmap, error) {
+	sub := C.al_create_sub_bitmap((*C.ALLEGRO_BITMAP)(bmp),
+		C.int(x), C.int(y), C.int(w), C.int(h))
+	if sub == nil {
+		return nil, errors.New("failed to create sub-bitmap")
+	}
+	return (*Bitmap)(sub), nil
+}
+
+func (bmp *Bitmap) IsSubBitmap() bool {
+	return bool(C.al_is_sub_bitmap((*C.ALLEGRO_BITMAP)(bmp)))
+}
+
+func (bmp *Bitmap) ParentBitmap() (*Bitmap, error) {
+	par := C.al_get_parent_bitmap((*C.ALLEGRO_BITMAP)(bmp))
+	if par == nil {
+		return nil, errors.New("no parent bitmap")
+	}
+	return (*Bitmap)(par), nil
+}
+
+func (bmp *Bitmap) Clone() (*Bitmap, error) {
+	clone := C.al_clone_bitmap((*C.ALLEGRO_BITMAP)(bmp))
+	if clone == nil {
+		return nil, errors.New("failed to clone bitmap")
+	}
+	return (*Bitmap)(clone), nil
+}
+
+func (bmp *Bitmap) IsCompatible() bool {
+	return bool(C.al_is_compatible_bitmap((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
 /* Locked Region Instance Methods */
