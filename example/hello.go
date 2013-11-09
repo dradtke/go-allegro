@@ -50,7 +50,7 @@ func main() {
 		return
 	}
 
-	eventQueue.RegisterEventSource(display.GetEventSource())
+	eventQueue.RegisterEventSource(display.EventSource())
 	allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
 	allegro.FlipDisplay()
 

@@ -274,8 +274,8 @@ func (queue *EventQueue) JustWaitForEventUntil(timeout *Timeout) bool {
 
 func (queue *EventQueue) newEvent() *Event {
 	ev := Event{
-		Type:      (EventType)(C.get_event_type(&queue.event)),
-		Source:    (*EventSource)(C.get_event_source(&queue.event)),
+		Type: (EventType)(C.get_event_type(&queue.event)),
+		Source: (*EventSource)(C.get_event_source(&queue.event)),
 		Timestamp: float64(C.get_event_timestamp(&queue.event)),
 	}
 	switch ev.Type {

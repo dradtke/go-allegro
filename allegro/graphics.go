@@ -95,7 +95,31 @@ const (
 	PIXEL_FORMAT_RGBA_4444         PixelFormat = C.ALLEGRO_PIXEL_FORMAT_RGBA_4444
 )
 
-/* Static Methods */
+type BlendingOperation int
+
+const (
+	ADD            BlendingOperation = C.ALLEGRO_ADD
+	DEST_MINUS_SRC BlendingOperation = C.ALLEGRO_DEST_MINUS_SRC
+	SRC_MINUS_DEST BlendingOperation = C.ALLEGRO_SRC_MINUS_DEST
+)
+
+type BlendingValue int
+
+const (
+	ZERO               BlendingValue = C.ALLEGRO_ZERO
+	ONE                BlendingValue = C.ALLEGRO_ONE
+	ALPHA              BlendingValue = C.ALLEGRO_ALPHA
+	INVERSE_ALPHA      BlendingValue = C.ALLEGRO_INVERSE_ALPHA
+	// These need at least Allegro 5.0.10
+	/*
+	SRC_COLOR          BlendingValue = C.ALLEGRO_SRC_COLOR
+	DEST_COLOR         BlendingValue = C.ALLEGRO_DEST_COLOR
+	INVERSE_SRC_COLOR  BlendingValue = C.ALLEGRO_INVERSE_SRC_COLOR
+	INVERSE_DEST_COLOR BlendingValue = C.ALLEGRO_INVERSE_DEST_COLOR
+	*/
+)
+
+// Static Methods {{{
 
 func NewBitmapFormat() PixelFormat {
 	return PixelFormat(C.al_get_new_bitmap_format())
@@ -119,10 +143,6 @@ func AddNewBitmapFlag(flags BitmapFlags) {
 
 func CreateBitmap(w, h int) *Bitmap {
 	return (*Bitmap)(C.al_create_bitmap(C.int(w), C.int(h)))
-}
-
-func MapRGB(r, g, b byte) Color {
-	return Color(C.al_map_rgb(C.uchar(r), C.uchar(g), C.uchar(b)))
 }
 
 func ClearToColor(c Color) {
@@ -155,7 +175,40 @@ func TargetBitmap() *Bitmap {
 	return (*Bitmap)(C.al_get_target_bitmap())
 }
 
-/* Bitmap Instance Methods */
+func PutPixel(x, y int, color Color) {
+	C.al_put_pixel(C.int(x), C.int(y), C.ALLEGRO_COLOR(color))
+}
+
+func PutBlendedPixel(x, y int, color Color) {
+	C.al_put_blended_pixel(C.int(x), C.int(y), C.ALLEGRO_COLOR(color))
+}
+
+func SetClippingRectangle(x, y, width, height int) {
+	C.al_set_clipping_rectangle(C.int(x), C.int(y), C.int(width), C.int(height))
+}
+
+func ResetClippingRectangle() {
+	C.al_reset_clipping_rectangle()
+}
+
+func ClippingRectangle() (x, y, w, h int) {
+	var cx, cy, cw, ch C.int
+	C.al_get_clipping_rectangle(&cx, &cy, &cw, &ch)
+	return int(cx), int(cy), int(cw), int(ch)
+}
+
+func SetBlender(op BlendingOperation, src, dst BlendingValue) {
+	C.al_set_blender(C.int(op), C.int(src), C.int(dst))
+}
+
+func Blender() (op BlendingOperation, src, dst BlendingValue) {
+	var cop, csrc, cdst C.int
+	C.al_get_blender(&cop, &csrc, &cdst)
+	return BlendingOperation(cop), BlendingValue(csrc), BlendingValue(cdst)
+}
+//}}}
+
+// Bitmap Instance Methods {{{
 
 func (bmp *Bitmap) Save(filename string) error {
 	filename_ := C.CString(filename)
@@ -191,7 +244,8 @@ func (bmp *Bitmap) Draw(dx, dy float32, flags DrawFlags) {
 	C.al_draw_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(dx),
 		C.float(dy),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawRegion(sx, sy, sw, sh, dx, dy float32, flags DrawFlags) {
@@ -202,7 +256,8 @@ func (bmp *Bitmap) DrawRegion(sx, sy, sw, sh, dx, dy float32, flags DrawFlags) {
 		C.float(sh),
 		C.float(dx),
 		C.float(dy),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawScaled(sx, sy, sw, sh, dx, dy, dw, dh float32, flags DrawFlags) {
@@ -215,7 +270,8 @@ func (bmp *Bitmap) DrawScaled(sx, sy, sw, sh, dx, dy, dw, dh float32, flags Draw
 		C.float(dy),
 		C.float(dw),
 		C.float(dh),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawRotated(cx, cy, dx, dy, angle float32, flags DrawFlags) {
@@ -228,6 +284,14 @@ func (bmp *Bitmap) DrawRotated(cx, cy, dx, dy, angle float32, flags DrawFlags) {
 		C.int(flags))
 }
 
+func (bmp *Bitmap) Parent() (*Bitmap, error) {
+	parent := C.al_get_parent_bitmap((*C.ALLEGRO_BITMAP)(bmp))
+	if parent == nil {
+		return nil, errors.New("bitmap has no parent")
+	}
+	return (*Bitmap)(parent), nil
+}
+
 func (bmp *Bitmap) DrawScaledRotated(cx, cy, dx, dy, xscale, yscale, angle float32, flags DrawFlags) {
 	C.al_draw_scaled_rotated_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(cx),
@@ -237,7 +301,8 @@ func (bmp *Bitmap) DrawScaledRotated(cx, cy, dx, dy, xscale, yscale, angle float
 		C.float(xscale),
 		C.float(yscale),
 		C.float(angle),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawTinted(tint Color, dx, dy float32, flags DrawFlags) {
@@ -245,7 +310,8 @@ func (bmp *Bitmap) DrawTinted(tint Color, dx, dy float32, flags DrawFlags) {
 		C.ALLEGRO_COLOR(tint),
 		C.float(dx),
 		C.float(dy),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawTintedRegion(tint Color, sx, sy, sw, sh, dx, dy float32, flags DrawFlags) {
@@ -257,7 +323,8 @@ func (bmp *Bitmap) DrawTintedRegion(tint Color, sx, sy, sw, sh, dx, dy float32, 
 		C.float(sh),
 		C.float(dx),
 		C.float(dy),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawTintedScaled(tint Color, sx, sy, sw, sh, dx, dy, dw, dh float32, flags DrawFlags) {
@@ -271,7 +338,8 @@ func (bmp *Bitmap) DrawTintedScaled(tint Color, sx, sy, sw, sh, dx, dy, dw, dh f
 		C.float(dy),
 		C.float(dw),
 		C.float(dh),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawTintedRotated(tint Color, cx, cy, dx, dy, angle float32, flags DrawFlags) {
@@ -282,7 +350,8 @@ func (bmp *Bitmap) DrawTintedRotated(tint Color, cx, cy, dx, dy, angle float32, 
 		C.float(dx),
 		C.float(dy),
 		C.float(angle),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) DrawTintedScaledRotated(tint Color, cx, cy, dx, dy, xscale, yscale, angle float32, flags DrawFlags) {
@@ -295,7 +364,8 @@ func (bmp *Bitmap) DrawTintedScaledRotated(tint Color, cx, cy, dx, dy, xscale, y
 		C.float(xscale),
 		C.float(yscale),
 		C.float(angle),
-		C.int(flags))
+		C.int(flags),
+	)
 }
 
 func (bmp *Bitmap) Lock(format PixelFormat, flags LockFlags) (*LockedRegion, error) {
@@ -313,7 +383,8 @@ func (bmp *Bitmap) LockRegion(x, y, width, height int, format PixelFormat, flags
 		C.int(width),
 		C.int(height),
 		C.int(format),
-		C.int(flags))
+		C.int(flags),
+	)
 	if reg == nil {
 		return nil, errors.New("failed to lock bitmap region; is it already locked?")
 	}
@@ -361,7 +432,70 @@ func (bmp *Bitmap) IsCompatible() bool {
 	return bool(C.al_is_compatible_bitmap((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
-/* Locked Region Instance Methods */
+func (bmp *Bitmap) BitmapFlags() BitmapFlags {
+	return BitmapFlags(C.al_get_bitmap_flags((*C.ALLEGRO_BITMAP)(bmp)))
+}
+
+func (bmp *Bitmap) BitmapFormat() PixelFormat {
+	return PixelFormat(C.al_get_bitmap_format((*C.ALLEGRO_BITMAP)(bmp)))
+}
+
+func (bmp *Bitmap) Pixel(x, y int) Color {
+	return (Color)(C.al_get_pixel((*C.ALLEGRO_BITMAP)(bmp), C.int(x), C.int(y)))
+}
+
+func (bmp *Bitmap) ConvertMaskToAlpha(mask_color Color) {
+	C.al_convert_mask_to_alpha((*C.ALLEGRO_BITMAP)(bmp), C.ALLEGRO_COLOR(mask_color))
+}
+
+//}}}
+
+// Color Methods {{{
+
+func MapRGB(r, g, b byte) Color {
+	return Color(C.al_map_rgb(C.uchar(r), C.uchar(g), C.uchar(b)))
+}
+
+func MapRGBA(r, g, b, a byte) Color {
+	return (Color)(C.al_map_rgba(C.uchar(r), C.uchar(g), C.uchar(b), C.uchar(a)))
+}
+
+// ??? name?
+func MapRGBf(r, g, b float32) Color {
+	return (Color)(C.al_map_rgb_f(C.float(r), C.float(g), C.float(b)))
+}
+
+func MapRGBAf(r, g, b, a float32) Color {
+	return (Color)(C.al_map_rgba_f(C.float(r), C.float(g), C.float(b), C.float(a)))
+}
+
+func (c Color) UnmapRGB() (byte, byte, byte) {
+	var r, g, b C.uchar
+	C.al_unmap_rgb((C.ALLEGRO_COLOR)(c), &r, &g, &b)
+	return byte(r), byte(g), byte(b)
+}
+
+func (c Color) UnmapRGBA() (byte, byte, byte, byte) {
+	var r, g, b, a C.uchar
+	C.al_unmap_rgba((C.ALLEGRO_COLOR)(c), &r, &g, &b, &a)
+	return byte(r), byte(g), byte(b), byte(a)
+}
+
+func (c Color) UnmapRGBf() (float32, float32, float32) {
+	var r, g, b C.float
+	C.al_unmap_rgb_f((C.ALLEGRO_COLOR)(c), &r, &g, &b)
+	return float32(r), float32(g), float32(b)
+}
+
+func (c Color) UnmapRGBAf() (float32, float32, float32, float32) {
+	var r, g, b, a C.float
+	C.al_unmap_rgba_f((C.ALLEGRO_COLOR)(c), &r, &g, &b, &a)
+	return float32(r), float32(g), float32(b), float32(a)
+}
+
+//}}}
+
+// Miscellaneous Instance Methods {{{
 
 func (reg *LockedRegion) Data() uintptr {
 	return uintptr(C.locked_region_get_data((*C.ALLEGRO_LOCKED_REGION)(reg)))
@@ -378,3 +512,13 @@ func (reg *LockedRegion) Pitch() int {
 func (reg *LockedRegion) PixelSize() int {
 	return int(C.locked_region_get_pixel_size((*C.ALLEGRO_LOCKED_REGION)(reg)))
 }
+
+func (format PixelFormat) PixelSize() int {
+	return int(C.al_get_pixel_size(C.int(format)))
+}
+
+func (format PixelFormat) PixelFormatBits() int {
+	return int(C.al_get_pixel_format_bits(C.int(format)))
+}
+
+//}}}

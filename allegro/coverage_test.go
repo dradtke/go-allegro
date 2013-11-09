@@ -18,6 +18,7 @@ var blacklist = map[string]bool{
 	"al_register_bitmap_saver_f":  true,
 	"al_load_bitmap_f":            true,
 	"al_save_bitmap_f":            true,
+	"al_run_main":                 true,
 }
 
 func TestCoverage(t *testing.T) {

@@ -193,7 +193,7 @@ func SetKeyboardLeds(leds int) bool {
 func KeyboardEventSource() (*EventSource, error) {
 	source := C.al_get_keyboard_event_source()
 	if source == nil {
-		return nil, errors.New("cannot get keyboard event source; did you call InstallKeyboard() first?")
+		return nil, errors.New("failed to get keyboard event source; did you call InstallKeyboard() first?")
 	}
 	return (*EventSource)(source), nil
 }
