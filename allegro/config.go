@@ -116,7 +116,7 @@ func (cfg *Config) FirstConfigEntry(section string) (string, ConfigEntryIterator
 }
 
 func (cfg *Config) NextConfigEntry(iter ConfigEntryIterator) (string, error) {
-	entry := C.al_get_next_config_entry((*C.ALLEGRO_CONFIG_ENTRY)(&iter))
+	entry := C.al_get_next_config_entry((**C.ALLEGRO_CONFIG_ENTRY)(&iter))
 	if entry == nil {
 		return "", fmt.Errorf("no more entries in this section")
 	}
