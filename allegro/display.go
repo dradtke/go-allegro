@@ -40,56 +40,56 @@ type MonitorInfo struct {
 type DisplayOption C.int
 
 const (
-	ColorSize            DisplayOption = C.ALLEGRO_COLOR_SIZE
-	RedSize              DisplayOption = C.ALLEGRO_RED_SIZE
-	GreenSize            DisplayOption = C.ALLEGRO_GREEN_SIZE
-	BlueSize             DisplayOption = C.ALLEGRO_BLUE_SIZE
-	AlphaSize            DisplayOption = C.ALLEGRO_ALPHA_SIZE
-	RedShift             DisplayOption = C.ALLEGRO_RED_SHIFT
-	GreenShift           DisplayOption = C.ALLEGRO_GREEN_SHIFT
-	BlueShift            DisplayOption = C.ALLEGRO_BLUE_SHIFT
-	AlphaShift           DisplayOption = C.ALLEGRO_ALPHA_SHIFT
-	AccRedSize           DisplayOption = C.ALLEGRO_ACC_RED_SIZE
-	AccGreenSize         DisplayOption = C.ALLEGRO_ACC_GREEN_SIZE
-	AccBlueSize          DisplayOption = C.ALLEGRO_ACC_BLUE_SIZE
-	AccAlphaSize         DisplayOption = C.ALLEGRO_ACC_ALPHA_SIZE
-	Stereo               DisplayOption = C.ALLEGRO_STEREO
-	AuxBuffers           DisplayOption = C.ALLEGRO_AUX_BUFFERS
-	DepthSize            DisplayOption = C.ALLEGRO_DEPTH_SIZE
-	StencilSize          DisplayOption = C.ALLEGRO_STENCIL_SIZE
-	SampleBuffers        DisplayOption = C.ALLEGRO_SAMPLE_BUFFERS
-	Samples              DisplayOption = C.ALLEGRO_SAMPLES
-	RenderMethod         DisplayOption = C.ALLEGRO_RENDER_METHOD
-	FloatColor           DisplayOption = C.ALLEGRO_FLOAT_COLOR
-	FloatDepth           DisplayOption = C.ALLEGRO_FLOAT_DEPTH
-	SingleBuffer         DisplayOption = C.ALLEGRO_SINGLE_BUFFER
-	SwapMethod           DisplayOption = C.ALLEGRO_SWAP_METHOD
-	CompatibleDisplay    DisplayOption = C.ALLEGRO_COMPATIBLE_DISPLAY
-	UpdateDisplayRegion  DisplayOption = C.ALLEGRO_UPDATE_DISPLAY_REGION
-	Vsync                DisplayOption = C.ALLEGRO_VSYNC
-	MaxBitmapSize        DisplayOption = C.ALLEGRO_MAX_BITMAP_SIZE
-	SupportNpotBitmap    DisplayOption = C.ALLEGRO_SUPPORT_NPOT_BITMAP
-	CanDrawIntoBitmap    DisplayOption = C.ALLEGRO_CAN_DRAW_INTO_BITMAP
-	SupportSeparateAlpha DisplayOption = C.ALLEGRO_SUPPORT_SEPARATE_ALPHA
+	COLOR_SIZE             DisplayOption = C.ALLEGRO_COLOR_SIZE
+	RED_SIZE               DisplayOption = C.ALLEGRO_RED_SIZE
+	GREEN_SIZE             DisplayOption = C.ALLEGRO_GREEN_SIZE
+	BLUE_SIZE              DisplayOption = C.ALLEGRO_BLUE_SIZE
+	ALPHA_SIZE             DisplayOption = C.ALLEGRO_ALPHA_SIZE
+	RED_SHIFT              DisplayOption = C.ALLEGRO_RED_SHIFT
+	GREEN_SHIFT            DisplayOption = C.ALLEGRO_GREEN_SHIFT
+	BLUE_SHIFT             DisplayOption = C.ALLEGRO_BLUE_SHIFT
+	ALPHA_SHIFT            DisplayOption = C.ALLEGRO_ALPHA_SHIFT
+	ACC_RED_SIZE           DisplayOption = C.ALLEGRO_ACC_RED_SIZE
+	ACC_GREEN_SIZE         DisplayOption = C.ALLEGRO_ACC_GREEN_SIZE
+	ACC_BLUE_SIZE          DisplayOption = C.ALLEGRO_ACC_BLUE_SIZE
+	ACC_ALPHA_SIZE         DisplayOption = C.ALLEGRO_ACC_ALPHA_SIZE
+	STEREO                 DisplayOption = C.ALLEGRO_STEREO
+	AUX_BUFFERS            DisplayOption = C.ALLEGRO_AUX_BUFFERS
+	DEPTH_SIZE             DisplayOption = C.ALLEGRO_DEPTH_SIZE
+	STENCIL_SIZE           DisplayOption = C.ALLEGRO_STENCIL_SIZE
+	SAMPLE_BUFFERS         DisplayOption = C.ALLEGRO_SAMPLE_BUFFERS
+	SAMPLES                DisplayOption = C.ALLEGRO_SAMPLES
+	RENDER_METHOD          DisplayOption = C.ALLEGRO_RENDER_METHOD
+	FLOAT_COLOR            DisplayOption = C.ALLEGRO_FLOAT_COLOR
+	FLOAT_DEPTH            DisplayOption = C.ALLEGRO_FLOAT_DEPTH
+	SINGLE_BUFFER          DisplayOption = C.ALLEGRO_SINGLE_BUFFER
+	SWAP_METHOD            DisplayOption = C.ALLEGRO_SWAP_METHOD
+	COMPATIBLE_DISPLAY     DisplayOption = C.ALLEGRO_COMPATIBLE_DISPLAY
+	UPDATE_DISPLAY_REGION  DisplayOption = C.ALLEGRO_UPDATE_DISPLAY_REGION
+	VSYNC                  DisplayOption = C.ALLEGRO_VSYNC
+	MAX_BITMAP_SIZE        DisplayOption = C.ALLEGRO_MAX_BITMAP_SIZE
+	SUPPORT_NPOT_BITMAP    DisplayOption = C.ALLEGRO_SUPPORT_NPOT_BITMAP
+	CAN_DRAW_INTO_BITMAP   DisplayOption = C.ALLEGRO_CAN_DRAW_INTO_BITMAP
+	SUPPORT_SEPARATE_ALPHA DisplayOption = C.ALLEGRO_SUPPORT_SEPARATE_ALPHA
 )
 
 type Importance C.int
 
 const (
-	Require  Importance = C.ALLEGRO_REQUIRE
-	Suggest  Importance = C.ALLEGRO_SUGGEST
-	DontCare Importance = C.ALLEGRO_DONTCARE
+	REQUIRE  Importance = C.ALLEGRO_REQUIRE
+	SUGGEST  Importance = C.ALLEGRO_SUGGEST
+	DONTCARE Importance = C.ALLEGRO_DONTCARE
 )
 
 type DisplayOrientation C.int
 
 const (
-	ZeroDegrees              DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_0_DEGREES
-	NinetyDegrees            DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_90_DEGREES
-	OneHundredEightyDegrees  DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_180_DEGREES
-	TwoHundredSeventyDegrees DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_270_DEGREES
-	FaceUp                   DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_UP
-	FaceDown                 DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_DOWN
+	DISPLAY_ORIENTATION_0_DEGREES   DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_0_DEGREES
+	DISPLAY_ORIENTATION_90_DEGREES  DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_90_DEGREES
+	DISPLAY_ORIENTATION_180_DEGREES DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_180_DEGREES
+	DISPLAY_ORIENTATION_270_DEGREES DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_270_DEGREES
+	DISPLAY_ORIENTATION_FACE_UP     DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_UP
+	DISPLAY_ORIENTATION_FACE_DOWN   DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_DOWN
 )
 
 func CreateDisplay(w, h int) (*Display, error) {
@@ -100,29 +100,16 @@ func CreateDisplay(w, h int) (*Display, error) {
 	return (*Display)(d), nil
 }
 
-func (d *Display) Destroy() {
-	C.al_destroy_display((*C.ALLEGRO_DISPLAY)(d))
-}
-
 func FlipDisplay() {
 	C.al_flip_display()
 }
 
-// ???: how to handle conflict between this and the flag?
-func DoUpdateDisplayRegion(x, y, width, height int) {
+func UpdateDisplayRegion(x, y, width, height int) {
 	C.al_update_display_region(C.int(x), C.int(y), C.int(width), C.int(height))
 }
 
 func NewDisplayFlags() DisplayFlags {
 	return DisplayFlags(C.al_get_new_display_flags())
-}
-
-func (d *Display) SetDisplayFlag(flags DisplayFlags, onoff bool) error {
-	success := bool(C.al_set_display_flag((*C.ALLEGRO_DISPLAY)(d), C.int(flags), C.bool(onoff)))
-	if !success {
-		return errors.New("failed to set display flag!")
-	}
-	return nil
 }
 
 func NewDisplayOption(option DisplayOption) (int, Importance) {
@@ -133,10 +120,6 @@ func NewDisplayOption(option DisplayOption) (int, Importance) {
 
 func SetNewDisplayFlags(flags DisplayFlags) {
 	C.al_set_new_display_flags(C.int(flags))
-}
-
-func (d *Display) DisplayOption(option DisplayOption) int {
-	return int(C.al_get_display_option((*C.ALLEGRO_DISPLAY)(d), C.int(option)))
 }
 
 func SetNewDisplayOption(option DisplayOption, value int, im Importance) {
@@ -151,10 +134,6 @@ func NewDisplayRefreshRate() int {
 	return int(C.al_get_new_display_refresh_rate())
 }
 
-func (d *Display) RefreshRate() int {
-	return int(C.al_get_display_refresh_rate((*C.ALLEGRO_DISPLAY)(d)))
-}
-
 func SetNewDisplayRefreshRate(rate int) {
 	C.al_set_new_display_refresh_rate(C.int(rate))
 }
@@ -165,18 +144,8 @@ func NewWindowPosition() (int, int) {
 	return int(x), int(y)
 }
 
-func (d *Display) WindowPosition() (int, int) {
-	var x, y C.int
-	C.al_get_window_position((*C.ALLEGRO_DISPLAY)(d), &x, &y)
-	return int(x), int(y)
-}
-
 func SetNewWindowPosition(x, y int) {
 	C.al_set_new_window_position(C.int(x), C.int(y))
-}
-
-func (d *Display) SetWindowPosition(x, y int) {
-	C.al_set_window_position((*C.ALLEGRO_DISPLAY)(d), C.int(x), C.int(y))
 }
 
 func ResetNewWindowPosition() {
@@ -187,52 +156,12 @@ func ResetDisplayFlags() {
 	C.al_set_new_display_flags(C.int(0))
 }
 
-func (d *Display) EventSource() *EventSource {
-	return (*EventSource)(C.al_get_display_event_source((*C.ALLEGRO_DISPLAY)(d)))
-}
-
-func (d *Display) Width() int {
-	return int(C.al_get_display_width((*C.ALLEGRO_DISPLAY)(d)))
-}
-
-func (d *Display) Height() int {
-	return int(C.al_get_display_height((*C.ALLEGRO_DISPLAY)(d)))
-}
-
-func (d *Display) AcknowledgeResize() bool {
-	return bool(C.al_acknowledge_resize((*C.ALLEGRO_DISPLAY)(d)))
-}
-
-func (d *Display) SetWindowTitle(title string) {
-	title_ := C.CString(title)
-	defer FreeString(title_)
-	C.al_set_window_title((*C.ALLEGRO_DISPLAY)(d), title_)
-}
-
-func (d *Display) Backbuffer() *Bitmap {
-	return (*Bitmap)(C.al_get_backbuffer((*C.ALLEGRO_DISPLAY)(d)))
-}
-
-// TODO: pixel formats
-
 func InhibitScreensaver(inhibit bool) error {
 	success := bool(C.al_inhibit_screensaver(C.bool(inhibit)))
 	if !success {
 		return errors.New("failed to inhibit screensaver!")
 	}
 	return nil
-}
-
-func (d *Display) Resize(width, height int) error {
-	success := bool(C.al_resize_display((*C.ALLEGRO_DISPLAY)(d), C.int(width), C.int(height)))
-	if !success {
-		return errors.New("failed to resize display!")
-	}
-	return nil
-}
-
-func (d *Display) SetDisplayIcon(icon *Bitmap) {
-	C.al_set_display_icon((*C.ALLEGRO_DISPLAY)(d), (*C.ALLEGRO_BITMAP)(icon))
 }
 
 func WaitForVSync() error {
@@ -283,3 +212,79 @@ func (info *MonitorInfo) Get(adapter int) error {
 func NumVideoAdapters() int {
 	return int(C.al_get_num_video_adapters())
 }
+
+// Display Instance Methods {{{
+
+func (d *Display) Destroy() {
+	C.al_destroy_display((*C.ALLEGRO_DISPLAY)(d))
+}
+
+func (d *Display) SetDisplayFlag(flags DisplayFlags, onoff bool) error {
+	success := bool(C.al_set_display_flag((*C.ALLEGRO_DISPLAY)(d), C.int(flags), C.bool(onoff)))
+	if !success {
+		return errors.New("failed to set display flag!")
+	}
+	return nil
+}
+
+func (d *Display) DisplayOption(option DisplayOption) int {
+	return int(C.al_get_display_option((*C.ALLEGRO_DISPLAY)(d), C.int(option)))
+}
+
+func (d *Display) RefreshRate() int {
+	return int(C.al_get_display_refresh_rate((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) WindowPosition() (int, int) {
+	var x, y C.int
+	C.al_get_window_position((*C.ALLEGRO_DISPLAY)(d), &x, &y)
+	return int(x), int(y)
+}
+
+func (d *Display) SetWindowPosition(x, y int) {
+	C.al_set_window_position((*C.ALLEGRO_DISPLAY)(d), C.int(x), C.int(y))
+}
+
+func (d *Display) EventSource() *EventSource {
+	return (*EventSource)(C.al_get_display_event_source((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) Width() int {
+	return int(C.al_get_display_width((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) Height() int {
+	return int(C.al_get_display_height((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) AcknowledgeResize() bool {
+	return bool(C.al_acknowledge_resize((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) SetWindowTitle(title string) {
+	title_ := C.CString(title)
+	defer freeString(title_)
+	C.al_set_window_title((*C.ALLEGRO_DISPLAY)(d), title_)
+}
+
+func (d *Display) Backbuffer() *Bitmap {
+	return (*Bitmap)(C.al_get_backbuffer((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+func (d *Display) Resize(width, height int) error {
+	success := bool(C.al_resize_display((*C.ALLEGRO_DISPLAY)(d), C.int(width), C.int(height)))
+	if !success {
+		return errors.New("failed to resize display!")
+	}
+	return nil
+}
+
+func (d *Display) SetDisplayIcon(icon *Bitmap) {
+	C.al_set_display_icon((*C.ALLEGRO_DISPLAY)(d), (*C.ALLEGRO_BITMAP)(icon))
+}
+
+func (d *Display) DisplayFormat() PixelFormat {
+	return PixelFormat(C.al_get_display_format((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+//}}}

@@ -52,6 +52,7 @@ func getSource(packageRoot string) ([]byte, error) {
 
 type MissingFunc struct {
 	Name   string
+	Header string
 	Module string
 }
 
@@ -77,7 +78,9 @@ func ScanHeaders(packageRoot string, missingFuncs chan *MissingFunc, errs chan e
 		return
 	}
 	filepath.Walk(headerRoot, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() || !strings.HasSuffix(info.Name(), ".h") {
+		if info.IsDir() && info.Name() == "internal" {
+			return filepath.SkipDir
+		} else if info.IsDir() || !strings.HasSuffix(info.Name(), ".h") {
 			return nil
 		}
 		data, err2 := ioutil.ReadFile(path)
@@ -97,7 +100,7 @@ func ScanHeaders(packageRoot string, missingFuncs chan *MissingFunc, errs chan e
 				continue
 			}
 			if !bytes.Contains(source, []byte("C."+name)) {
-				missingFuncs <- &MissingFunc{Name: name, Module: ""}
+				missingFuncs <- &MissingFunc{Name: name, Module: "", Header: path}
 			}
 		}
 		return nil
@@ -139,7 +142,7 @@ func ScanHeaders(packageRoot string, missingFuncs chan *MissingFunc, errs chan e
 				continue
 			}
 			if !bytes.Contains(source, []byte("C."+name)) {
-				missingFuncs <- &MissingFunc{Name: name, Module: m.name}
+				missingFuncs <- &MissingFunc{Name: name, Module: m.name, Header: header}
 			}
 		}
 	}
