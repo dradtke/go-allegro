@@ -7,13 +7,6 @@ import (
 	"os"
 )
 
-/*
-// Without this, cgo complains about atexit not being defined.
-// Linking explicitly against /usr/lib64/libc_nonshared.a might fix it
-void atexit() {}
-*/
-import "C"
-
 func main() {
 	var (
 		display *allegro.Display
@@ -23,12 +16,7 @@ func main() {
 		err error
 	)
 
-	if err = allegro.Init(); err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
-	}
-
-	allegro.SetNewDisplayFlags(allegro.Windowed)
+	allegro.SetNewDisplayFlags(allegro.WINDOWED)
 	if display, err = allegro.CreateDisplay(640, 480); err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
 		return

@@ -140,12 +140,40 @@ int get_event_display_orientation(ALLEGRO_EVENT *event) {
 	return event->display.orientation;
 }
 
+// User
+
+ALLEGRO_EVENT_SOURCE *get_event_user_source(ALLEGRO_EVENT *event) {
+	return event->user.source;
+}
+
+intptr_t get_event_user_data1(ALLEGRO_EVENT *event) {
+	return event->user.data1;
+}
+
+intptr_t get_event_user_data2(ALLEGRO_EVENT *event) {
+	return event->user.data2;
+}
+
+intptr_t get_event_user_data3(ALLEGRO_EVENT *event) {
+	return event->user.data3;
+}
+
+intptr_t get_event_user_data4(ALLEGRO_EVENT *event) {
+	return event->user.data4;
+}
+
+ALLEGRO_USER_EVENT *get_user_event(ALLEGRO_EVENT *event) {
+	return &event->user;
+}
+
 //}}}
 */
 import "C"
 import (
 	"errors"
 )
+
+var EmptyQueue = errors.New("event queue is empty")
 
 type Event struct {
 	Type      EventType
@@ -157,6 +185,7 @@ type Event struct {
 	Mouse    MouseEventInfo
 	Timer    TimerEventInfo
 	Display  DisplayEventInfo
+	User     UserEventInfo
 }
 
 type JoystickEventInfo struct {
@@ -190,6 +219,12 @@ type DisplayEventInfo struct {
 	Orientation         DisplayOrientation
 }
 
+type UserEventInfo struct {
+	Source                     *EventSource
+	Data1, Data2, Data3, Data4 uintptr
+	Raw                        *C.ALLEGRO_USER_EVENT // used for memory management
+}
+
 type EventType int
 
 const (
@@ -220,8 +255,30 @@ const (
 type EventSource C.ALLEGRO_EVENT_SOURCE
 
 type EventQueue struct {
-	ptr   *C.ALLEGRO_EVENT_QUEUE
+	raw   *C.ALLEGRO_EVENT_QUEUE
 	event C.ALLEGRO_EVENT
+}
+
+// ???: is this needed?
+func (ev *Event) UnrefUserEvent() {
+	C.al_unref_user_event(ev.User.Raw)
+}
+
+// The EventSource instance must be already allocated.
+func (source EventSource) InitUserEventSource() {
+	C.al_init_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(&source))
+}
+
+func (source *EventSource) DestroyUserEventSource() {
+	C.al_destroy_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(source))
+}
+
+func (source *EventSource) SetData(data uintptr) {
+	C.al_set_event_source_data((*C.ALLEGRO_EVENT_SOURCE)(source), C.intptr_t(data))
+}
+
+func (source *EventSource) Data() uintptr {
+	return uintptr(C.al_get_event_source_data((*C.ALLEGRO_EVENT_SOURCE)(source)))
 }
 
 func CreateEventQueue() (*EventQueue, error) {
@@ -229,39 +286,63 @@ func CreateEventQueue() (*EventQueue, error) {
 	if queue == nil {
 		return nil, errors.New("failed to create event queue!")
 	}
-	return &EventQueue{ptr: queue}, nil
+	return &EventQueue{raw: queue}, nil
 }
 
 func (queue *EventQueue) Destroy() {
-	C.al_destroy_event_queue(queue.ptr)
+	C.al_destroy_event_queue(queue.raw)
 }
 
 func (queue *EventQueue) RegisterEventSource(source *EventSource) {
-	C.al_register_event_source(queue.ptr, (*C.ALLEGRO_EVENT_SOURCE)(source))
+	C.al_register_event_source(queue.raw, (*C.ALLEGRO_EVENT_SOURCE)(source))
 }
 
-func (queue *EventQueue) GetNextEvent() (*Event, bool) {
-	success := bool(C.al_get_next_event(queue.ptr, &queue.event))
-	if !success {
-		return nil, false
+func (queue *EventQueue) UnregisterEventSource(source *EventSource) {
+	C.al_unregister_event_source(queue.raw, (*C.ALLEGRO_EVENT_SOURCE)(source))
+}
+
+func (queue *EventQueue) IsEmpty() bool {
+	return bool(C.al_is_event_queue_empty(queue.raw))
+}
+
+func (queue *EventQueue) PeekNextEvent() (*Event, error) {
+	ok := bool(C.al_peek_next_event(queue.raw, &queue.event))
+	if !ok {
+		return nil, EmptyQueue
 	}
-	return queue.newEvent(), true
+	return queue.newEvent(), nil
+}
+
+func (queue *EventQueue) DropNextEvent() bool {
+	return bool(C.al_drop_next_event(queue.raw))
+}
+
+func (queue *EventQueue) Flush() {
+	C.al_flush_event_queue(queue.raw)
+}
+
+func (queue *EventQueue) GetNextEvent() (*Event, error) {
+	ok := bool(C.al_get_next_event(queue.raw, &queue.event))
+	if !ok {
+		return nil, EmptyQueue
+	}
+	return queue.newEvent(), nil
 }
 
 func (queue *EventQueue) WaitForEvent() *Event {
-	C.al_wait_for_event(queue.ptr, &queue.event)
+	C.al_wait_for_event(queue.raw, &queue.event)
 	return queue.newEvent()
 }
 
 // wait for an event, but don't take it off the queue
 // better name for this?
 func (queue *EventQueue) JustWaitForEvent() {
-	C.al_wait_for_event(queue.ptr, nil)
+	C.al_wait_for_event(queue.raw, nil)
 }
 
 func (queue *EventQueue) WaitForEventUntil(timeout *Timeout) (*Event, bool) {
-	success := C.al_wait_for_event_until(queue.ptr, &queue.event, (*C.ALLEGRO_TIMEOUT)(timeout))
-	if !success {
+	ok := C.al_wait_for_event_until(queue.raw, &queue.event, (*C.ALLEGRO_TIMEOUT)(timeout))
+	if !ok {
 		return nil, false
 	}
 	return queue.newEvent(), true
@@ -269,13 +350,13 @@ func (queue *EventQueue) WaitForEventUntil(timeout *Timeout) (*Event, bool) {
 
 // like WaitForEventUntil, but don't return an event and leave everything on the queue
 func (queue *EventQueue) JustWaitForEventUntil(timeout *Timeout) bool {
-	return bool(C.al_wait_for_event_until(queue.ptr, nil, (*C.ALLEGRO_TIMEOUT)(timeout)))
+	return bool(C.al_wait_for_event_until(queue.raw, nil, (*C.ALLEGRO_TIMEOUT)(timeout)))
 }
 
 func (queue *EventQueue) newEvent() *Event {
 	ev := Event{
-		Type: (EventType)(C.get_event_type(&queue.event)),
-		Source: (*EventSource)(C.get_event_source(&queue.event)),
+		Type:      (EventType)(C.get_event_type(&queue.event)),
+		Source:    (*EventSource)(C.get_event_source(&queue.event)),
 		Timestamp: float64(C.get_event_timestamp(&queue.event)),
 	}
 	switch ev.Type {
@@ -340,7 +421,7 @@ func (queue *EventQueue) newEvent() *Event {
 		ev.Mouse = MouseEventInfo{X: x, Y: y, Z: z, W: w, Display: display}
 
 	case TimerEvent:
-		source := &Timer{ptr: C.get_event_timer_source(&queue.event)}
+		source := (*Timer)(C.get_event_timer_source(&queue.event))
 		count := int64(C.get_event_timer_count(&queue.event))
 		ev.Timer = TimerEventInfo{Source: source, Count: count}
 
@@ -360,6 +441,15 @@ func (queue *EventQueue) newEvent() *Event {
 		source := (*Display)(C.get_event_display_source(&queue.event))
 		orientation := (DisplayOrientation)(C.get_event_display_orientation(&queue.event))
 		ev.Display = DisplayEventInfo{Source: source, Orientation: orientation}
+
+	default:
+		source := (*EventSource)(C.get_event_user_source(&queue.event))
+		data1 := uintptr(C.get_event_user_data1(&queue.event))
+		data2 := uintptr(C.get_event_user_data2(&queue.event))
+		data3 := uintptr(C.get_event_user_data3(&queue.event))
+		data4 := uintptr(C.get_event_user_data4(&queue.event))
+		raw := C.get_user_event(&queue.event)
+		ev.User = UserEventInfo{Source: source, Data1: data1, Data2: data2, Data3: data3, Data4: data4, Raw: raw}
 	}
 	return &ev
 }

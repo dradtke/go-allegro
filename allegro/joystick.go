@@ -11,11 +11,19 @@ import (
 )
 
 type Joystick C.ALLEGRO_JOYSTICK
+
+type JoyFlags int
+
+const (
+	JOYFLAG_DIGITAL JoyFlags = C.ALLEGRO_JOYFLAG_DIGITAL
+	JOYFLAG_ANALOGUE  JoyFlags = C.ALLEGRO_JOYFLAG_ANALOGUE
+)
+
 type JoystickState struct {
-	Stick []stickState
-	Button []int
+	Stick    []stickState
+	Button   []int
 	joystick *Joystick
-	ptr C.ALLEGRO_JOYSTICK_STATE
+	ptr      C.ALLEGRO_JOYSTICK_STATE
 }
 
 type stickState struct {
@@ -46,83 +54,87 @@ func NumJoysticks() int {
 	return int(C.al_get_num_joysticks())
 }
 
-func GetJoystick(num int) (*Joystick, error) {
-	joystick := (*Joystick)(C.al_get_joystick(C.int(num)))
+func GetJoystick(stick int) (*Joystick, error) {
+	joystick := (*Joystick)(C.al_get_joystick(C.int(stick)))
 	if joystick == nil {
-		return nil, fmt.Errorf("joystick '%d' not found", num)
+		return nil, fmt.Errorf("joystick '%d' not found", stick)
 	}
 	return joystick, nil
 }
 
-func (stick *Joystick) Release() {
-	C.al_release_joystick((*C.ALLEGRO_JOYSTICK)(stick))
+func (j *Joystick) Release() {
+	C.al_release_joystick((*C.ALLEGRO_JOYSTICK)(j))
 }
 
-func (stick *Joystick) Active() bool {
-	return bool(C.al_get_joystick_active((*C.ALLEGRO_JOYSTICK)(stick)))
+func (j *Joystick) Active() bool {
+	return bool(C.al_get_joystick_active((*C.ALLEGRO_JOYSTICK)(j)))
 }
 
-func (stick *Joystick) Name() string {
-	return C.GoString(C.al_get_joystick_name((*C.ALLEGRO_JOYSTICK)(stick)))
+func (j *Joystick) Name() string {
+	return C.GoString(C.al_get_joystick_name((*C.ALLEGRO_JOYSTICK)(j)))
 }
 
-func (stick *Joystick) StickName(num int) (string, error) {
-	name_ := C.al_get_joystick_stick_name((*C.ALLEGRO_JOYSTICK)(stick), C.int(num))
+func (j *Joystick) StickName(stick int) (string, error) {
+	name_ := C.al_get_joystick_stick_name((*C.ALLEGRO_JOYSTICK)(j), C.int(stick))
 	if name_ == nil {
-		return "", fmt.Errorf("stick '%d' not found on joystick '%s'", num, stick.Name())
+		return "", fmt.Errorf("stick '%d' not found on joystick '%s'", stick, j.Name())
 	}
 	return C.GoString(name_), nil
 }
 
-func (stick *Joystick) AxisName(num, axis int) (string, error) {
-	name_ := C.al_get_joystick_axis_name((*C.ALLEGRO_JOYSTICK)(stick), C.int(num), C.int(axis))
+func (j *Joystick) AxisName(stick, axis int) (string, error) {
+	name_ := C.al_get_joystick_axis_name((*C.ALLEGRO_JOYSTICK)(j), C.int(stick), C.int(axis))
 	if name_ == nil {
-		return "", fmt.Errorf("axis '%d' not found on joystick '%s'", num, stick.Name())
+		return "", fmt.Errorf("axis '%d' not found on joystick '%s'", stick, j.Name())
 	}
 	return C.GoString(name_), nil
 }
 
-func (stick *Joystick) ButtonName(num int) (string, error) {
-	name_ := C.al_get_joystick_button_name((*C.ALLEGRO_JOYSTICK)(stick), C.int(num))
+func (j *Joystick) ButtonName(stick int) (string, error) {
+	name_ := C.al_get_joystick_button_name((*C.ALLEGRO_JOYSTICK)(j), C.int(stick))
 	if name_ == nil {
-		return "", fmt.Errorf("button '%d' not found on joystick '%s'", num, stick.Name())
+		return "", fmt.Errorf("button '%d' not found on joystick '%s'", stick, j.Name())
 	}
 	return C.GoString(name_), nil
 }
 
-func (stick *Joystick) NumSticks() int {
-	return int(C.al_get_joystick_num_sticks((*C.ALLEGRO_JOYSTICK)(stick)))
+func (j *Joystick) NumSticks() int {
+	return int(C.al_get_joystick_num_sticks((*C.ALLEGRO_JOYSTICK)(j)))
 }
 
-func (stick *Joystick) NumAxes(num int) int {
-	return int(C.al_get_joystick_num_axes((*C.ALLEGRO_JOYSTICK)(stick), C.int(num)))
+func (j *Joystick) NumAxes(stick int) int {
+	return int(C.al_get_joystick_num_axes((*C.ALLEGRO_JOYSTICK)(j), C.int(stick)))
 }
 
-func (stick *Joystick) NumButtons() int {
-	return int(C.al_get_joystick_num_buttons((*C.ALLEGRO_JOYSTICK)(stick)))
+func (j *Joystick) NumButtons() int {
+	return int(C.al_get_joystick_num_buttons((*C.ALLEGRO_JOYSTICK)(j)))
+}
+
+func (j *Joystick) StickFlags(stick int) JoyFlags {
+	return JoyFlags(C.al_get_joystick_stick_flags((*C.ALLEGRO_JOYSTICK)(j), C.int(stick)))
 }
 
 func JoystickEventSource() *EventSource {
 	return (*EventSource)(C.al_get_joystick_event_source())
 }
 
-func (stick *Joystick) State() *JoystickState {
-	numSticks := stick.NumSticks()
-	numButtons := stick.NumButtons()
-	state := JoystickState{joystick:stick, Stick:make([]stickState, numSticks), Button:make([]int, numButtons)}
-	for i := 0; i<numSticks; i++ {
-		state.Stick[i].Axis = make([]float32, stick.NumAxes(i))
+func (j *Joystick) State() *JoystickState {
+	numSticks := j.NumSticks()
+	numButtons := j.NumButtons()
+	state := JoystickState{joystick: j, Stick: make([]stickState, numSticks), Button: make([]int, numButtons)}
+	for i := 0; i < numSticks; i++ {
+		state.Stick[i].Axis = make([]float32, j.NumAxes(i))
 	}
 	return &state
 }
 
 func (state *JoystickState) Get() {
 	C.al_get_joystick_state((*C.ALLEGRO_JOYSTICK)(state.joystick), &state.ptr)
-	for i := 0; i<len(state.Button); i++ {
+	for i := 0; i < len(state.Button); i++ {
 		state.Button[i] = int(state.ptr.button[C.int(i)])
 	}
-	for i := 0; i<len(state.Stick); i++ {
-		for j := 0; j<len(state.Stick[i].Axis); j++ {
+	for i := 0; i < len(state.Stick); i++ {
+		for j := 0; j < len(state.Stick[i].Axis); j++ {
 			state.Stick[i].Axis[j] = float32(state.ptr.stick[C.int(i)].axis[C.int(j)])
 		}
 	}

@@ -151,7 +151,7 @@ func ClearToColor(c Color) {
 
 func LoadBitmap(filename string) (*Bitmap, error) {
 	filename_ := C.CString(filename)
-	defer FreeString(filename_)
+	defer freeString(filename_)
 	bmp := C.al_load_bitmap(filename_)
 	if bmp == nil {
 		return nil, fmt.Errorf("failed to load bitmap at '%s'", filename)
@@ -159,11 +159,11 @@ func LoadBitmap(filename string) (*Bitmap, error) {
 	return (*Bitmap)(bmp), nil
 }
 
-func HoldDrawing(hold bool) {
+func HoldBitmapDrawing(hold bool) {
 	C.al_hold_bitmap_drawing(C.bool(hold))
 }
 
-func IsDrawingHeld() bool {
+func IsBitmapDrawingHeld() bool {
 	return bool(C.al_is_bitmap_drawing_held())
 }
 
@@ -181,6 +181,10 @@ func PutPixel(x, y int, color Color) {
 
 func PutBlendedPixel(x, y int, color Color) {
 	C.al_put_blended_pixel(C.int(x), C.int(y), C.ALLEGRO_COLOR(color))
+}
+
+func DrawPixel(x, y float32, color Color) {
+	C.al_draw_pixel(C.float(x), C.float(y), C.ALLEGRO_COLOR(color))
 }
 
 func SetClippingRectangle(x, y, width, height int) {
@@ -206,13 +210,22 @@ func Blender() (op BlendingOperation, src, dst BlendingValue) {
 	C.al_get_blender(&cop, &csrc, &cdst)
 	return BlendingOperation(cop), BlendingValue(csrc), BlendingValue(cdst)
 }
+
+func CurrentDisplay() *Display {
+	return (*Display)(C.al_get_current_display())
+}
+
+func SetTargetBackbuffer(d *Display) {
+	C.al_set_target_backbuffer((*C.ALLEGRO_DISPLAY)(d))
+}
+
 //}}}
 
 // Bitmap Instance Methods {{{
 
 func (bmp *Bitmap) Save(filename string) error {
 	filename_ := C.CString(filename)
-	defer FreeString(filename_)
+	defer freeString(filename_)
 	ok := C.al_save_bitmap(filename_, (*C.ALLEGRO_BITMAP)(bmp))
 	if !ok {
 		return fmt.Errorf("failed to save bitmap at '%s'", filename)
