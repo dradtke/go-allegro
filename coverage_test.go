@@ -206,6 +206,8 @@ func getSource(packageRoot string) ([]byte, error) {
 
 type missingFunc struct {
 	Name   string
+	Type   string
+	Params string
 	Header string
 	Module string
 }
@@ -250,8 +252,10 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 				// function names starting with an underscore are private
 				continue
 			}
+			typ := strings.TrimSpace(vals[1])
+			params := strings.TrimSpace(vals[3])
 			if !bytes.Contains(source, []byte("C."+name)) {
-				missingFuncs <- &missingFunc{Name: name, Module: "", Header: path}
+				missingFuncs <- &missingFunc{Name: name, Type: typ, Params: params, Module: "", Header: path}
 			}
 		}
 		return nil
@@ -297,8 +301,10 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 				// function names starting with an underscore are private
 				continue
 			}
+			typ := strings.TrimSpace(vals[1])
+			params := strings.TrimSpace(vals[3])
 			if !bytes.Contains(source, []byte("C."+name)) {
-				missingFuncs <- &missingFunc{Name: name, Module: m.name, Header: header}
+				missingFuncs <- &missingFunc{Name: name, Type: typ, Params: params, Module: m.name, Header: header}
 			}
 		}
 	}
@@ -326,7 +332,7 @@ func TestCoverage(t *testing.T) {
 			if f.Module == "" {
 				t.Errorf("Missing allegro function '%s' in file '%s'", f.Name, f.Header)
 			} else {
-				t.Errorf("Module '%s' missing function '%s'", f.Module, f.Name)
+				t.Errorf("Module '%s' missing function '%s' [%s %s(%s)]", f.Module, f.Name, f.Type, f.Name, f.Params)
 			}
 		}
 		wg.Done()
