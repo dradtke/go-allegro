@@ -16,8 +16,9 @@ import (
 var modules = []mod{
 	mod{name: "image", regex: buildRegex("ALLEGRO_IIO_FUNC")},
 	mod{name: "acodec", regex: buildRegex("ALLEGRO_ACODEC_FUNC")},
+	mod{name: "font", regex: buildRegex("ALLEGRO_FONT_FUNC")},
+	mod{name: "ttf", regex: buildRegex("ALLEGRO_TTF_FUNC"), path: "font/ttf"},
 	//mod{name: "audio", regex: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
-	//mod{name: "ttf", regex: buildRegex("ALLEGRO_TTF_FUNC")},
 	// TODO: add whatever other modules need to be included
 }
 
@@ -161,11 +162,18 @@ var blacklist = map[string]bool{
 	"al_utf16_encode":                true,
 	"al_get_errno":                   true,
 	"al_set_errno":                   true,
+	"al_register_font_loader":        true,
+	"al_get_ustr_width":              true,
+	"al_draw_ustr":                   true,
+	"al_draw_justified_ustr":         true,
+	"al_get_ustr_dimensions":         true,
+	"al_load_ttf_font_f":             true,
+	"al_load_ttf_font_stretch_f":     true,
 }
 
 type mod struct {
-	name  string
-	regex *regexp.Regexp
+	name, path string
+	regex      *regexp.Regexp
 }
 
 // regexes for various function macros
@@ -204,8 +212,8 @@ type missingFunc struct {
 
 func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan error) {
 	var (
-		source []byte
-		sourceErr error
+		source     []byte
+		sourceErr  error
 		headerRoot = filepath.Join("/", "usr", "include", "allegro5")
 	)
 
@@ -252,9 +260,14 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 	// now iterate through all known modules
 	for _, m := range modules {
 		var (
+			root   string
 			header = filepath.Join(headerRoot, "allegro_"+m.name+".h")
-			root = filepath.Join(packageRoot, m.name)
 		)
+		if m.path != "" {
+			root = filepath.Join(packageRoot, m.path)
+		} else {
+			root = filepath.Join(packageRoot, m.name)
+		}
 		if _, err := os.Stat(header); os.IsNotExist(err) {
 			errs <- fmt.Errorf("Module header not found at '%s'", header)
 			continue
@@ -268,7 +281,7 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 			errs <- err
 			continue
 		}
-		source, sourceErr = getSource(filepath.Join(packageRoot, m.name))
+		source, sourceErr = getSource(root)
 		if sourceErr != nil {
 			errs <- sourceErr
 			return

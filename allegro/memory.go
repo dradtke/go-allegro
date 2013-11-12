@@ -13,11 +13,15 @@ import (
 	"unsafe"
 )
 
-func freeString(str *C.char) {
-	C._al_free(unsafe.Pointer(str))
+func free(data unsafe.Pointer) {
+	C._al_free(data)
 }
 
-// Allow users to override default C memory management.
+func freeString(data *C.char) {
+	C._al_free(unsafe.Pointer(data))
+}
+
+// Allow users to override default C memory management, if they really want to.
 func SetMemoryInterface(memory_interface *C.ALLEGRO_MEMORY_INTERFACE) {
 	C.al_set_memory_interface(memory_interface)
 }
