@@ -14,9 +14,10 @@ import (
 )
 
 var modules = []mod{
-	mod{name: "image", regex: buildRegex("ALLEGRO_IIO_FUNC")},
 	mod{name: "acodec", regex: buildRegex("ALLEGRO_ACODEC_FUNC")},
 	mod{name: "font", regex: buildRegex("ALLEGRO_FONT_FUNC")},
+	mod{name: "image", regex: buildRegex("ALLEGRO_IIO_FUNC")},
+	mod{name: "dialog", regex: buildRegex("ALLEGRO_DIALOG_FUNC"), header: "native_dialog"}, // TODO: fix
 	mod{name: "ttf", regex: buildRegex("ALLEGRO_TTF_FUNC"), path: "font/ttf"},
 	//mod{name: "audio", regex: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
 	// TODO: add whatever other modules need to be included
@@ -172,8 +173,24 @@ var blacklist = map[string]bool{
 }
 
 type mod struct {
-	name, path string
+	name, path, header string
 	regex      *regexp.Regexp
+}
+
+func (m *mod) Header() string {
+	if m.header != "" {
+		return "allegro_" + m.header + ".h"
+	} else {
+		return "allegro_" + m.name + ".h"
+	}
+}
+
+func (m *mod) Path() string {
+	if m.path != "" {
+		return m.path
+	} else {
+		return m.name
+	}
 }
 
 // regexes for various function macros
@@ -263,15 +280,8 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 
 	// now iterate through all known modules
 	for _, m := range modules {
-		var (
-			root   string
-			header = filepath.Join(headerRoot, "allegro_"+m.name+".h")
-		)
-		if m.path != "" {
-			root = filepath.Join(packageRoot, m.path)
-		} else {
-			root = filepath.Join(packageRoot, m.name)
-		}
+		root := filepath.Join(packageRoot, m.Path())
+		header := filepath.Join(headerRoot, m.Header())
 		if _, err := os.Stat(header); os.IsNotExist(err) {
 			errs <- fmt.Errorf("Module header not found at '%s'", header)
 			continue
