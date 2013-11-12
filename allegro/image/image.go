@@ -7,8 +7,12 @@ package image
 */
 import "C"
 
-func Init() {
-	C.al_init_image_addon()
+func Init() error {
+	ok := bool(C.al_init_image_addon())
+	if !ok {
+		return errors.New("failed to initialize image addon")
+	}
+	return nil
 }
 
 func Shutdown() {
