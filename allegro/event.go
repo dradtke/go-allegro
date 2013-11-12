@@ -171,6 +171,7 @@ ALLEGRO_USER_EVENT *get_user_event(ALLEGRO_EVENT *event) {
 import "C"
 import (
 	"errors"
+	"runtime"
 )
 
 var EmptyQueue = errors.New("event queue is empty")
@@ -282,11 +283,13 @@ func (source *EventSource) Data() uintptr {
 }
 
 func CreateEventQueue() (*EventQueue, error) {
-	queue := C.al_create_event_queue()
-	if queue == nil {
+	q := C.al_create_event_queue()
+	if q == nil {
 		return nil, errors.New("failed to create event queue!")
 	}
-	return &EventQueue{raw: queue}, nil
+	queue := &EventQueue{raw: q}
+	runtime.SetFinalizer(queue, queue.Destroy)
+	return queue, nil
 }
 
 func (queue *EventQueue) Destroy() {

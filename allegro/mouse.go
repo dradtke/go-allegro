@@ -7,6 +7,7 @@ package allegro
 import "C"
 import (
 	"errors"
+	"runtime"
 )
 
 type MouseCursor C.ALLEGRO_MOUSE_CURSOR
@@ -105,11 +106,13 @@ func MouseEventSource() (*EventSource, error) {
 }
 
 func CreateMouseCursor(bmp *Bitmap, x_focus, y_focus int) (*MouseCursor, error) {
-	cursor := C.al_create_mouse_cursor((*C.ALLEGRO_BITMAP)(bmp), C.int(x_focus), C.int(y_focus))
-	if cursor == nil {
+	c := C.al_create_mouse_cursor((*C.ALLEGRO_BITMAP)(bmp), C.int(x_focus), C.int(y_focus))
+	if c == nil {
 		return nil, errors.New("failed to create mouse cursor!")
 	}
-	return (*MouseCursor)(cursor), nil
+	cursor := (*MouseCursor)(c)
+	runtime.SetFinalizer(cursor, cursor.Destroy)
+	return cursor, nil
 }
 
 func (cursor *MouseCursor) Destroy() {

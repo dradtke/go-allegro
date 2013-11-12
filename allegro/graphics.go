@@ -24,6 +24,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"runtime"
 )
 
 /* Types and Enums */
@@ -142,7 +143,9 @@ func AddNewBitmapFlag(flags BitmapFlags) {
 }
 
 func CreateBitmap(w, h int) *Bitmap {
-	return (*Bitmap)(C.al_create_bitmap(C.int(w), C.int(h)))
+	bitmap := (*Bitmap)(C.al_create_bitmap(C.int(w), C.int(h)))
+	runtime.SetFinalizer(bitmap, bitmap.Destroy)
+	return bitmap
 }
 
 func ClearToColor(c Color) {
@@ -156,7 +159,9 @@ func LoadBitmap(filename string) (*Bitmap, error) {
 	if bmp == nil {
 		return nil, fmt.Errorf("failed to load bitmap at '%s'", filename)
 	}
-	return (*Bitmap)(bmp), nil
+	bitmap := (*Bitmap)(bmp)
+	runtime.SetFinalizer(bitmap, bitmap.Destroy)
+	return bitmap, nil
 }
 
 func HoldBitmapDrawing(hold bool) {

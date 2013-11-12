@@ -8,6 +8,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"runtime"
 )
 
 type Config C.ALLEGRO_CONFIG
@@ -15,7 +16,9 @@ type ConfigSectionIterator (*C.ALLEGRO_CONFIG_SECTION)
 type ConfigEntryIterator (*C.ALLEGRO_CONFIG_ENTRY)
 
 func CreateConfig() *Config {
-	return (*Config)(C.al_create_config())
+	config := (*Config)(C.al_create_config())
+	runtime.SetFinalizer(config, config.Destroy)
+	return config
 }
 
 func LoadConfig(filename string) (*Config, error) {

@@ -7,16 +7,19 @@ package allegro
 import "C"
 import (
 	"errors"
+	"runtime"
 )
 
 type Timer C.ALLEGRO_TIMER
 
 func CreateTimer(speed float64) (*Timer, error) {
-	timer := C.al_create_timer(C.double(speed))
-	if timer == nil {
+	t := C.al_create_timer(C.double(speed))
+	if t == nil {
 		return nil, errors.New("failed to create timer")
 	}
-	return (*Timer)(timer), nil
+	timer := (*Timer)(t)
+	runtime.SetFinalizer(timer, timer.Destroy)
+	return timer, nil
 }
 
 func (t *Timer) Destroy() {

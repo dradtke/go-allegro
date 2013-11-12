@@ -8,6 +8,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"runtime"
 )
 
 type Display C.ALLEGRO_DISPLAY
@@ -97,7 +98,9 @@ func CreateDisplay(w, h int) (*Display, error) {
 	if d == nil {
 		return nil, errors.New("failed to create display!")
 	}
-	return (*Display)(d), nil
+	display := (*Display)(d)
+	runtime.SetFinalizer(display, display.Destroy)
+	return display, nil
 }
 
 func FlipDisplay() {

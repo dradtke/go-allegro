@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dradtke/go-allegro/allegro"
+	"runtime"
 	"unsafe"
 )
 
@@ -56,7 +57,9 @@ func LoadFont(filename string, size, flags int) (*Font, error) {
 	if f == nil {
 		return nil, fmt.Errorf("failed to load font '%s'", filename)
 	}
-	return (*Font)(f), nil
+	font := (*Font)(f)
+	runtime.SetFinalizer(font, font.Destroy)
+	return font, nil
 }
 
 func LoadBitmapFont(filename string) (*Font, error) {
@@ -66,7 +69,9 @@ func LoadBitmapFont(filename string) (*Font, error) {
 	if f == nil {
 		return nil, fmt.Errorf("failed to load bitmap font '%s'", filename)
 	}
-	return (*Font)(f), nil
+	font := (*Font)(f)
+	runtime.SetFinalizer(font, font.Destroy)
+	return font, nil
 }
 
 func GrabFontFromBitmap(bmp *allegro.Bitmap, ranges [][2]int) (*Font, error) {
