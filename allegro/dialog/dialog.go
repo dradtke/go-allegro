@@ -8,6 +8,10 @@ package dialog
 void _al_free_string(char *data) {
 	al_free(data);
 }
+
+void _al_append_native_text_log(ALLEGRO_TEXTLOG *log, char *str) {
+	al_append_native_text_log(log, str);
+}
 */
 import "C"
 import (
@@ -20,6 +24,7 @@ import (
 )
 
 type FileChooser C.ALLEGRO_FILECHOOSER
+type TextLog C.ALLEGRO_TEXTLOG
 
 type FileChooserFlags int
 
@@ -48,6 +53,13 @@ const (
 	RESPONSE_NONE      MessageBoxResult = 0
 	RESPONSE_YES_OK    MessageBoxResult = 1
 	RESPONSE_NO_CANCEL MessageBoxResult = 2
+)
+
+type TextLogFlags int
+
+const (
+	TEXTLOG_NO_CLOSE  TextLogFlags = C.ALLEGRO_TEXTLOG_NO_CLOSE
+	TEXTLOG_MONOSPACE TextLogFlags = C.ALLEGRO_TEXTLOG_MONOSPACE
 )
 
 func Version() uint32 {
@@ -100,9 +112,25 @@ func ShowNativeMessageBoxWithButtons(display *allegro.Display, title, heading, t
 	defer C._al_free_string(heading_)
 	defer C._al_free_string(text_)
 	defer C._al_free_string(buttons_)
-	res := C.al_show_native_message_box((*C.ALLEGRO_DISPLAY)(unsafe.Pointer(display)),
-		title_, heading_, text_, buttons_, C.int(flags))
-	return buttons[int(res)-1]
+	res := int(C.al_show_native_message_box((*C.ALLEGRO_DISPLAY)(unsafe.Pointer(display)),
+		title_, heading_, text_, buttons_, C.int(flags))) - 1
+
+	if res > -1 && res < len(buttons) {
+		return buttons[res]
+	} else {
+		return ""
+	}
+}
+
+func OpenNativeTextLog(title string, flags TextLogFlags) (*TextLog, error) {
+	title_ := C.CString(title)
+	defer C._al_free_string(title_)
+	l := C.al_open_native_text_log(title_, C.int(flags))
+	if l == nil {
+		return nil, errors.New("failed to open native text log")
+	}
+	log := (*TextLog)(l)
+	return log, nil
 }
 
 func (dialog *FileChooser) Count() int {
@@ -119,4 +147,20 @@ func (dialog *FileChooser) Path(i int) (string, error) {
 
 func (dialog *FileChooser) Destroy() {
 	C.al_destroy_native_file_dialog((*C.ALLEGRO_FILECHOOSER)(dialog))
+}
+
+func (log *TextLog) Close() {
+	C.al_close_native_text_log((*C.ALLEGRO_TEXTLOG)(log))
+}
+
+func (log *TextLog) Append(format string, a ...interface{}) {
+	text_ := C.CString(fmt.Sprintf(format, a))
+	defer C._al_free_string(text_)
+	// C.al_append_native_text_log()
+	C._al_append_native_text_log((*C.ALLEGRO_TEXTLOG)(log), text_)
+}
+
+func (log *TextLog) EventSource() (*allegro.EventSource) {
+	return (*allegro.EventSource)(unsafe.Pointer(
+		C.al_get_native_text_log_event_source((*C.ALLEGRO_TEXTLOG)(log))))
 }
