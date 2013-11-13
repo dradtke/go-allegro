@@ -5,6 +5,9 @@ package allegro
 #include <allegro5/allegro.h>
 */
 import "C"
+import (
+	"fmt"
+)
 
 type State C.ALLEGRO_STATE
 
@@ -22,6 +25,14 @@ const (
 	STATE_ALL                    StateFlags = C.ALLEGRO_STATE_ALL
 )
 
+type Error struct {
+	Errno int
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("errno = %d", e.Errno)
+}
+
 func StoreState(flags StateFlags) *State {
 	var state C.ALLEGRO_STATE
 	C.al_store_state(&state, C.int(flags))
@@ -30,4 +41,12 @@ func StoreState(flags StateFlags) *State {
 
 func RestoreState(state *State) {
 	C.al_restore_state((*C.ALLEGRO_STATE)(state))
+}
+
+func LastError() error {
+	return &Error{int(C.al_get_errno())}
+}
+
+func SetLastError(e *Error) {
+	C.al_set_errno(C.int(e.Errno))
 }
