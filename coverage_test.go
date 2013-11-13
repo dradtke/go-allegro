@@ -14,13 +14,15 @@ import (
 )
 
 var modules = []mod{
-	mod{name: "acodec", regex: buildRegex("ALLEGRO_ACODEC_FUNC")},
-	mod{name: "font", regex: buildRegex("ALLEGRO_FONT_FUNC")},
-	mod{name: "image", regex: buildRegex("ALLEGRO_IIO_FUNC")},
-	mod{name: "dialog", regex: buildRegex("ALLEGRO_DIALOG_FUNC"), header: "native_dialog"}, // TODO: fix
-	mod{name: "ttf", regex: buildRegex("ALLEGRO_TTF_FUNC"), path: "font/ttf"},
-	//mod{name: "audio", regex: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
-	// TODO: add whatever other modules need to be included
+	mod{name: "acodec", decl: buildRegex("ALLEGRO_ACODEC_FUNC")},
+	//mod{name: "audio", decl: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
+	mod{name: "color", decl: buildRegex("ALLEGRO_COLOR_FUNC")},
+	mod{name: "dialog", decl: buildRegex("ALLEGRO_DIALOG_FUNC"), header: "native_dialog"},
+	mod{name: "font", decl: buildRegex("ALLEGRO_FONT_FUNC")},
+	mod{name: "image", decl: buildRegex("ALLEGRO_IIO_FUNC")},
+	mod{name: "memfile", decl: buildRegex("ALLEGRO_MEMFILE_FUNC")},
+	mod{name: "physfs", decl: buildRegex("ALLEGRO_PHYSFS_FUNC")},
+	mod{name: "ttf", decl: buildRegex("ALLEGRO_TTF_FUNC"), path: "font/ttf"},
 }
 
 // Ignore functions that I either don't know how to implement,
@@ -37,20 +39,9 @@ var blacklist = map[string]bool{
 	"al_save_config_file_f":          true,
 	"al_run_main":                    true,
 	"al_toggle_display_flag":         true, // deprecated
-	"al_fopen":                       true,
 	"al_fopen_interface":             true,
 	"al_create_file_handle":          true,
-	"al_fclose":                      true,
-	"al_fread":                       true,
-	"al_fwrite":                      true,
-	"al_fflush":                      true,
-	"al_ftell":                       true,
-	"al_fseek":                       true,
-	"al_feof":                        true,
-	"al_ferror":                      true,
-	"al_fclearerr":                   true,
 	"al_fungetc":                     true,
-	"al_fsize":                       true,
 	"al_fgetc":                       true,
 	"al_fputc":                       true,
 	"al_fread16le":                   true,
@@ -174,7 +165,7 @@ var blacklist = map[string]bool{
 
 type mod struct {
 	name, path, header string
-	regex      *regexp.Regexp
+	decl      *decl
 }
 
 func (m *mod) Header() string {
@@ -193,11 +184,16 @@ func (m *mod) Path() string {
 	}
 }
 
+type decl struct {
+	macro string
+	regex *regexp.Regexp
+}
+
 // regexes for various function macros
 var alFunc = buildRegex("AL_FUNC")
 
-func buildRegex(macro string) *regexp.Regexp {
-	return regexp.MustCompile(macro + `\((?P<type>.*), (?P<name>.*), \((?P<params>.*)\)\)`)
+func buildRegex(macro string) *decl {
+	return &decl{macro, regexp.MustCompile(macro + `\((?P<type>.*), (?P<name>.*), \((?P<params>.*)\)\)`)}
 }
 
 func getSource(packageRoot string) ([]byte, error) {
@@ -241,44 +237,28 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 		close(errs)
 	}()
 
-	// first walk the full root, looking for standard allegro functions
+	// First walk the full root, looking for standard allegro functions.
 	source, sourceErr = getSource(packageRoot)
 	if sourceErr != nil {
 		errs <- sourceErr
 		return
 	}
-	filepath.Walk(headerRoot, func(path string, info os.FileInfo, err error) error {
+	filepath.Walk(headerRoot, func(header string, info os.FileInfo, err error) error {
 		if info.IsDir() && info.Name() == "internal" {
 			return filepath.SkipDir
 		} else if info.IsDir() || !strings.HasSuffix(info.Name(), ".h") {
 			return nil
 		}
-		data, err2 := ioutil.ReadFile(path)
+		data, err2 := ioutil.ReadFile(header)
 		if err2 != nil {
 			errs <- err2
 			return nil
 		}
-		for _, line := range strings.Split(string(data), "\n") {
-			vals := alFunc.FindStringSubmatch(line)
-			if vals == nil {
-				// no match
-				continue
-			}
-			name := strings.TrimSpace(vals[2])
-			if strings.HasPrefix(name, "_") {
-				// function names starting with an underscore are private
-				continue
-			}
-			typ := strings.TrimSpace(vals[1])
-			params := strings.TrimSpace(vals[3])
-			if !bytes.Contains(source, []byte("C."+name)) {
-				missingFuncs <- &missingFunc{Name: name, Type: typ, Params: params, Module: "", Header: path}
-			}
-		}
+		findMissingFuncs(data, source, header, alFunc, "", missingFuncs)
 		return nil
 	})
 
-	// now iterate through all known modules
+	// Now iterate through all known modules.
 	for _, m := range modules {
 		root := filepath.Join(packageRoot, m.Path())
 		header := filepath.Join(headerRoot, m.Header())
@@ -300,22 +280,46 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 			errs <- sourceErr
 			return
 		}
-		for _, line := range strings.Split(string(data), "\n") {
-			vals := m.regex.FindStringSubmatch(line)
-			if vals == nil {
-				// no match
-				continue
+		findMissingFuncs(data, source, header, m.decl, m.name, missingFuncs)
+	}
+}
+
+// findMissingFuncs() is a customized iteration method used to ensure that multi-line function declarations are found.
+func findMissingFuncs(data, source []byte, header string, d *decl, modName string, missingFuncs chan *missingFunc) {
+	ch := make(chan string)
+	go func() {
+		var buf bytes.Buffer
+		lines := strings.Split(string(data), "\n")
+		for i := 0; i<len(lines); i++ {
+			line := strings.TrimSpace(lines[i])
+			buf.WriteString(line)
+			if strings.HasPrefix(line, d.macro) {
+				for !strings.HasSuffix(line, ";") {
+					i++
+					line = strings.TrimSpace(lines[i])
+					buf.WriteString(line)
+				}
 			}
-			name := strings.TrimSpace(vals[2])
-			if strings.HasPrefix(name, "_") {
-				// function names starting with an underscore are private
-				continue
-			}
-			typ := strings.TrimSpace(vals[1])
-			params := strings.TrimSpace(vals[3])
-			if !bytes.Contains(source, []byte("C."+name)) {
-				missingFuncs <- &missingFunc{Name: name, Type: typ, Params: params, Module: m.name, Header: header}
-			}
+			ch <- buf.String()
+			buf.Reset()
+		}
+		close(ch)
+	}()
+	for line := range ch {
+		vals := d.regex.FindStringSubmatch(line)
+		if vals == nil {
+			// no match
+			continue
+		}
+		name := strings.TrimSpace(vals[2])
+		if strings.HasPrefix(name, "_") {
+			// function names starting with an underscore are private
+			continue
+		}
+		typ := strings.TrimSpace(vals[1])
+		params := strings.TrimSpace(vals[3])
+		if !bytes.Contains(source, []byte("C."+name)) {
+			missingFuncs <- &missingFunc{Name: name, Type: typ, Params: params, Module: modName, Header: header}
 		}
 	}
 }
