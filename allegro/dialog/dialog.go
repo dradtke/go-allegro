@@ -154,7 +154,13 @@ func (log *TextLog) Close() {
 }
 
 func (log *TextLog) Append(format string, a ...interface{}) {
-	text_ := C.CString(fmt.Sprintf(format, a))
+	var text string
+	if len(a) == 0 {
+		text = format + "\n"
+	} else {
+		text = fmt.Sprintf(format + "\n", a)
+	}
+	text_ := C.CString(text)
 	defer C._al_free_string(text_)
 	// C.al_append_native_text_log()
 	C._al_append_native_text_log((*C.ALLEGRO_TEXTLOG)(log), text_)
