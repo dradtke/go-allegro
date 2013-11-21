@@ -7,7 +7,7 @@ I assume that you have a working Allegro 5 development environment set up. If no
 
 Screenshot of one of the included examples (open the `example` folder for more details on the included examples):
 
-![screenshot](https://github.com/dradtke/go-allegro/raw/0.8/example/img/screenshot.png)
+![screenshot](https://github.com/dradtke/go-allegro/raw/5.0/example/img/screenshot.png)
 
 The following functions still need to be implemented or blacklisted (in addition to a few more modules):
 
