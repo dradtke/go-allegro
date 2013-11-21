@@ -9,143 +9,60 @@ Screenshot of one of the included examples (open the `example` folder for more d
 
 ![screenshot](https://github.com/dradtke/go-allegro/raw/master/example/img/screenshot.png)
 
-As of November 9th, 2013, these bindings passed 100% coverage of the main Allegro 5.0.8 API, minus the following blacklisted functions:
+The following functions still need to be implemented or blacklisted (in addition to a few more modules):
 
 ```
-al_register_bitmap_loader
-al_register_bitmap_saver
-al_register_bitmap_loader_f
-al_register_bitmap_saver_f
-al_load_bitmap_f
-al_save_bitmap_f
-al_load_config_file_f
-al_save_config_file_f
-al_run_main
-al_toggle_display_flag
-al_fopen
-al_fopen_interface
-al_create_file_handle
-al_fclose
-al_fread
-al_fwrite
-al_fflush
-al_ftell
-al_fseek
-al_feof
-al_ferror
-al_fclearerr
-al_fungetc
-al_fsize
-al_fgetc
-al_fputc
-al_fread16le
-al_fread16be
-al_fwrite16le
-al_fwrite16be
-al_fread32le
-al_fread32be
-al_fwrite32le
-al_fwrite32be
-al_fgets
-al_fget_ustr
-al_fputs
-al_fopen_fd
-al_get_new_file_interface
-al_set_standard_file_interface
-al_get_file_userdata
-al_fixsqrt
-al_fixhypot
-al_fixatan
-al_fixatan2
-al_destroy_fs_entry
-al_get_current_directory
-al_change_directory
-al_get_fs_interface
-al_set_fs_interface
-al_set_standard_fs_interface
-al_create_path
-al_create_path_for_directory
-al_clone_path
-al_get_path_num_components
-al_get_path_component
-al_replace_path_component
-al_remove_path_component
-al_insert_path_component
-al_get_path_tail
-al_drop_path_tail
-al_append_path_component
-al_join_paths
-al_rebase_path
-al_path_cstr
-al_destroy_path
-al_set_path_drive
-al_get_path_drive
-al_set_path_filename
-al_get_path_filename
-al_get_path_extension
-al_set_path_extension
-al_get_path_basename
-al_make_path_canonical
-al_install_system
-al_uninstall_system
-al_is_system_installed
-al_get_system_driver
-al_get_standard_path
-al_start_thread
-al_join_thread
-al_set_thread_should_stop
-al_get_thread_should_stop
-al_destroy_thread
-al_run_detached_thread
-al_create_mutex
-al_create_mutex_recursive
-al_lock_mutex
-al_unlock_mutex
-al_destroy_mutex
-al_create_cond
-al_destroy_cond
-al_wait_cond
-al_broadcast_cond
-al_signal_cond
-al_ustr_new
-al_ustr_new_from_buffer
-al_ustr_free
-al_cstr
-al_ustr_to_buffer
-al_cstr_dup
-al_ustr_dup
-al_ustr_empty_string
-al_ref_cstr
-al_ustr_size
-al_ust_length
-al_ustr_offset
-al_ustr_next
-al_ustr_prev
-al_ustr_get
-al_ustr_get_next
-al_ustr_prev_get
-al_ustr_insert_chr
-al_ustr_append
-al_ustr_append_cstr
-al_ustr_append_chr
-al_ustr_remove_chr
-al_ustr_truncate
-al_ustr_ltrim_ws
-al_ustr_rtrim_ws
-al_ustr_trim_ws
-al_ustr_assign
-al_ustr_assign_cstr
-al_ustr_set_chr
-al_ustr_equal
-al_ustr_compare
-al_ustr_has_prefix_cstr
-al_utf8_width
-al_utf8_encode
-al_ustr_new_from_utf16
-al_ustr_size_utf16
-al_ustr_encode_utf16
-al_utf16_width
-al_utf16_encode
-al_get_errno
-al_set_errno
+--- FAIL: TestCoverage (0.14 seconds)
+	coverage_test.go:347: Missing allegro function 'al_draw_tinted_scaled_rotated_bitmap_region' in file '/usr/include/allegro5/bitmap.h'
+	coverage_test.go:347: Missing allegro function 'al_set_separate_blender' in file '/usr/include/allegro5/bitmap.h'
+	coverage_test.go:347: Missing allegro function 'al_get_separate_blender' in file '/usr/include/allegro5/bitmap.h'
+	coverage_test.go:347: Missing allegro function 'al_register_assert_handler' in file '/usr/include/allegro5/debug.h'
+	coverage_test.go:347: Missing allegro function 'al_emit_user_event' in file '/usr/include/allegro5/events.h'
+	coverage_test.go:347: Missing allegro function 'al_wait_for_event_timed' in file '/usr/include/allegro5/events.h'
+	coverage_test.go:347: Missing allegro function 'al_make_temp_file' in file '/usr/include/allegro5/file.h'
+	coverage_test.go:347: Missing allegro function 'al_set_new_file_interface' in file '/usr/include/allegro5/file.h'
+	coverage_test.go:347: Missing allegro function 'al_malloc_with_context' in file '/usr/include/allegro5/memory.h'
+	coverage_test.go:347: Missing allegro function 'al_free_with_context' in file '/usr/include/allegro5/memory.h'
+	coverage_test.go:347: Missing allegro function 'al_realloc_with_context' in file '/usr/include/allegro5/memory.h'
+	coverage_test.go:347: Missing allegro function 'al_calloc_with_context' in file '/usr/include/allegro5/memory.h'
+	coverage_test.go:347: Missing allegro function 'al_wait_cond_until' in file '/usr/include/allegro5/threads.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_dup_substr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ref_buffer' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ref_ustr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_insert' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_insert_cstr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_vappendf' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_remove_range' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_assign_substr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_replace_range' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_chr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_rfind_chr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_set' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_set_cstr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_cset' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_cset_cstr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_str' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_cstr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_rfind_str' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_rfind_cstr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_replace' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_find_replace_cstr' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:347: Missing allegro function 'al_ustr_ncompare' in file '/usr/include/allegro5/utf8.h'
+	coverage_test.go:349: Module 'color' missing function 'al_color_hsv_to_rgb' [void al_color_hsv_to_rgb(float hue, float saturation,float value, float *red, float *green, float *blue)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_hsl' [void al_color_rgb_to_hsl(float red, float green, float blue,float *hue, float *saturation, float *lightness)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_hsv' [void al_color_rgb_to_hsv(float red, float green, float blue,float *hue, float *saturation, float *value)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_name_to_rgb' [bool al_color_name_to_rgb(char const *name, float *r, float *g,float *b)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_name' [const char* al_color_rgb_to_name(float r, float g, float b)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_cmyk' [void al_color_rgb_to_cmyk(float red, float green, float blue,float *cyan, float *magenta, float *yellow, float *key)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_yuv_to_rgb' [void al_color_yuv_to_rgb(float y, float u, float v,float *red, float *green, float *blue)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_yuv' [void al_color_rgb_to_yuv(float red, float green, float blue,float *y, float *u, float *v)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_html' [void al_color_rgb_to_html(float red, float green, float blue,char *string)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_html_to_rgb' [void al_color_html_to_rgb(char const *string,float *red, float *green, float *blue)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_yuv' [ALLEGRO_COLOR al_color_yuv(float y, float u, float v)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_hsv' [ALLEGRO_COLOR al_color_hsv(float h, float s, float v)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_name' [ALLEGRO_COLOR al_color_name(char const *name)]
+	coverage_test.go:349: Module 'color' missing function 'al_color_html' [ALLEGRO_COLOR al_color_html(char const *string)]
+FAIL
+exit status 1
+FAIL	github.com/dradtke/go-allegro	0.153s
 ```
