@@ -57,9 +57,7 @@ func main() {
 		}
 
 		allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
-
 		gordon.Draw(float32((display.Width()-gordon.Width())/2), float32((display.Height()-gordon.Height())/2), 0)
-
 		allegro.FlipDisplay()
 	}
 }
