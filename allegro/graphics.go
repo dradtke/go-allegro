@@ -210,10 +210,27 @@ func SetBlender(op BlendingOperation, src, dst BlendingValue) {
 	C.al_set_blender(C.int(op), C.int(src), C.int(dst))
 }
 
+func SetSeparateBlender(op BlendingOperation, src, dst, BlendingValue, alpha_op BlendingOperation, alpha_src, alpha_dst BlendingValue) {
+	C.al_set_separate_blender(
+		C.int(op),
+		C.int(src),
+		C.int(dst),
+		C.int(alpha_op),
+		C.int(alpha_src),
+		C.int(alpha_dst),
+	)
+}
+
 func Blender() (op BlendingOperation, src, dst BlendingValue) {
 	var cop, csrc, cdst C.int
 	C.al_get_blender(&cop, &csrc, &cdst)
 	return BlendingOperation(cop), BlendingValue(csrc), BlendingValue(cdst)
+}
+
+func SeparateBlender() (op BlendingOperation, src, dst BlendingValue, alpha_op BlendingOperation, alpha_src, alpha_dst BlendingValue) {
+	var cop, csrc, cdst, calpha_op, calpha_src, calpha_dst C.int
+	C.al_get_separate_blender(&cop, &csrc, &cdst, &calpha_op, &calpha_src, &calpha_dst)
+	return BlendingOperation(cop), BlendingValue(csrc), BlendingValue(cdst), BlendingOperation(calpha_op), BlendingValue(calpha_src), BlendingValue(calpha_dst)
 }
 
 func CurrentDisplay() *Display {
@@ -386,6 +403,24 @@ func (bmp *Bitmap) DrawTintedScaledRotated(tint Color, cx, cy, dx, dy, xscale, y
 	)
 }
 
+func (bmp *Bitmap) DrawTintedScaledRotatedRegion(sx, sy, sw, sh float32, tint Color, cx, cy, dx, dy, xscale, yscale, angle float32, flags DrawFlags) {
+	C.al_draw_tinted_scaled_rotated_bitmap_region((*C.ALLEGRO_BITMAP)(bmp),
+		C.float(sx),
+		C.float(sy),
+		C.float(sw),
+		C.float(sh),
+		C.ALLEGRO_COLOR(tint),
+		C.float(cx),
+		C.float(cy),
+		C.float(dx),
+		C.float(dy),
+		C.float(xscale),
+		C.float(yscale),
+		C.float(angle),
+		C.int(flags),
+	)
+}
+
 func (bmp *Bitmap) Lock(format PixelFormat, flags LockFlags) (*LockedRegion, error) {
 	reg := C.al_lock_bitmap((*C.ALLEGRO_BITMAP)(bmp), C.int(format), C.int(flags))
 	if reg == nil {
@@ -537,6 +572,26 @@ func (format PixelFormat) PixelSize() int {
 
 func (format PixelFormat) PixelFormatBits() int {
 	return int(C.al_get_pixel_format_bits(C.int(format)))
+}
+
+func (f *File) LoadBitmap(ident string) (*Bitmap, error) {
+	ident_ := C.CString(ident)
+	defer freeString(ident_)
+	bmp := C.al_load_bitmap_f((*C.ALLEGRO_FILE)(f), ident_)
+	if bmp == nil {
+		return nil, errors.New("failed to load bitmap from file")
+	}
+	return (*Bitmap)(bmp), nil
+}
+
+func (f *File) SaveBitmap(ident string, bmp *Bitmap) error {
+	ident_ := C.CString(ident)
+	defer freeString(ident_)
+	ok := bool(C.al_save_bitmap_f((*C.ALLEGRO_FILE)(f), ident_, (*C.ALLEGRO_BITMAP)(bmp)))
+	if !ok {
+		return errors.New("failed to save bitmap to file")
+	}
+	return nil
 }
 
 //}}}

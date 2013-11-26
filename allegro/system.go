@@ -4,7 +4,7 @@ package allegro
 #cgo pkg-config: allegro-5.0
 #include <allegro5/allegro.h>
 
-bool init() {
+bool _al_init() {
 	return al_init();
 }
 */
@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	if !bool(C.init()) {
+	if !bool(C._al_init()) {
 		panic("failed to initialize allegro!")
 	}
 }
@@ -56,3 +56,4 @@ func OrgName() string {
 func AppName() string {
 	return C.GoString(C.al_get_app_name())
 }
+

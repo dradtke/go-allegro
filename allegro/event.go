@@ -3,6 +3,14 @@ package allegro
 /*
 #cgo pkg-config: allegro-5.0
 #include <allegro5/allegro.h>
+
+void set_user_data(ALLEGRO_EVENT *event, intptr_t data1, intptr_t data2, intptr_t data3, intptr_t data4) {
+	event->user.data1 = data1;
+	event->user.data2 = data2;
+	event->user.data3 = data3;
+	event->user.data4 = data4;
+}
+
 //{{{ event getters
 // Common
 
@@ -171,6 +179,7 @@ ALLEGRO_USER_EVENT *get_user_event(ALLEGRO_EVENT *event) {
 import "C"
 import (
 	"errors"
+	"fmt"
 )
 
 var EmptyQueue = errors.New("event queue is empty")
@@ -269,6 +278,33 @@ func (source EventSource) InitUserEventSource() {
 	C.al_init_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(&source))
 }
 
+func (source *EventSource) EmitUserEvent(data []uintptr) error {
+	var l = len(data)
+	if l > 4 {
+		return fmt.Errorf("too many parameters: %d > 4", l)
+	}
+	var data1, data2, data3, data4 C.intptr_t = 0, 0, 0, 0
+	if l > 0 {
+		data1 = C.intptr_t(data[0])
+	}
+	if l > 1 {
+		data2 = C.intptr_t(data[1])
+	}
+	if l > 2 {
+		data3 = C.intptr_t(data[2])
+	}
+	if l > 3 {
+		data4 = C.intptr_t(data[3])
+	}
+	var event C.ALLEGRO_EVENT
+	C.set_user_data(&event, data1, data2, data3, data4)
+	ok := bool(C.al_emit_user_event((*C.ALLEGRO_EVENT_SOURCE)(source), &event, nil))
+	if !ok {
+		return errors.New("failed to emit user event")
+	}
+	return nil
+}
+
 func (source *EventSource) DestroyUserEventSource() {
 	C.al_destroy_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(source))
 }
@@ -331,15 +367,26 @@ func (queue *EventQueue) GetNextEvent() (*Event, error) {
 	return queue.newEvent(), nil
 }
 
-func (queue *EventQueue) WaitForEvent() *Event {
-	C.al_wait_for_event(queue.raw, &queue.event)
-	return queue.newEvent()
+// If peek is true, then this function will return nil and
+// leave the event at the head of the queue.
+func (queue *EventQueue) WaitForEvent(peek bool) *Event {
+	if peek {
+		C.al_wait_for_event(queue.raw, nil)
+		return nil
+	} else {
+		C.al_wait_for_event(queue.raw, &queue.event)
+		return queue.newEvent()
+	}
 }
 
-// wait for an event, but don't take it off the queue
-// better name for this?
-func (queue *EventQueue) JustWaitForEvent() {
-	C.al_wait_for_event(queue.raw, nil)
+func (queue *EventQueue) WaitForEventTimed(peek bool, secs float32) (bool, *Event) {
+	if peek {
+		ok := bool(C.al_wait_for_event_timed(queue.raw, nil, C.float(secs)))
+		return ok, nil
+	} else {
+		ok := bool(C.al_wait_for_event_timed(queue.raw, &queue.event, C.float(secs)))
+		return ok, queue.newEvent()
+	}
 }
 
 func (queue *EventQueue) WaitForEventUntil(timeout *Timeout) (*Event, bool) {

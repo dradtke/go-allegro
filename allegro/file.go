@@ -41,6 +41,10 @@ func (m FileMode) String() string {
 	return buf.String()
 }
 
+func pathStr(path *C.ALLEGRO_PATH) string {
+	return C.GoString(C.al_path_cstr(path, C.ALLEGRO_NATIVE_PATH_SEP))
+}
+
 func OpenFile(path string, mode FileMode) (*File, error) {
 	path_ := C.CString(path)
 	mode_ := C.CString(mode.String())
@@ -51,6 +55,14 @@ func OpenFile(path string, mode FileMode) (*File, error) {
 		return nil, fmt.Errorf("failed to open File '%s'", path)
 	}
 	return (*File)(f), nil
+}
+
+func MakeTempFile(template string) string {
+	template_ := C.CString(template)
+	defer freeString(template_)
+	var path *C.ALLEGRO_PATH
+	C.al_make_temp_file(template_, &path)
+	return pathStr(path)
 }
 
 func (f *File) Close() error {
@@ -177,3 +189,4 @@ func (f *File) Slice(initial_size int, mode FileMode) (*File, error) {
 	}
 	return (*File)(s), nil
 }
+

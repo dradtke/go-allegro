@@ -35,6 +35,22 @@ func MergeConfig(cfg1, cfg2 *Config) *Config {
 	return (*Config)(C.al_merge_config((*C.ALLEGRO_CONFIG)(cfg1), (*C.ALLEGRO_CONFIG)(cfg2)))
 }
 
+func (f *File) LoadConfig() (*Config, error) {
+	cfg := C.al_load_config_file_f((*C.ALLEGRO_FILE)(f))
+	if cfg == nil {
+		return nil, errors.New("failed to load config from file")
+	}
+	return (*Config)(cfg), nil
+}
+
+func (f *File) SaveConfig(cfg *Config) error {
+	ok := bool(C.al_save_config_file_f((*C.ALLEGRO_FILE)(f), (*C.ALLEGRO_CONFIG)(cfg)))
+	if !ok {
+		return errors.New("failed to save config from file")
+	}
+	return nil
+}
+
 // Config Instance Methods {{{
 
 func (cfg *Config) AddSection(name string) {
