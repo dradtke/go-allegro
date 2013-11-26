@@ -25,147 +25,9 @@ var modules = []mod{
 	mod{name: "ttf", decl: buildRegex("ALLEGRO_TTF_FUNC"), path: "font/ttf"},
 }
 
-// Ignore functions that I either don't know how to implement,
-// are redundant, or are based on Allegro features that Go
-// already provides, like file I/O and fixed point math.
-var blacklist = map[string]bool{
-	"al_register_bitmap_loader":      true,
-	"al_register_bitmap_saver":       true,
-	"al_register_bitmap_loader_f":    true,
-	"al_register_bitmap_saver_f":     true,
-	"al_load_bitmap_f":               true,
-	"al_save_bitmap_f":               true,
-	"al_load_config_file_f":          true,
-	"al_save_config_file_f":          true,
-	"al_run_main":                    true,
-	"al_toggle_display_flag":         true, // deprecated
-	"al_fopen_interface":             true,
-	"al_create_file_handle":          true,
-	"al_fungetc":                     true,
-	"al_fgetc":                       true,
-	"al_fputc":                       true,
-	"al_fread16le":                   true,
-	"al_fread16be":                   true,
-	"al_fwrite16le":                  true,
-	"al_fwrite16be":                  true,
-	"al_fread32le":                   true,
-	"al_fread32be":                   true,
-	"al_fwrite32le":                  true,
-	"al_fwrite32be":                  true,
-	"al_fgets":                       true,
-	"al_fget_ustr":                   true,
-	"al_fputs":                       true,
-	"al_fopen_fd":                    true,
-	"al_get_new_file_interface":      true,
-	"al_set_standard_file_interface": true,
-	"al_get_file_userdata":           true,
-	"al_fixsqrt":                     true,
-	"al_fixhypot":                    true,
-	"al_fixatan":                     true,
-	"al_fixatan2":                    true,
-	"al_destroy_fs_entry":            true,
-	"al_get_current_directory":       true,
-	"al_change_directory":            true,
-	"al_get_fs_interface":            true,
-	"al_set_fs_interface":            true,
-	"al_set_standard_fs_interface":   true,
-	"al_create_path":                 true,
-	"al_create_path_for_directory":   true,
-	"al_clone_path":                  true,
-	"al_get_path_num_components":     true,
-	"al_get_path_component":          true,
-	"al_replace_path_component":      true,
-	"al_remove_path_component":       true,
-	"al_insert_path_component":       true,
-	"al_get_path_tail":               true,
-	"al_drop_path_tail":              true,
-	"al_append_path_component":       true,
-	"al_join_paths":                  true,
-	"al_rebase_path":                 true,
-	"al_path_cstr":                   true,
-	"al_destroy_path":                true,
-	"al_set_path_drive":              true,
-	"al_get_path_drive":              true,
-	"al_set_path_filename":           true,
-	"al_get_path_filename":           true,
-	"al_get_path_extension":          true,
-	"al_set_path_extension":          true,
-	"al_get_path_basename":           true,
-	"al_make_path_canonical":         true,
-	"al_install_system":              true, // taken care of automatically
-	"al_uninstall_system":            true,
-	"al_is_system_installed":         true,
-	"al_get_system_driver":           true, // why was this reported?
-	"al_get_standard_path":           true, // could be useful, if we can convert ALLEGRO_PATH structs to strings
-	"al_start_thread":                true,
-	"al_join_thread":                 true,
-	"al_set_thread_should_stop":      true,
-	"al_get_thread_should_stop":      true,
-	"al_destroy_thread":              true,
-	"al_run_detached_thread":         true,
-	"al_create_mutex":                true,
-	"al_create_mutex_recursive":      true,
-	"al_lock_mutex":                  true,
-	"al_unlock_mutex":                true,
-	"al_destroy_mutex":               true,
-	"al_create_cond":                 true,
-	"al_destroy_cond":                true,
-	"al_wait_cond":                   true,
-	"al_broadcast_cond":              true,
-	"al_signal_cond":                 true,
-	"al_ustr_new":                    true,
-	"al_ustr_new_from_buffer":        true,
-	"al_ustr_free":                   true,
-	"al_cstr":                        true,
-	"al_ustr_to_buffer":              true,
-	"al_cstr_dup":                    true,
-	"al_ustr_dup":                    true,
-	"al_ustr_empty_string":           true,
-	"al_ref_cstr":                    true,
-	"al_ustr_size":                   true,
-	"al_ustr_length":                 true,
-	"al_ustr_offset":                 true,
-	"al_ustr_next":                   true,
-	"al_ustr_prev":                   true,
-	"al_ustr_get":                    true,
-	"al_ustr_get_next":               true,
-	"al_ustr_prev_get":               true,
-	"al_ustr_insert_chr":             true,
-	"al_ustr_append":                 true,
-	"al_ustr_append_cstr":            true,
-	"al_ustr_append_chr":             true,
-	"al_ustr_remove_chr":             true,
-	"al_ustr_truncate":               true,
-	"al_ustr_ltrim_ws":               true,
-	"al_ustr_rtrim_ws":               true,
-	"al_ustr_trim_ws":                true,
-	"al_ustr_assign":                 true,
-	"al_ustr_assign_cstr":            true,
-	"al_ustr_set_chr":                true,
-	"al_ustr_equal":                  true,
-	"al_ustr_compare":                true,
-	"al_ustr_has_prefix_cstr":        true,
-	"al_utf8_width":                  true,
-	"al_utf8_encode":                 true,
-	"al_ustr_new_from_utf16":         true,
-	"al_ustr_size_utf16":             true,
-	"al_ustr_encode_utf16":           true,
-	"al_utf16_width":                 true,
-	"al_utf16_encode":                true,
-	"al_get_errno":                   true,
-	"al_set_errno":                   true,
-	"al_register_font_loader":        true,
-	"al_get_ustr_width":              true,
-	"al_draw_ustr":                   true,
-	"al_draw_justified_ustr":         true,
-	"al_get_ustr_dimensions":         true,
-	"al_load_ttf_font_f":             true,
-	"al_load_ttf_font_stretch_f":     true,
-}
-
 type mod struct {
 	name, path, header string
-	decl      *decl
+	decl               *decl
 }
 
 func (m *mod) Header() string {
@@ -290,7 +152,7 @@ func findMissingFuncs(data, source []byte, header string, d *decl, modName strin
 	go func() {
 		var buf bytes.Buffer
 		lines := strings.Split(string(data), "\n")
-		for i := 0; i<len(lines); i++ {
+		for i := 0; i < len(lines); i++ {
 			line := strings.TrimSpace(lines[i])
 			buf.WriteString(line)
 			if strings.HasPrefix(line, d.macro) {
@@ -324,12 +186,33 @@ func findMissingFuncs(data, source []byte, header string, d *decl, modName strin
 	}
 }
 
+// Ignore functions that I either don't know how to implement,
+// are redundant, or are based on Allegro features that Go
+// already provides, like file I/O and fixed point math.
+func getBlacklist() map[string]bool {
+	blacklist := make(map[string]bool)
+	data, err := ioutil.ReadFile("blacklist")
+	if err != nil {
+		panic(err)
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		i := strings.IndexRune(line, '#')
+		if i != -1 {
+			line = line[0:i]
+		}
+		blacklist[strings.TrimSpace(line)] = true
+	}
+	return blacklist
+}
+
 func TestCoverage(t *testing.T) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 	packageRoot := filepath.Join(cwd, "allegro")
+
+	blacklist := getBlacklist()
 
 	missingFuncs := make(chan *missingFunc)
 	errs := make(chan error)
