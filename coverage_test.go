@@ -150,6 +150,13 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 func findMissingFuncs(data, source []byte, header string, d *decl, modName string, missingFuncs chan *missingFunc) {
 	ch := make(chan string)
 	go func() {
+		defer func() {
+			close(ch)
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "Header file '%s' is malformed.\n", header)
+				os.Exit(1)
+			}
+		}()
 		var buf bytes.Buffer
 		lines := strings.Split(string(data), "\n")
 		for i := 0; i < len(lines); i++ {
@@ -165,7 +172,6 @@ func findMissingFuncs(data, source []byte, header string, d *decl, modName strin
 			ch <- buf.String()
 			buf.Reset()
 		}
-		close(ch)
 	}()
 	for line := range ch {
 		vals := d.regex.FindStringSubmatch(line)
