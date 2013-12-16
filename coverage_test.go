@@ -22,6 +22,7 @@ var modules = []mod{
 	mod{name: "image", decl: buildRegex("ALLEGRO_IIO_FUNC")},
 	mod{name: "memfile", decl: buildRegex("ALLEGRO_MEMFILE_FUNC")},
 	mod{name: "physfs", decl: buildRegex("ALLEGRO_PHYSFS_FUNC")},
+	mod{name: "primitives", decl: buildRegex("ALLEGRO_PRIM_FUNC")},
 	mod{name: "ttf", decl: buildRegex("ALLEGRO_TTF_FUNC"), path: "font/ttf"},
 }
 
