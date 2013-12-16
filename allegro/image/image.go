@@ -6,6 +6,9 @@ package image
 #include <allegro5/allegro_image.h>
 */
 import "C"
+import (
+	"errors"
+)
 
 func Init() error {
 	ok := bool(C.al_init_image_addon())
