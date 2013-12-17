@@ -294,13 +294,13 @@ func main() {
 		for e := lines.Front(); e != nil; e = e.Next() {
 			buf.WriteString(e.Value.(string) + "\n")
 		}
-		err := ioutil.WriteFile("/tmp/" + filepath.Base(path), buf.Bytes(), os.ModePerm)
+		err := ioutil.WriteFile(path, buf.Bytes(), os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
 		}
 		buf.Reset()
 		if verbose {
-			fmt.Println("writing to " + path)
+			fmt.Println("wrote to " + path)
 		}
 	}
 }
