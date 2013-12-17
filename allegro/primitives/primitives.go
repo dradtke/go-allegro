@@ -5,6 +5,10 @@ package primitives
 #cgo pkg-config: allegro_primitives-5.0
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
+
+int get_stride() {
+	return 2 * sizeof(float);
+}
 */
 import "C"
 import (
@@ -131,7 +135,7 @@ func DrawFilledRoundedRectangle(p1, p2 Point, rx, ry float32, color allegro.Colo
 // The destination buffer should consist of regularly spaced (by distance of
 // stride bytes) doublets of floats, corresponding to x and y coordinates of
 // the vertices.
-func CalculateArc(stride int, center Point, rx, ry, start_theta, delta_theta, thickness float32, num_points int) []Point {
+func CalculateArc(center Point, rx, ry, start_theta, delta_theta, thickness float32, num_points int) []Point {
 	if num_points == 0 {
 		return make([]Point, 0)
 	}
@@ -142,7 +146,7 @@ func CalculateArc(stride int, center Point, rx, ry, start_theta, delta_theta, th
 	cbuf := make([]C.float, buffer_length*2)
 	C.al_calculate_arc(
 		(*C.float)(unsafe.Pointer(&cbuf[0])),
-		C.int(stride),
+		C.get_stride(),
 		C.float(center.X),
 		C.float(center.Y),
 		C.float(rx),
@@ -170,8 +174,9 @@ func DrawPieslice(center Point, r, start_theta, delta_theta float32, color alleg
 		C.float(thickness))
 }
 
+// Draws a filled pieslice (filled circular sector).
 func DrawFilledPieslice(center Point, r, start_theta, delta_theta float32, color allegro.Color) {
-	C.al_draw_pieslice(
+	C.al_draw_filled_pieslice(
 		C.float(center.X),
 		C.float(center.Y),
 		C.float(r),
@@ -189,5 +194,156 @@ func DrawEllipse(center Point, rx, ry float32, color allegro.Color, thickness fl
 		C.float(ry),
 		col(color),
 		C.float(thickness))
+}
+
+// Draws a filled ellipse.
+func DrawFilledEllipse(center Point, rx, ry float32, color allegro.Color) {
+	C.al_draw_filled_ellipse(
+		C.float(center.X),
+		C.float(center.Y),
+		C.float(rx),
+		C.float(ry),
+		col(color))
+}
+
+// Draws an outlined circle.
+func DrawCircle(center Point, r float32, color allegro.Color, thickness float32) {
+	C.al_draw_circle(
+		C.float(center.X),
+		C.float(center.Y),
+		C.float(r),
+		col(color),
+		C.float(thickness))
+}
+
+// Draws a filled circle.
+func DrawFilledCircle(center Point, r float32, color allegro.Color) {
+	C.al_draw_filled_circle(
+		C.float(center.X),
+		C.float(center.Y),
+		C.float(r),
+		col(color))
+}
+
+// Draws an arc.
+func DrawArc(center Point, r, start_theta, delta_theta float32, color allegro.Color, thickness float32) {
+	C.al_draw_arc(
+		C.float(center.X),
+		C.float(center.Y),
+		C.float(r),
+		C.float(start_theta),
+		C.float(delta_theta),
+		col(color),
+		C.float(thickness))
+}
+
+// Draws an elliptical arc.
+func DrawEllipticalArc(center Point, rx, ry, start_theta, delta_theta float32, color allegro.Color, thickness float32) {
+	C.al_draw_elliptical_arc(
+		C.float(center.X),
+		C.float(center.Y),
+		C.float(rx),
+		C.float(ry),
+		C.float(start_theta),
+		C.float(delta_theta),
+		col(color),
+		C.float(thickness))
+}
+
+// Calculates a Bézier spline given 4 control points. If thickness <= 0, then
+// num_segments of points are required in the destination, otherwise twice as
+// many are needed. The destination buffer should consist of regularly spaced
+// (by distance of stride bytes) doublets of floats, corresponding to x and y
+// coordinates of the vertices.
+func CalculateSpline(points [4]Point, thickness float32, num_segments int) []Point {
+	if num_segments == 0 {
+		return make([]Point, 0)
+	}
+	buffer_length := num_segments
+	if thickness <= 0 {
+		buffer_length *= 2
+	}
+	cpoints := []C.float {
+		C.float(points[0].X), C.float(points[0].Y),
+		C.float(points[1].X), C.float(points[1].Y),
+		C.float(points[2].X), C.float(points[2].Y),
+		C.float(points[3].X), C.float(points[3].Y),
+	}
+	cbuf := make([]C.float, buffer_length*2)
+	C.al_calculate_spline(
+		(*C.float)(unsafe.Pointer(&cbuf[0])),
+		C.get_stride(),
+		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		C.float(thickness),
+		C.int(num_segments))
+	buf := make([]Point, buffer_length)
+	for i := 0; i < (buffer_length*2); i += 2 {
+		buf[i/2] = Point{float32(cbuf[i]), float32(cbuf[i+1])}
+	}
+	return buf
+}
+
+// Draws a Bézier spline given 4 control points.
+func DrawSpline(points [4]Point, color allegro.Color, thickness float32) {
+	cpoints := []C.float {
+		C.float(points[0].X), C.float(points[0].Y),
+		C.float(points[1].X), C.float(points[1].Y),
+		C.float(points[2].X), C.float(points[2].Y),
+		C.float(points[3].X), C.float(points[3].Y),
+	}
+	C.al_draw_spline(
+		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		col(color),
+		C.float(thickness))
+}
+
+// Calculates a ribbon given an array of points. The ribbon will go through all
+// of the passed points. If thickness <= 0, then num_segments of points are
+// required in the destination buffer, otherwise twice as many are needed. The
+// destination and the points buffer should consist of regularly spaced
+// doublets of floats, corresponding to x and y coordinates of the vertices.
+func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num_segments int) []Point {
+	if num_segments == 0 {
+		return make([]Point, 0)
+	}
+	buffer_length := num_segments
+	if thickness <= 0 {
+		buffer_length *= 2
+	}
+	cpoints := []C.float {
+		C.float(points[0].X), C.float(points[0].Y),
+		C.float(points[1].X), C.float(points[1].Y),
+		C.float(points[2].X), C.float(points[2].Y),
+		C.float(points[3].X), C.float(points[3].Y),
+	}
+	cbuf := make([]C.float, buffer_length*2)
+	C.al_calculate_ribbon(
+		(*C.float)(unsafe.Pointer(&cbuf[0])),
+		C.get_stride(),
+		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		C.get_stride(),
+		C.float(thickness),
+		C.int(num_segments))
+	buf := make([]Point, buffer_length)
+	for i := 0; i < (buffer_length*2); i += 2 {
+		buf[i/2] = Point{float32(cbuf[i]), float32(cbuf[i+1])}
+	}
+	return buf
+}
+
+// Draws a series of straight lines given an array of points. The ribbon will
+// go through all of the passed points.
+func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segments int) {
+	cpoints := make([]C.float, len(points)*2)
+	for i := 0; i < len(points)*2; i += 2 {
+		cpoints[i] = C.float(points[i/2].X)
+		cpoints[i+1] = C.float(points[i/2].Y)
+	}
+	C.al_draw_ribbon(
+		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		C.get_stride(),
+		col(color),
+		C.float(thickness),
+		C.int(num_segments))
 }
 

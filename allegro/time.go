@@ -29,3 +29,4 @@ func Rest(seconds float64) {
 func Time() float64 {
 	return float64(C.al_get_time())
 }
+

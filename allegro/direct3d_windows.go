@@ -52,3 +52,4 @@ func (bmp *Bitmap) TexturePosition() (int, int) {
 func HaveD3DNonSquareTextureSupport() bool {
 	return bool(C.al_have_d3d_non_square_texture_support())
 }
+

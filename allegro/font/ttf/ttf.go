@@ -95,3 +95,4 @@ func LoadFontStretchF(file *allegro.File, filename string, w, h int, flags TtfFl
 	return (*font.Font)(unsafe.Pointer(f)), nil
 }
 
+

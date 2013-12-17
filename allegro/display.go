@@ -374,3 +374,4 @@ func (d *Display) DisplayFormat() PixelFormat {
 }
 
 //}}}
+

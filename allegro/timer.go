@@ -86,3 +86,4 @@ func (t *Timer) AddCount(diff int64) {
 func (t *Timer) EventSource() *EventSource {
 	return (*EventSource)(C.al_get_timer_event_source((*C.ALLEGRO_TIMER)(t)))
 }
+

@@ -58,3 +58,4 @@ func LastError() error {
 func SetLastError(e *Error) {
 	C.al_set_errno(C.int(e.Errno))
 }
+

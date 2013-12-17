@@ -133,3 +133,4 @@ func OrgName() string {
 func AppName() string {
 	return C.GoString(C.al_get_app_name())
 }
+

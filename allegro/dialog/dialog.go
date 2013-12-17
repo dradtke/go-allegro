@@ -202,3 +202,4 @@ func (log *TextLog) EventSource() (*allegro.EventSource) {
 		C.al_get_native_text_log_event_source((*C.ALLEGRO_TEXTLOG)(log))))
 }
 
+

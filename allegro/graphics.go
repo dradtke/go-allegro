@@ -731,3 +731,4 @@ func (f *File) SaveBitmap(ident string, bmp *Bitmap) error {
 }
 
 //}}}
+

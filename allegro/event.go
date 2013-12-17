@@ -549,3 +549,4 @@ func (queue *EventQueue) newEvent() *Event {
 	}
 	return &ev
 }
+
