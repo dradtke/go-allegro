@@ -1,3 +1,4 @@
+// Package memfile provides support for Allegro's memfile addon.
 package memfile
 
 /*

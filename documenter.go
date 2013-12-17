@@ -1,6 +1,7 @@
+package main
+
 // This is a utility program used to pull down HTML Allegro documentation, parse it, and insert it
 // into the Go source code.
-package main
 
 import (
 	"bytes"

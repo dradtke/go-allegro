@@ -1,3 +1,4 @@
+// Package font provides support for Allegro's font addon.
 package font
 
 /*

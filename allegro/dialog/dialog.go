@@ -1,4 +1,4 @@
-// Package dialog provides support for Allegro's native dialog module.
+// Package dialog provides support for Allegro's native dialog addon.
 package dialog
 
 /*

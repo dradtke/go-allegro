@@ -1,3 +1,4 @@
+// Package acodec provides support for Allegro's acodec addon.
 package acodec
 
 /*

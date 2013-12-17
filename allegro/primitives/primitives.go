@@ -1,3 +1,4 @@
+// Package primitives provides support for Allegro's primitives addon.
 package primitives
 
 /*

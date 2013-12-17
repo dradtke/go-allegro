@@ -1,3 +1,4 @@
+// Package color provides support for Allegro's color addon.
 package color
 
 /*

@@ -1,3 +1,4 @@
+// Package physfs provides support for Allegro's PhysicsFS addon.
 package physfs
 
 /*

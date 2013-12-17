@@ -1,3 +1,4 @@
+// Package allegro_main provides support for Allegro's main addon.
 package allegro_main
 
 /*

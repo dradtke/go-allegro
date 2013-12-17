@@ -1,3 +1,4 @@
+// Package ttf provides support for Allegro's TTF font addon.
 package ttf
 
 /*

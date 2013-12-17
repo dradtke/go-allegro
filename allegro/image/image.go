@@ -1,3 +1,4 @@
+// Package image provides support for Allegro's image addon.
 package image
 
 /*
