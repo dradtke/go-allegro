@@ -12,57 +12,24 @@ Screenshot of one of the included examples (open the `example` folder for more d
 The following functions still need to be implemented or blacklisted (in addition to a few more modules):
 
 ```
---- FAIL: TestCoverage (0.14 seconds)
-	coverage_test.go:347: Missing allegro function 'al_draw_tinted_scaled_rotated_bitmap_region' in file '/usr/include/allegro5/bitmap.h'
-	coverage_test.go:347: Missing allegro function 'al_set_separate_blender' in file '/usr/include/allegro5/bitmap.h'
-	coverage_test.go:347: Missing allegro function 'al_get_separate_blender' in file '/usr/include/allegro5/bitmap.h'
-	coverage_test.go:347: Missing allegro function 'al_register_assert_handler' in file '/usr/include/allegro5/debug.h'
-	coverage_test.go:347: Missing allegro function 'al_emit_user_event' in file '/usr/include/allegro5/events.h'
-	coverage_test.go:347: Missing allegro function 'al_wait_for_event_timed' in file '/usr/include/allegro5/events.h'
-	coverage_test.go:347: Missing allegro function 'al_make_temp_file' in file '/usr/include/allegro5/file.h'
-	coverage_test.go:347: Missing allegro function 'al_set_new_file_interface' in file '/usr/include/allegro5/file.h'
-	coverage_test.go:347: Missing allegro function 'al_malloc_with_context' in file '/usr/include/allegro5/memory.h'
-	coverage_test.go:347: Missing allegro function 'al_free_with_context' in file '/usr/include/allegro5/memory.h'
-	coverage_test.go:347: Missing allegro function 'al_realloc_with_context' in file '/usr/include/allegro5/memory.h'
-	coverage_test.go:347: Missing allegro function 'al_calloc_with_context' in file '/usr/include/allegro5/memory.h'
-	coverage_test.go:347: Missing allegro function 'al_wait_cond_until' in file '/usr/include/allegro5/threads.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_dup_substr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ref_buffer' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ref_ustr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_insert' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_insert_cstr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_vappendf' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_remove_range' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_assign_substr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_replace_range' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_chr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_rfind_chr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_set' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_set_cstr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_cset' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_cset_cstr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_str' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_cstr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_rfind_str' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_rfind_cstr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_replace' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_find_replace_cstr' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:347: Missing allegro function 'al_ustr_ncompare' in file '/usr/include/allegro5/utf8.h'
-	coverage_test.go:349: Module 'color' missing function 'al_color_hsv_to_rgb' [void al_color_hsv_to_rgb(float hue, float saturation,float value, float *red, float *green, float *blue)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_hsl' [void al_color_rgb_to_hsl(float red, float green, float blue,float *hue, float *saturation, float *lightness)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_hsv' [void al_color_rgb_to_hsv(float red, float green, float blue,float *hue, float *saturation, float *value)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_name_to_rgb' [bool al_color_name_to_rgb(char const *name, float *r, float *g,float *b)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_name' [const char* al_color_rgb_to_name(float r, float g, float b)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_cmyk' [void al_color_rgb_to_cmyk(float red, float green, float blue,float *cyan, float *magenta, float *yellow, float *key)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_yuv_to_rgb' [void al_color_yuv_to_rgb(float y, float u, float v,float *red, float *green, float *blue)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_yuv' [void al_color_rgb_to_yuv(float red, float green, float blue,float *y, float *u, float *v)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_rgb_to_html' [void al_color_rgb_to_html(float red, float green, float blue,char *string)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_html_to_rgb' [void al_color_html_to_rgb(char const *string,float *red, float *green, float *blue)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_yuv' [ALLEGRO_COLOR al_color_yuv(float y, float u, float v)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_hsv' [ALLEGRO_COLOR al_color_hsv(float h, float s, float v)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_name' [ALLEGRO_COLOR al_color_name(char const *name)]
-	coverage_test.go:349: Module 'color' missing function 'al_color_html' [ALLEGRO_COLOR al_color_html(char const *string)]
+--- FAIL: TestCoverage (0.25 seconds)
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_prim' [int al_draw_prim(const void* vtxs, const ALLEGRO_VERTEX_DECL* decl, ALLEGRO_BITMAP* texture, int start, int end, int type)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_indexed_prim' [int al_draw_indexed_prim(const void* vtxs, const ALLEGRO_VERTEX_DECL* decl, ALLEGRO_BITMAP* texture, const int* indices, int num_vtx, int type)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_create_vertex_decl' [ALLEGRO_VERTEX_DECL* al_create_vertex_decl(const ALLEGRO_VERTEX_ELEMENT* elements, int stride)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_destroy_vertex_decl' [void al_destroy_vertex_decl(ALLEGRO_VERTEX_DECL* decl)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_soft_triangle' [void al_draw_soft_triangle(ALLEGRO_VERTEX* v1, ALLEGRO_VERTEX* v2, ALLEGRO_VERTEX* v3, uintptr_t state,void (*init)(uintptr_t, ALLEGRO_VERTEX*, ALLEGRO_VERTEX*, ALLEGRO_VERTEX*),void (*first)(uintptr_t, int, int, int, int),void (*step)(uintptr_t, int),void (*draw)(uintptr_t, int, int, int))]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_soft_line' [void al_draw_soft_line(ALLEGRO_VERTEX* v1, ALLEGRO_VERTEX* v2, uintptr_t state,void (*first)(uintptr_t, int, int, ALLEGRO_VERTEX*, ALLEGRO_VERTEX*),void (*step)(uintptr_t, int),void (*draw)(uintptr_t, int, int))]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_circle' [void al_draw_circle(float cx, float cy, float r, ALLEGRO_COLOR color, float thickness)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_arc' [void al_draw_arc(float cx, float cy, float r, float start_theta, float delta_theta, ALLEGRO_COLOR color, float thickness)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_elliptical_arc' [void al_draw_elliptical_arc(float cx, float cy, float rx, float ry, float start_theta, float delta_theta, ALLEGRO_COLOR color, float thickness)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_calculate_spline' [void al_calculate_spline(float* dest, int stride, float points[8], float thickness, int num_segments)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_spline' [void al_draw_spline(float points[8], ALLEGRO_COLOR color, float thickness)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_calculate_ribbon' [void al_calculate_ribbon(float* dest, int dest_stride, const float *points, int points_stride, float thickness, int num_segments)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_ribbon' [void al_draw_ribbon(const float *points, int points_stride, ALLEGRO_COLOR color, float thickness, int num_segments)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_filled_ellipse' [void al_draw_filled_ellipse(float cx, float cy, float rx, float ry, ALLEGRO_COLOR color)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_filled_circle' [void al_draw_filled_circle(float cx, float cy, float r, ALLEGRO_COLOR color)]
+	coverage_test.go:239: Module 'primitives' missing function 'al_draw_filled_pieslice' [void al_draw_filled_pieslice(float cx, float cy, float r, float start_theta, float delta_theta, ALLEGRO_COLOR color)]
 FAIL
 exit status 1
-FAIL	github.com/dradtke/go-allegro	0.153s
+FAIL	github.com/dradtke/go-allegro	0.299s
 ```
