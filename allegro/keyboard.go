@@ -158,8 +158,11 @@ const (
 	KEYMOD_ACCENT3    KeyModifier = C.ALLEGRO_KEYMOD_ACCENT3
 	KEYMOD_ACCENT4    KeyModifier = C.ALLEGRO_KEYMOD_ACCENT4
 )
+
 //}}}
 
+// Install a keyboard driver. Returns true if successful. If a driver was
+// already installed, nothing happens and true is returned.
 func InstallKeyboard() error {
 	success := bool(C.al_install_keyboard())
 	if !success {
@@ -168,31 +171,42 @@ func InstallKeyboard() error {
 	return nil
 }
 
+// Returns true if al_install_keyboard was called successfully.
 func IsKeyboardInstalled() bool {
 	return bool(C.al_is_keyboard_installed())
 }
 
+// Uninstalls the active keyboard driver, if any. This will automatically
+// unregister the keyboard event source with any event queues.
 func UninstallKeyboard() {
 	C.al_uninstall_keyboard()
 }
 
+// Save the state of the keyboard specified at the time the function is called
+// into the structure pointed to by ret_state.
 func (state *KeyboardState) Get() {
 	C.al_get_keyboard_state((*C.ALLEGRO_KEYBOARD_STATE)(state))
 }
 
+// Return true if the key specified was held down in the state specified.
 func (state *KeyboardState) IsDown(key KeyCode) bool {
 	return bool(C.al_key_down((*C.ALLEGRO_KEYBOARD_STATE)(state), C.int(key)))
 }
 
+// Converts the given keycode to a description of the key.
 func (key KeyCode) Name() string {
 	name := C.al_keycode_to_name(C.int(key))
 	return C.GoString(name)
 }
 
+// Overrides the state of the keyboard LED indicators. Set to -1 to return to
+// default behavior. False is returned if the current keyboard driver cannot
+// set LED indicators.
 func SetKeyboardLeds(leds int) bool {
 	return bool(C.al_set_keyboard_leds(C.int(leds)))
 }
 
+// Retrieve the keyboard event source.
 func KeyboardEventSource() (*EventSource, error) {
 	source := C.al_get_keyboard_event_source()
 	if source == nil {

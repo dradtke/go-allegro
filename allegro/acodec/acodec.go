@@ -7,6 +7,8 @@ package acodec
 */
 import "C"
 
+// This function registers all the known audio file type handlers for
+// al_load_sample, al_save_sample, al_load_audio_stream, etc.
 func Init() error {
 	ok := bool(C.al_init_acodec_addon())
 	if !ok {
@@ -19,6 +21,9 @@ func Shutdown() {
 	C.al_shutdown_acodec_addon()
 }
 
+// Returns the (compiled) version of the addon, in the same format as
+// al_get_allegro_version.
 func Version() uint32 {
 	return uint32(C.al_get_allegro_acodec_version())
 }
+

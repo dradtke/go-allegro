@@ -41,10 +41,15 @@ func (m FileMode) String() string {
 	return buf.String()
 }
 
+// Convert a path to its string representation, i.e. optional drive, followed
+// by directory components separated by 'delim', followed by an optional
+// filename.
 func pathStr(path *C.ALLEGRO_PATH) string {
 	return C.GoString(C.al_path_cstr(path, C.ALLEGRO_NATIVE_PATH_SEP))
 }
 
+// Creates and opens a file (real or virtual) given the path and mode. The
+// current file interface is used to open the file.
 func OpenFile(path string, mode FileMode) (*File, error) {
 	path_ := C.CString(path)
 	mode_ := C.CString(mode.String())
@@ -57,6 +62,7 @@ func OpenFile(path string, mode FileMode) (*File, error) {
 	return (*File)(f), nil
 }
 
+// Make a temporary randomly named file given a filename 'template'.
 func MakeTempFile(template string) string {
 	template_ := C.CString(template)
 	defer freeString(template_)
@@ -65,6 +71,7 @@ func MakeTempFile(template string) string {
 	return pathStr(path)
 }
 
+// Close the given file, writing any buffered output data (if any).
 func (f *File) Close() error {
 	C.al_fclose((*C.ALLEGRO_FILE)(f))
 	if f.HasError() {
@@ -73,18 +80,24 @@ func (f *File) Close() error {
 	return nil
 }
 
+// Returns true if the end-of-file indicator has been set on the file, i.e. we
+// have attempted to read past the end of the file.
 func (f *File) Eof() bool {
 	return bool(C.al_feof((*C.ALLEGRO_FILE)(f)))
 }
 
+// Returns true if the error indicator is set on the given file, i.e. there was
+// some sort of previous error.
 func (f *File) HasError() bool {
 	return bool(C.al_ferror((*C.ALLEGRO_FILE)(f)))
 }
 
+// Clear the error indicator for the given file.
 func (f *File) ClearError() {
 	C.al_fclearerr((*C.ALLEGRO_FILE)(f))
 }
 
+// Read 'size' bytes into the buffer pointed to by 'ptr', from the given file.
 func (f *File) Read(b []byte) (n int, err error) {
 	size := len(b)
 	if size == 0 {
@@ -102,6 +115,7 @@ func (f *File) Read(b []byte) (n int, err error) {
 	}
 }
 
+// Write 'size' bytes from the buffer pointed to by 'ptr' into the given file.
 func (f *File) Write(b []byte) (n int, err error) {
 	size := len(b)
 	written := int(C.al_fwrite((*C.ALLEGRO_FILE)(f),
@@ -114,6 +128,8 @@ func (f *File) Write(b []byte) (n int, err error) {
 	}
 }
 
+// Read and return next byte in the given file. Returns EOF on end of file or
+// if an error occurred.
 func (f *File) Getc() (byte, error) {
 	b := byte(C.al_fgetc((*C.ALLEGRO_FILE)(f)))
 	if f.Eof() {
@@ -125,14 +141,19 @@ func (f *File) Getc() (byte, error) {
 	}
 }
 
+// Ungets a single byte from a file. Pushed-back bytes are not written to the
+// file, only made available for subsequent reads, in reverse order.
 func (f *File) Ungetc(b byte) byte {
 	return byte(C.al_fungetc((*C.ALLEGRO_FILE)(f), C.int(b)))
 }
 
+// Write a single byte to the given file. The byte written is the value of c
+// cast to an unsigned char.
 func (f *File) Putc(b byte) byte {
 	return byte(C.al_fputc((*C.ALLEGRO_FILE)(f), C.int(b)))
 }
 
+// Flush any pending writes to the given file.
 func (f *File) Flush() error {
 	ok := bool(C.al_fflush((*C.ALLEGRO_FILE)(f)))
 	if !ok {
@@ -141,6 +162,8 @@ func (f *File) Flush() error {
 	return nil
 }
 
+// Returns the current position in the given file, or -1 on error. errno is set
+// to indicate the error.
 func (f *File) Tell() (int64, error) {
 	pos := int64(C.al_ftell((*C.ALLEGRO_FILE)(f)))
 	if pos == -1 {
@@ -149,6 +172,8 @@ func (f *File) Tell() (int64, error) {
 	return pos, nil
 }
 
+// Set the current position of the given file to a position relative to that
+// specified by 'whence', plus 'offset' number of bytes.
 func (f *File) Seek(offset int64, whence int) (ret int64, err error) {
 	var whence_ C.int
 	switch whence {
@@ -172,6 +197,7 @@ func (f *File) Seek(offset int64, whence int) (ret int64, err error) {
 	return pos, nil
 }
 
+// Return the size of the file, if it can be determined, or -1 otherwise.
 func (f *File) Size() (int64, error) {
 	size := int64(C.al_fsize((*C.ALLEGRO_FILE)(f)))
 	if size == -1 {
@@ -180,6 +206,9 @@ func (f *File) Size() (int64, error) {
 	return size, nil
 }
 
+// Opens a slice (subset) of an already open random access file as if it were a
+// stand alone file. While the slice is open, the parent file handle must not
+// be used in any way.
 func (f *File) Slice(initial_size int, mode FileMode) (*File, error) {
 	mode_ := C.CString(mode.String())
 	defer freeString(mode_)
@@ -189,4 +218,3 @@ func (f *File) Slice(initial_size int, mode FileMode) (*File, error) {
 	}
 	return (*File)(s), nil
 }
-

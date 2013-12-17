@@ -268,16 +268,24 @@ type EventQueue struct {
 	event C.ALLEGRO_EVENT
 }
 
-// ???: is this needed?
+// Decrease the reference count of a user-defined event. This must be called on
+// any user event that you get from al_get_next_event, al_peek_next_event,
+// al_wait_for_event, etc. which is reference counted. This function does
+// nothing if the event is not reference counted.
 func (ev *Event) UnrefUserEvent() {
 	C.al_unref_user_event(ev.User.Raw)
 }
 
-// The EventSource instance must be already allocated.
+// Initialise an event source for emitting user events. The space for the event
+// source must already have been allocated.
 func (source EventSource) InitUserEventSource() {
 	C.al_init_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(&source))
 }
 
+// Emit a user event. The event source must have been initialised with
+// al_init_user_event_source. Returns false if the event source isn't
+// registered with any queues, hence the event wouldn't have been delivered
+// into any queues.
 func (source *EventSource) EmitUserEvent(data []uintptr) error {
 	var l = len(data)
 	if l > 4 {
@@ -305,18 +313,26 @@ func (source *EventSource) EmitUserEvent(data []uintptr) error {
 	return nil
 }
 
+// Destroy an event source initialised with al_init_user_event_source.
 func (source *EventSource) DestroyUserEventSource() {
 	C.al_destroy_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(source))
 }
 
+// Assign the abstract user data to the event source. Allegro does not use the
+// data internally for anything; it is simply meant as a convenient way to
+// associate your own data or objects with events.
 func (source *EventSource) SetData(data uintptr) {
 	C.al_set_event_source_data((*C.ALLEGRO_EVENT_SOURCE)(source), C.intptr_t(data))
 }
 
+// Returns the abstract user data associated with the event source. If no data
+// was previously set, returns NULL.
 func (source *EventSource) Data() uintptr {
 	return uintptr(C.al_get_event_source_data((*C.ALLEGRO_EVENT_SOURCE)(source)))
 }
 
+// Create a new, empty event queue, returning a pointer to object if
+// successful. Returns NULL on error.
 func CreateEventQueue() (*EventQueue, error) {
 	q := C.al_create_event_queue()
 	if q == nil {
@@ -327,22 +343,36 @@ func CreateEventQueue() (*EventQueue, error) {
 	return queue, nil
 }
 
+// Destroy the event queue specified. All event sources currently registered
+// with the queue will be automatically unregistered before the queue is
+// destroyed.
 func (queue *EventQueue) Destroy() {
 	C.al_destroy_event_queue(queue.raw)
 }
 
+// Register the event source with the event queue specified. An event source
+// may be registered with any number of event queues simultaneously, or none.
+// Trying to register an event source with the same event queue more than once
+// does nothing.
 func (queue *EventQueue) RegisterEventSource(source *EventSource) {
 	C.al_register_event_source(queue.raw, (*C.ALLEGRO_EVENT_SOURCE)(source))
 }
 
+// Unregister an event source with an event queue. If the event source is not
+// actually registered with the event queue, nothing happens.
 func (queue *EventQueue) UnregisterEventSource(source *EventSource) {
 	C.al_unregister_event_source(queue.raw, (*C.ALLEGRO_EVENT_SOURCE)(source))
 }
 
+// Return true if the event queue specified is currently empty.
 func (queue *EventQueue) IsEmpty() bool {
 	return bool(C.al_is_event_queue_empty(queue.raw))
 }
 
+// Copy the contents of the next event in the event queue specified into
+// ret_event and return true. The original event packet will remain at the head
+// of the queue. If the event queue is actually empty, this function returns
+// false and the contents of ret_event are unspecified.
 func (queue *EventQueue) PeekNextEvent() (*Event, error) {
 	ok := bool(C.al_peek_next_event(queue.raw, &queue.event))
 	if !ok {
@@ -351,14 +381,21 @@ func (queue *EventQueue) PeekNextEvent() (*Event, error) {
 	return queue.newEvent(), nil
 }
 
+// Drop (remove) the next event from the queue. If the queue is empty, nothing
+// happens. Returns true if an event was dropped.
 func (queue *EventQueue) DropNextEvent() bool {
 	return bool(C.al_drop_next_event(queue.raw))
 }
 
+// Drops all events, if any, from the queue.
 func (queue *EventQueue) Flush() {
 	C.al_flush_event_queue(queue.raw)
 }
 
+// Take the next event out of the event queue specified, and copy the contents
+// into ret_event, returning true. The original event will be removed from the
+// queue. If the event queue is empty, return false and the contents of
+// ret_event are unspecified.
 func (queue *EventQueue) GetNextEvent() (*Event, error) {
 	ok := bool(C.al_get_next_event(queue.raw, &queue.event))
 	if !ok {
@@ -367,8 +404,10 @@ func (queue *EventQueue) GetNextEvent() (*Event, error) {
 	return queue.newEvent(), nil
 }
 
-// If peek is true, then this function will return nil and
-// leave the event at the head of the queue.
+// Wait until the event queue specified is non-empty. If ret_event is not NULL,
+// the first event in the queue will be copied into ret_event and removed from
+// the queue. If ret_event is NULL the first event is left at the head of the
+// queue.
 func (queue *EventQueue) WaitForEvent(peek bool) *Event {
 	if peek {
 		C.al_wait_for_event(queue.raw, nil)
@@ -379,6 +418,10 @@ func (queue *EventQueue) WaitForEvent(peek bool) *Event {
 	}
 }
 
+// Wait until the event queue specified is non-empty. If ret_event is not NULL,
+// the first event in the queue will be copied into ret_event and removed from
+// the queue. If ret_event is NULL the first event is left at the head of the
+// queue.
 func (queue *EventQueue) WaitForEventTimed(peek bool, secs float32) (bool, *Event) {
 	if peek {
 		ok := bool(C.al_wait_for_event_timed(queue.raw, nil, C.float(secs)))
@@ -389,6 +432,10 @@ func (queue *EventQueue) WaitForEventTimed(peek bool, secs float32) (bool, *Even
 	}
 }
 
+// Wait until the event queue specified is non-empty. If ret_event is not NULL,
+// the first event in the queue will be copied into ret_event and removed from
+// the queue. If ret_event is NULL the first event is left at the head of the
+// queue.
 func (queue *EventQueue) WaitForEventUntil(timeout *Timeout) (*Event, bool) {
 	ok := C.al_wait_for_event_until(queue.raw, &queue.event, (*C.ALLEGRO_TIMEOUT)(timeout))
 	if !ok {

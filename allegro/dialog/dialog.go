@@ -64,10 +64,14 @@ const (
 	TEXTLOG_MONOSPACE TextLogFlags = C.ALLEGRO_TEXTLOG_MONOSPACE
 )
 
+// Returns the (compiled) version of the addon, in the same format as
+// al_get_allegro_version.
 func Version() uint32 {
 	return uint32(C.al_get_allegro_native_dialog_version())
 }
 
+// Creates a new native file dialog. You should only have one such dialog
+// opened at a time.
 func CreateNativeFileDialog(initial_path, title, patterns string, flags FileChooserFlags) (*FileChooser, error) {
 	initial_path_ := C.CString(initial_path)
 	title_ := C.CString(title)
@@ -84,6 +88,8 @@ func CreateNativeFileDialog(initial_path, title, patterns string, flags FileChoo
 	return dialog, nil
 }
 
+// Show the dialog window. The display may be NULL, otherwise the given display
+// is treated as the parent if possible.
 func ShowNativeFileDialog(display *allegro.Display, dialog *FileChooser) error {
 	ok := bool(C.al_show_native_file_dialog((*C.ALLEGRO_DISPLAY)(unsafe.Pointer(display)),
 		(*C.ALLEGRO_FILECHOOSER)(dialog)))
@@ -93,6 +99,9 @@ func ShowNativeFileDialog(display *allegro.Display, dialog *FileChooser) error {
 	return nil
 }
 
+// Show a native GUI message box. This can be used for example to display an
+// error message if creation of an initial display fails. The display may be
+// NULL, otherwise the given display is treated as the parent if possible.
 func ShowNativeMessageBox(display *allegro.Display, title, heading, text string, flags MessageBoxFlags) MessageBoxResult {
 	title_ := C.CString(title)
 	heading_ := C.CString(heading)
@@ -124,6 +133,9 @@ func ShowNativeMessageBoxWithButtons(display *allegro.Display, title, heading, t
 	}
 }
 
+// Opens a window to which you can append log messages with
+// al_append_native_text_log. This can be useful for debugging if you don't
+// want to depend on a console being available.
 func OpenNativeTextLog(title string, flags TextLogFlags) (*TextLog, error) {
 	title_ := C.CString(title)
 	defer C.free_string(title_)
@@ -135,10 +147,12 @@ func OpenNativeTextLog(title string, flags TextLogFlags) (*TextLog, error) {
 	return log, nil
 }
 
+// Returns the number of files selected, or 0 if the dialog was cancelled.
 func (dialog *FileChooser) Count() int {
 	return int(C.al_get_native_file_dialog_count((*C.ALLEGRO_FILECHOOSER)(dialog)))
 }
 
+// Returns one of the selected paths.
 func (dialog *FileChooser) Path(i int) (string, error) {
 	path := C.al_get_native_file_dialog_path((*C.ALLEGRO_FILECHOOSER)(dialog), C.size_t(i))
 	if path == nil {
@@ -147,14 +161,19 @@ func (dialog *FileChooser) Path(i int) (string, error) {
 	return C.GoString(path), nil
 }
 
+// Frees up all resources used by the file dialog.
 func (dialog *FileChooser) Destroy() {
 	C.al_destroy_native_file_dialog((*C.ALLEGRO_FILECHOOSER)(dialog))
 }
 
+// Closes a message log window opened with al_open_native_text_log earlier.
 func (log *TextLog) Close() {
 	C.al_close_native_text_log((*C.ALLEGRO_TEXTLOG)(log))
 }
 
+// Appends a line of text to the message log window and scrolls to the bottom
+// (if the line would not be visible otherwise). This works like printf. A line
+// is continued until you add a newline character.
 func (log *TextLog) Append(format string, a ...interface{}) {
 	var text string
 	if len(a) == 0 {
@@ -177,7 +196,9 @@ func (log *TextLog) Appendln(format string, a ...interface{}) {
 	}
 }
 
+// Get an event source for a text log window. The possible events are:
 func (log *TextLog) EventSource() (*allegro.EventSource) {
 	return (*allegro.EventSource)(unsafe.Pointer(
 		C.al_get_native_text_log_event_source((*C.ALLEGRO_TEXTLOG)(log))))
 }
+
