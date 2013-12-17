@@ -5,23 +5,33 @@ package main
 import (
 	"bytes"
 	"code.google.com/p/go.net/html"
+	"container/list"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
 
 const ROOT_URL string = "http://alleg.sourceforge.net/a5docs/"
+
 var VERSION string
 
+var verbose bool
+var locate string
+
+// Usage() prints out the program's usage.
 func Usage() {
-	fmt.Println("usage: documenter <allegro-version>")
+	fmt.Println("usage: documenter [-v] <allegro-version>")
 	os.Exit(0)
 }
 
+// Get() takes a sub-URL, fetches the appropriate page from the Allegro docs,
+// parses it, and returns the result as an HTML node.
 func Get(suburl string) *html.Node {
 	url := ROOT_URL + VERSION + "/" + suburl
 	resp, err := http.Get(url)
@@ -42,6 +52,7 @@ func Get(suburl string) *html.Node {
 	return node
 }
 
+// Attr() returns the value of the HTML node's attribute with the given name.
 func Attr(node *html.Node, name string) string {
 	if node == nil || node.Attr == nil {
 		return ""
@@ -54,6 +65,8 @@ func Attr(node *html.Node, name string) string {
 	return ""
 }
 
+// HasClass() checks of the HTML node's "class" attribute contains a
+// certain class value.
 func HasClass(node *html.Node, class string) bool {
 	classes := strings.Split(Attr(node, "class"), " ")
 	for _, c := range classes {
@@ -64,31 +77,39 @@ func HasClass(node *html.Node, class string) bool {
 	return false
 }
 
-func Filter(node *html.Node, cond func(*html.Node) bool) <-chan *html.Node {
-	ch := make(chan *html.Node)
-	go func() {
-		var f func(*html.Node)
-		f = func(child *html.Node) {
-			for child != nil {
-				if cond(child) {
-					ch <- child
-				}
-				if child.FirstChild != nil {
-					f(child.FirstChild)
-				}
-				child = child.NextSibling
+// Find() takes an HTML node and a filter function and returns that node's
+// first child for which the filter returns true.
+func Find(node *html.Node, cond func(*html.Node) bool) *html.Node {
+	var f func(*html.Node) *html.Node
+	f = func(child *html.Node) *html.Node {
+		for child != nil {
+			if cond(child) {
+				return child
 			}
+			if child.FirstChild != nil {
+				if result := f(child.FirstChild); result != nil {
+					return result
+				}
+			}
+			child = child.NextSibling
 		}
-		f(node.FirstChild)
-		close(ch)
-	}()
-	return ch
+		return nil
+	}
+	return f(node.FirstChild)
 }
 
+// Filter function for the content div.
 func IsContentDiv(node *html.Node) bool {
 	return node.Data == "div" && HasClass(node, "content")
 }
 
+// Filter function for the table of contents div.
+func IsTOCDiv(node *html.Node) bool {
+	return node.Data == "div" && Attr(node, "id") == "TOC"
+}
+
+// GetListContents() takes a <ul> HTML node and returns a channel of nodes that
+// represent all of that list's values.
 func GetListContents(node *html.Node) <-chan *html.Node {
 	if node.Data != "ul" {
 		log.Fatalf("'%s' is not a <ul> node", node.Data)
@@ -107,6 +128,8 @@ func GetListContents(node *html.Node) <-chan *html.Node {
 	return ch
 }
 
+// GetText() takes an HTML node and returns the text of it and all of its
+// subchildren.
 func GetText(node *html.Node) string {
 	var buf bytes.Buffer
 	node = node.FirstChild
@@ -121,69 +144,163 @@ func GetText(node *html.Node) string {
 	return buf.String()
 }
 
-func Parse(href string, wg *sync.WaitGroup) {
+// GetSource() walks the allegro packages and returns a map from file path
+// to linked list of lines in that source file.
+func GetSource() map[string]*list.List {
+	m := make(map[string]*list.List)
+	err := filepath.Walk("allegro/", func(path string, info os.FileInfo, err error) error {
+		if strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, "_test.go") {
+			data, err2 := ioutil.ReadFile(path)
+			if err2 != nil {
+				return err2
+			}
+			l := list.New()
+			for _, line := range strings.Split(string(data), "\n") {
+				l.PushBack(line)
+			}
+			m[path] = l
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return m
+}
+
+// TrimTo() trims a string down to a maximum length, breaking off at the
+// last space to occur before the limit.
+func TrimTo(str string, length int) (string, string) {
+	if len(str) <= length {
+		return str, ""
+	}
+	i := strings.LastIndex(str[:length], " ")
+	return str[:i], str[i+1:]
+}
+
+// Parse() fetches a page from a table of contents link, pulls out all
+// function documentation, and updates the source file implementing that
+// function with it. This doesn't write anything to disk, just modifies it
+// in memory to be written out later.
+func Parse(href string, sources map[string]*list.List, wg *sync.WaitGroup) {
 	defer func() {
 		wg.Done()
 	}()
 	page := Get(href)
-	content :=  <-Filter(page, func(child *html.Node) bool {
-		return child.Data == "div" && HasClass(child, "content")
-	})
-	toc := <-Filter(content, func(child *html.Node) bool {
-		return child.Data == "div" && Attr(child, "id") == "TOC"
-	})
+	content := Find(page, IsContentDiv)
+	toc := Find(content, IsTOCDiv)
 	if toc == nil {
-		// the main addon has no table of contents, so just return
 		return
 	}
 	ch := make(chan string)
 	go func() {
-		for item := range GetListContents(toc.FirstChild.NextSibling) {
-			a := Attr(item, "href")
-			if a != "" && a[0] == '#' {
-				ch <- a[1:]
+		var f func(*html.Node)
+		f = func(node *html.Node) {
+			for item := range GetListContents(node) {
+				a := Attr(item, "href")
+				if a != "" && a[0] == '#' {
+					ch <- a[1:]
+				}
+				next := item.NextSibling
+				if next != nil && next.Type != html.TextNode && next.Data == "ul" {
+					f(item.NextSibling)
+				}
 			}
 		}
+		f(toc.FirstChild.NextSibling)
 		close(ch)
 	}()
 	for id := range ch {
-		node := <-Filter(content, func(child *html.Node) bool {
-			return child.Data == "h1" && Attr(child, "id") == id
+		if id == locate {
+			fmt.Println("looking for " + locate)
+		}
+		cgo := "C." + id + "("
+		node := Find(content, func(child *html.Node) bool {
+			return Attr(child, "id") == id
 		})
-		fmt.Print(id + ": ")
 		for node.Data != "p" {
 			node = node.NextSibling
 		}
-		fmt.Println(GetText(node))
-		// TODO: find the implementation of the Allegro function denoted by id,
-		// go to the line right above the function declaration, and insert the
-		// value of GetText(node)
+		found := false
+		for _, lines := range sources {
+			var e *list.Element
+			for e = lines.Front(); e != nil; e = e.Next() {
+				if bytes.Contains([]byte(e.Value.(string)), []byte(cgo)) {
+					break
+				}
+			}
+			if e == nil {
+				continue
+			}
+			found = true
+			for !strings.HasPrefix(e.Value.(string), "func ") {
+				e = e.Prev()
+			}
+			for strings.HasPrefix(e.Prev().Value.(string), "//") {
+				lines.Remove(e.Prev())
+			}
+			text := GetText(node)
+			if id == locate {
+				fmt.Printf("%s: %s\n", locate, text)
+				fmt.Printf("implemented at: %s\n", e.Value.(string))
+			}
+			for {
+				commentLine, rest := TrimTo(text, 77)
+				lines.InsertBefore("// " + commentLine, e)
+				if rest == "" {
+					break
+				} else {
+					text = rest
+				}
+			}
+		}
+		if id == locate && !found {
+			fmt.Printf("'%s' not found in package sources\n", locate)
+		}
 	}
 }
 
 func main() {
-	if len(os.Args) == 1 {
+	flag.BoolVar(&verbose, "v", false, "-v")
+	flag.StringVar(&locate, "debug", "", "-debug <function>")
+	flag.Parse()
+	if flag.NArg() == 0 {
 		Usage()
 	}
-	VERSION = os.Args[1]
+	VERSION = flag.Arg(0)
 	index := Get("index.html")
-	content := <-Filter(index, IsContentDiv)
-	apiContent := <-Filter(content, func(child *html.Node) bool {
+	content := Find(index, IsContentDiv)
+	apiContent := Find(content, func(child *html.Node) bool {
 		return child.Data == "h1" && Attr(child, "id") == "api"
 	})
-	addonContent := <-Filter(content, func(child *html.Node) bool {
+	addonContent := Find(content, func(child *html.Node) bool {
 		return child.Data == "h1" && Attr(child, "id") == "addons"
 	})
+	sources := GetSource()
 	var wg sync.WaitGroup
 	for link := range GetListContents(apiContent.NextSibling.NextSibling) {
 		href := Attr(link, "href")
 		wg.Add(1)
-		go Parse(href, &wg)
+		go Parse(href, sources, &wg)
 	}
 	for link := range GetListContents(addonContent.NextSibling.NextSibling) {
 		href := Attr(link, "href")
 		wg.Add(1)
-		go Parse(href, &wg)
+		go Parse(href, sources, &wg)
 	}
 	wg.Wait()
+	var buf bytes.Buffer
+	for path, lines := range sources {
+		for e := lines.Front(); e != nil; e = e.Next() {
+			buf.WriteString(e.Value.(string) + "\n")
+		}
+		err := ioutil.WriteFile("/tmp/" + filepath.Base(path), buf.Bytes(), os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+		buf.Reset()
+		if verbose {
+			fmt.Println("writing to " + path)
+		}
+	}
 }
