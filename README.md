@@ -9,7 +9,9 @@ Screenshot of one of the included examples (open the `example` folder for more d
 
 ![screenshot](https://github.com/dradtke/go-allegro/raw/5.0/example/img/screenshot.png)
 
-The following functions still need to be implemented or blacklisted (in addition to a few more modules):
+Function documentation is included in the source, but it's pulled directly from Allegro's C API documentation, so not everything will line up as far as parameters and return values. However, the C API maps pretty well to the Go API, so if you're familiar with the patterns (e.g. `error`'s instead of boolean success values, multiple return values instead of output parameters, object functions as instance methods on structs), then it shouldn't be hard to figure out what's going on.
+
+The following functions still need to be implemented or blacklisted (in addition to a few more modules). This list is generated using the included `coverage_test.go`:
 
 ```
 --- FAIL: TestCoverage (0.25 seconds)
