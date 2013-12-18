@@ -84,7 +84,7 @@ func CreateNativeFileDialog(initial_path, title, patterns string, flags FileChoo
 		return nil, errors.New("failed to create native file chooser dialog")
 	}
 	dialog := (*FileChooser)(d)
-	runtime.SetFinalizer(dialog, dialog.Destroy)
+	//runtime.SetFinalizer(dialog, dialog.Destroy)
 	return dialog, nil
 }
 

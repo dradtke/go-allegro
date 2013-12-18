@@ -7,7 +7,6 @@ package allegro
 import "C"
 import (
 	"errors"
-	"runtime"
 )
 
 type Timer C.ALLEGRO_TIMER
@@ -21,7 +20,7 @@ func CreateTimer(speed float64) (*Timer, error) {
 		return nil, errors.New("failed to create timer")
 	}
 	timer := (*Timer)(t)
-	runtime.SetFinalizer(timer, timer.Destroy)
+	//runtime.SetFinalizer(timer, timer.Destroy)
 	return timer, nil
 }
 

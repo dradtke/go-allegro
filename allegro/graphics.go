@@ -24,7 +24,6 @@ import "C"
 import (
 	"errors"
 	"fmt"
-	"runtime"
 )
 
 /* Types and Enums */
@@ -153,7 +152,7 @@ func AddNewBitmapFlag(flags BitmapFlags) {
 // memory bitmaps and display bitmaps may be slow.
 func CreateBitmap(w, h int) *Bitmap {
 	bitmap := (*Bitmap)(C.al_create_bitmap(C.int(w), C.int(h)))
-	runtime.SetFinalizer(bitmap, bitmap.Destroy)
+	//runtime.SetFinalizer(bitmap, bitmap.Destroy)
 	return bitmap
 }
 
@@ -172,7 +171,7 @@ func LoadBitmap(filename string) (*Bitmap, error) {
 		return nil, fmt.Errorf("failed to load bitmap at '%s'", filename)
 	}
 	bitmap := (*Bitmap)(bmp)
-	runtime.SetFinalizer(bitmap, bitmap.Destroy)
+	//runtime.SetFinalizer(bitmap, bitmap.Destroy)
 	return bitmap, nil
 }
 

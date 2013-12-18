@@ -8,7 +8,6 @@ import "C"
 import (
 	"errors"
 	"fmt"
-	"runtime"
 )
 
 type Config C.ALLEGRO_CONFIG
@@ -18,7 +17,7 @@ type ConfigEntryIterator (*C.ALLEGRO_CONFIG_ENTRY)
 // Create an empty configuration structure.
 func CreateConfig() *Config {
 	config := (*Config)(C.al_create_config())
-	runtime.SetFinalizer(config, config.Destroy)
+	//runtime.SetFinalizer(config, config.Destroy)
 	return config
 }
 
