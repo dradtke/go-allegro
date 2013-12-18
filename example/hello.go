@@ -2,41 +2,55 @@ package main
 
 import (
 	"github.com/dradtke/go-allegro/allegro"
-	"github.com/dradtke/go-allegro/allegro/image"
-	"fmt"
-	"os"
+	"github.com/dradtke/go-allegro/allegro/color"
+	"github.com/dradtke/go-allegro/allegro/font"
+	//"github.com/dradtke/go-allegro/allegro/image"
+	"log"
 )
 
 func main() {
 	var (
-		display *allegro.Display
-		eventQueue *allegro.EventQueue
-		gordon *allegro.Bitmap
-		running bool = true
-		err error
+		display     *allegro.Display
+		eventQueue  *allegro.EventQueue
+		builtinFont *font.Font
+		//gordon      *allegro.Bitmap
+		textColor   allegro.Color
+		running     bool = true
+		score       int  = 0
+		err         error
 	)
 
 	allegro.SetNewDisplayFlags(allegro.WINDOWED)
 	if display, err = allegro.CreateDisplay(640, 480); err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		return
+		log.Fatal(err)
 	} else {
 		defer display.Destroy()
 		display.SetWindowTitle("Hello, Go!")
 	}
 
 	if eventQueue, err = allegro.CreateEventQueue(); err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		return
+		log.Fatal(err)
 	} else {
 		defer eventQueue.Destroy()
 	}
 
+	/*
 	image.Init()
 	if gordon, err = allegro.LoadBitmap("img/gordon-the-gopher.png"); err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		return
+		log.Fatal(err)
 	}
+	*/
+
+	font.Init()
+	if builtinFont, err = font.Builtin(); err != nil {
+		log.Fatal(err)
+	}
+
+	textR, textG, textB, err := color.NameToRgb(color.FLORAL_WHITE)
+	if err != nil {
+		log.Fatal(err)
+	}
+	textColor = allegro.MapRGB(byte(textR), byte(textG), byte(textB))
 
 	eventQueue.RegisterEventSource(display.EventSource())
 	allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
@@ -46,9 +60,9 @@ func main() {
 		event, found := eventQueue.WaitForEventUntil(allegro.NewTimeout(0.06))
 		if found {
 			switch event.Type {
-				case allegro.DisplayCloseEvent:
-					running = false
-					break
+			case allegro.DisplayCloseEvent:
+				running = false
+				break
 			}
 		}
 
@@ -57,7 +71,8 @@ func main() {
 		}
 
 		allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
-		gordon.Draw(float32((display.Width()-gordon.Width())/2), float32((display.Height()-gordon.Height())/2), 0)
+		//gordon.Draw(float32((display.Width()-gordon.Width())/2), float32((display.Height()-gordon.Height())/2), 0)
+		font.DrawTextf(builtinFont, textColor, 50, 50, font.ALIGN_LEFT, "Score: %d", score)
 		allegro.FlipDisplay()
 	}
 }
