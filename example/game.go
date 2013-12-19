@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/dradtke/go-allegro/allegro"
-	"github.com/dradtke/go-allegro/allegro/image"
 	"math"
 	"os"
 )
@@ -28,6 +27,7 @@ var gameMap = [][]int{
 }
 
 const TILE_SIZE = 30
+const GOPHER_SIZE = 20
 const START_X = 6
 const START_Y = 6
 const GOPHER_SPEED = 6
@@ -175,23 +175,20 @@ func main() {
 		return
 	} else {
 		defer display.Destroy()
-		display.SetWindowTitle("Help Gordon Escape!")
+		display.SetWindowTitle("You Can't Leave!")
 	}
 
-	image.Init()
+	screen := allegro.TargetBitmap()
 
 	game.gopher = new(Gopher)
-	bmp, err := allegro.LoadBitmap("img/little-gopher.png")
-	if err != nil {
-		panic(err)
-	}
-	game.gopher.image = bmp
+	game.gopher.image = allegro.CreateBitmap(GOPHER_SIZE, GOPHER_SIZE)
+	allegro.SetTargetBitmap(game.gopher.image)
+	allegro.ClearToColor(allegro.MapRGB(0xFF, 0, 0))
+
 	game.gopher.w = float32(game.gopher.image.Width())
 	game.gopher.h = float32(game.gopher.image.Height())
 	game.gopher.x = float32((START_X * TILE_SIZE) - (game.gopher.w / 2))
 	game.gopher.y = float32((START_Y * TILE_SIZE) - (game.gopher.h / 2))
-
-	screen := allegro.TargetBitmap()
 
 	whiteTile := &Tile{id: 0}
 	whiteTile.image = allegro.CreateBitmap(TILE_SIZE, TILE_SIZE)
@@ -229,7 +226,7 @@ func main() {
 	timer.Start()
 
 	for running {
-		event := eventQueue.WaitForEvent()
+		event := eventQueue.WaitForEvent(false)
 		switch event.Type {
 		case allegro.TimerEvent:
 			redraw = true
