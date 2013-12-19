@@ -6,7 +6,7 @@ package ttf
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_ttf.h>
 
-void _al_free_string(char *data) {
+void _al_ttf_free_string(char *data) {
 	al_free(data);
 }
 */
@@ -48,7 +48,7 @@ func Version() uint32 {
 // the FreeType FAQ this means support for many different font formats:
 func LoadFont(filename string, size int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_free_string(filename_)
+	defer C._al_ttf_free_string(filename_)
 	f := C.al_load_ttf_font(filename_, C.int(size), C.int(flags))
 	if f == nil {
 		return nil, fmt.Errorf("failed to load ttf font at '%s'", filename)
@@ -60,7 +60,7 @@ func LoadFont(filename string, size int, flags TtfFlags) (*font.Font, error) {
 // filename is only used to find possible additional files next to a font file.
 func LoadFontF(file *allegro.File, filename string, size int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_free_string(filename_)
+	defer C._al_ttf_free_string(filename_)
 	f := C.al_load_ttf_font_f((*C.ALLEGRO_FILE)(unsafe.Pointer(file)), filename_,
 		C.int(size), C.int(flags))
 	if f == nil {
@@ -73,7 +73,7 @@ func LoadFontF(file *allegro.File, filename string, size int, flags TtfFlags) (*
 // instead of a single size parameter.
 func LoadFontStretch(filename string, w, h int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_free_string(filename_)
+	defer C._al_ttf_free_string(filename_)
 	f := C.al_load_ttf_font_stretch(filename_, C.int(w), C.int(h), C.int(flags))
 	if f == nil {
 		return nil, fmt.Errorf("failed to load ttf font at '%s'", filename)
@@ -86,7 +86,7 @@ func LoadFontStretch(filename string, w, h int, flags TtfFlags) (*font.Font, err
 // file.
 func LoadFontStretchF(file *allegro.File, filename string, w, h int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_free_string(filename_)
+	defer C._al_ttf_free_string(filename_)
 	f := C.al_load_ttf_font_stretch_f((*C.ALLEGRO_FILE)(unsafe.Pointer(file)),
 		filename_, C.int(w), C.int(h), C.int(flags))
 	if f == nil {
