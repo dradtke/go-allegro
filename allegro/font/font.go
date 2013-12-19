@@ -135,7 +135,7 @@ func DrawJustifiedText(font *Font, color allegro.Color, x1, x2, y, diff float32,
 
 func DrawTextf(font *Font, color allegro.Color, x, y float32, flags DrawFlags, format string, a ...interface{}) {
 	// C.al_draw_textf
-	text_ := C.CString(fmt.Sprintf(format, a))
+	text_ := C.CString(fmt.Sprintf(format, a...))
 	defer C._al_free_string(text_)
 	C.al_draw_text((*C.ALLEGRO_FONT)(font),
 		*((*C.ALLEGRO_COLOR)(unsafe.Pointer(&color))), // is there an easier way to get this converted?
