@@ -15,7 +15,7 @@ import (
 
 var modules = []mod{
 	mod{name: "acodec", decl: buildRegex("ALLEGRO_ACODEC_FUNC")},
-	//mod{name: "audio", decl: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
+	mod{name: "audio", decl: buildRegex("ALLEGRO_KCM_AUDIO_FUNC")},
 	mod{name: "color", decl: buildRegex("ALLEGRO_COLOR_FUNC")},
 	mod{name: "dialog", decl: buildRegex("ALLEGRO_DIALOG_FUNC"), header: "native_dialog"},
 	mod{name: "font", decl: buildRegex("ALLEGRO_FONT_FUNC")},
