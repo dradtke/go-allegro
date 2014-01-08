@@ -49,7 +49,7 @@
 //     		event, found := eventQueue.WaitForEventUntil(allegro.NewTimeout(timeout))
 //     		if found {
 //     			switch event.Type {
-//     				case allegro.DisplayCloseEvent:
+//     				case allegro.EVENT_DISPLAY_CLOSE:
 //     					running = false
 //     					break
 //

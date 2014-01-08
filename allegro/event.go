@@ -456,27 +456,27 @@ func (queue *EventQueue) newEvent() *Event {
 		Timestamp: float64(C.get_event_timestamp(&queue.event)),
 	}
 	switch ev.Type {
-	case JoystickAxisEvent:
+	case EVENT_JOYSTICK_AXIS:
 		id := (*Joystick)(C.get_event_joystick_id(&queue.event))
 		stick := int(C.get_event_joystick_stick(&queue.event))
 		axis := int(C.get_event_joystick_axis(&queue.event))
 		pos := float32(C.get_event_joystick_pos(&queue.event))
 		ev.Joystick = JoystickEventInfo{Id: id, Stick: stick, Axis: axis, Pos: pos}
 
-	case JoystickButtonDownEvent, JoystickButtonUpEvent:
+	case EVENT_JOYSTICK_BUTTON_DOWN, EVENT_JOYSTICK_BUTTON_UP:
 		id := (*Joystick)(C.get_event_joystick_id(&queue.event))
 		button := int(C.get_event_joystick_button(&queue.event))
 		ev.Joystick = JoystickEventInfo{Id: id, Button: button}
 
-	case JoystickConfigurationEvent:
+	case EVENT_JOYSTICK_CONFIGURATION:
 		ev.Joystick = JoystickEventInfo{}
 
-	case KeyDownEvent, KeyUpEvent:
+	case EVENT_KEY_DOWN, EVENT_KEY_UP:
 		keycode := (KeyCode)(C.get_event_keyboard_keycode(&queue.event))
 		display := (*Display)(C.get_event_keyboard_display(&queue.event))
 		ev.Keyboard = KeyboardEventInfo{KeyCode: keycode, Display: display}
 
-	case KeyCharEvent:
+	case EVENT_KEY_CHAR:
 		keycode := (KeyCode)(C.get_event_keyboard_keycode(&queue.event))
 		unichar := int(C.get_event_keyboard_unichar(&queue.event))
 		modifiers := KeyModifier(C.get_event_keyboard_modifiers(&queue.event))
@@ -484,7 +484,7 @@ func (queue *EventQueue) newEvent() *Event {
 		display := (*Display)(C.get_event_keyboard_display(&queue.event))
 		ev.Keyboard = KeyboardEventInfo{KeyCode: keycode, Unichar: unichar, Modifiers: modifiers, Repeat: repeat, Display: display}
 
-	case MouseAxesEvent:
+	case EVENT_MOUSE_AXES:
 		x := int(C.get_event_mouse_x(&queue.event))
 		y := int(C.get_event_mouse_y(&queue.event))
 		z := int(C.get_event_mouse_z(&queue.event))
@@ -496,7 +496,7 @@ func (queue *EventQueue) newEvent() *Event {
 		display := (*Display)(C.get_event_mouse_display(&queue.event))
 		ev.Mouse = MouseEventInfo{X: x, Y: y, Z: z, W: w, Dx: dx, Dy: dy, Dz: dz, Dw: dw, Display: display}
 
-	case MouseButtonDownEvent, MouseButtonUpEvent:
+	case EVENT_MOUSE_BUTTON_DOWN, EVENT_MOUSE_BUTTON_UP:
 		x := int(C.get_event_mouse_x(&queue.event))
 		y := int(C.get_event_mouse_y(&queue.event))
 		z := int(C.get_event_mouse_z(&queue.event))
@@ -505,10 +505,10 @@ func (queue *EventQueue) newEvent() *Event {
 		display := (*Display)(C.get_event_mouse_display(&queue.event))
 		ev.Mouse = MouseEventInfo{X: x, Y: y, Z: z, W: w, Button: button, Display: display}
 
-	case MouseWarpedEvent:
+	case EVENT_MOUSE_WARPED:
 		ev.Mouse = MouseEventInfo{}
 
-	case MouseEnterDisplayEvent, MouseLeaveDisplayEvent:
+	case EVENT_MOUSE_ENTER_DISPLAY, EVENT_MOUSE_LEAVE_DISPLAY:
 		x := int(C.get_event_mouse_x(&queue.event))
 		y := int(C.get_event_mouse_y(&queue.event))
 		z := int(C.get_event_mouse_z(&queue.event))
@@ -516,12 +516,12 @@ func (queue *EventQueue) newEvent() *Event {
 		display := (*Display)(C.get_event_mouse_display(&queue.event))
 		ev.Mouse = MouseEventInfo{X: x, Y: y, Z: z, W: w, Display: display}
 
-	case TimerEvent:
+	case EVENT_TIMER:
 		source := (*Timer)(C.get_event_timer_source(&queue.event))
 		count := int64(C.get_event_timer_count(&queue.event))
 		ev.Timer = TimerEventInfo{Source: source, Count: count}
 
-	case DisplayExposeEvent, DisplayResizeEvent:
+	case EVENT_DISPLAY_EXPOSE, EVENT_DISPLAY_RESIZE:
 		source := (*Display)(C.get_event_display_source(&queue.event))
 		x := int(C.get_event_display_x(&queue.event))
 		y := int(C.get_event_display_y(&queue.event))
@@ -529,11 +529,11 @@ func (queue *EventQueue) newEvent() *Event {
 		height := int(C.get_event_display_height(&queue.event))
 		ev.Display = DisplayEventInfo{Source: source, X: x, Y: y, Width: width, Height: height}
 
-	case DisplayCloseEvent, DisplayLostEvent, DisplayFoundEvent, DisplaySwitchOutEvent, DisplaySwitchInEvent:
+	case EVENT_DISPLAY_CLOSE, EVENT_DISPLAY_LOST, EVENT_DISPLAY_FOUND, EVENT_DISPLAY_SWITCH_OUT, EVENT_DISPLAY_SWITCH_IN:
 		source := (*Display)(C.get_event_display_source(&queue.event))
 		ev.Display = DisplayEventInfo{Source: source}
 
-	case DisplayOrientationEvent:
+	case EVENT_DISPLAY_ORIENTATION:
 		source := (*Display)(C.get_event_display_source(&queue.event))
 		orientation := (DisplayOrientation)(C.get_event_display_orientation(&queue.event))
 		ev.Display = DisplayEventInfo{Source: source, Orientation: orientation}
