@@ -1,5 +1,12 @@
 // Package allegro provides bindings to the core functionality of the
-// Allegro 5 API. A bare-bones program might look something like this:
+// Allegro 5 API.
+//
+// In order to improve the readability of this API, many methods are annotated
+// with information pulled directly from Allegro's online C documentation.
+// Note that this means that method names and some other information may be
+// C-specific, but otherwise should still be useful.
+//
+// A bare-bones program might look something like this:
 //
 //     package main
 //
