@@ -261,6 +261,56 @@ const (
 	EVENT_DISPLAY_ORIENTATION    EventType = C.ALLEGRO_EVENT_DISPLAY_ORIENTATION
 )
 
+func (typ EventType) Name() string {
+	switch typ {
+	case EVENT_JOYSTICK_AXIS:
+		return "Joystick Axis"
+	case EVENT_JOYSTICK_BUTTON_DOWN:
+		return "Joystick Button Down"
+	case EVENT_JOYSTICK_BUTTON_UP:
+		return "Joystick Button Up"
+	case EVENT_JOYSTICK_CONFIGURATION:
+		return "Joystick Configuration"
+	case EVENT_KEY_DOWN:
+		return "Key Down"
+	case EVENT_KEY_UP:
+		return "Key Up"
+	case EVENT_KEY_CHAR:
+		return "Key Char"
+	case EVENT_MOUSE_AXES:
+		return "Mouse Axes"
+	case EVENT_MOUSE_BUTTON_DOWN:
+		return "Mouse Button Down"
+	case EVENT_MOUSE_BUTTON_UP:
+		return "Mouse Button Up"
+	case EVENT_MOUSE_WARPED:
+		return "Mouse Warped"
+	case EVENT_MOUSE_ENTER_DISPLAY:
+		return "Mouse Enter Display"
+	case EVENT_MOUSE_LEAVE_DISPLAY:
+		return "Mouse Leave Display"
+	case EVENT_TIMER:
+		return "Timer"
+	case EVENT_DISPLAY_EXPOSE:
+		return "Display Expose"
+	case EVENT_DISPLAY_RESIZE:
+		return "Display Resize"
+	case EVENT_DISPLAY_CLOSE:
+		return "Display Close"
+	case EVENT_DISPLAY_LOST:
+		return "Display Lost"
+	case EVENT_DISPLAY_FOUND:
+		return "Display Found"
+	case EVENT_DISPLAY_SWITCH_OUT:
+		return "Display Switch Out"
+	case EVENT_DISPLAY_SWITCH_IN:
+		return "Display Switch In"
+	case EVENT_DISPLAY_ORIENTATION:
+		return "Display Orientation"
+	}
+	return "Unknown"
+}
+
 type EventSource C.ALLEGRO_EVENT_SOURCE
 
 type EventQueue struct {
@@ -272,8 +322,8 @@ type EventQueue struct {
 // any user event that you get from al_get_next_event, al_peek_next_event,
 // al_wait_for_event, etc. which is reference counted. This function does
 // nothing if the event is not reference counted.
-func (ev *Event) UnrefUserEvent() {
-	C.al_unref_user_event(ev.User.Raw)
+func (e *Event) UnrefUserEvent() {
+	C.al_unref_user_event(e.User.Raw)
 }
 
 // Initialise an event source for emitting user events. The space for the event
@@ -373,12 +423,12 @@ func (queue *EventQueue) IsEmpty() bool {
 // ret_event and return true. The original event packet will remain at the head
 // of the queue. If the event queue is actually empty, this function returns
 // false and the contents of ret_event are unspecified.
-func (queue *EventQueue) PeekNextEvent() (*Event, error) {
+func (queue *EventQueue) PeekNextEvent(event *Event) error {
 	ok := bool(C.al_peek_next_event(queue.raw, &queue.event))
 	if !ok {
-		return nil, EmptyQueue
+		return EmptyQueue
 	}
-	return queue.newEvent(), nil
+	return nil
 }
 
 // Drop (remove) the next event from the queue. If the queue is empty, nothing
@@ -396,25 +446,25 @@ func (queue *EventQueue) Flush() {
 // into ret_event, returning true. The original event will be removed from the
 // queue. If the event queue is empty, return false and the contents of
 // ret_event are unspecified.
-func (queue *EventQueue) GetNextEvent() (*Event, error) {
+func (queue *EventQueue) GetNextEvent(event *Event) error {
 	ok := bool(C.al_get_next_event(queue.raw, &queue.event))
 	if !ok {
-		return nil, EmptyQueue
+		return EmptyQueue
 	}
-	return queue.newEvent(), nil
+	queue.fillEvent(event)
+	return nil
 }
 
 // Wait until the event queue specified is non-empty. If ret_event is not NULL,
 // the first event in the queue will be copied into ret_event and removed from
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
-func (queue *EventQueue) WaitForEvent(peek bool) *Event {
-	if peek {
+func (queue *EventQueue) WaitForEvent(event *Event) {
+	if event == nil {
 		C.al_wait_for_event(queue.raw, nil)
-		return nil
 	} else {
 		C.al_wait_for_event(queue.raw, &queue.event)
-		return queue.newEvent()
+		queue.fillEvent(event)
 	}
 }
 
@@ -422,13 +472,14 @@ func (queue *EventQueue) WaitForEvent(peek bool) *Event {
 // the first event in the queue will be copied into ret_event and removed from
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
-func (queue *EventQueue) WaitForEventTimed(peek bool, secs float32) (bool, *Event) {
-	if peek {
+func (queue *EventQueue) WaitForEventTimed(event *Event, secs float32) bool {
+	if event == nil {
 		ok := bool(C.al_wait_for_event_timed(queue.raw, nil, C.float(secs)))
-		return ok, nil
+		return ok
 	} else {
 		ok := bool(C.al_wait_for_event_timed(queue.raw, &queue.event, C.float(secs)))
-		return ok, queue.newEvent()
+		queue.fillEvent(event)
+		return ok
 	}
 }
 
@@ -436,12 +487,13 @@ func (queue *EventQueue) WaitForEventTimed(peek bool, secs float32) (bool, *Even
 // the first event in the queue will be copied into ret_event and removed from
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
-func (queue *EventQueue) WaitForEventUntil(timeout *Timeout) (*Event, bool) {
+func (queue *EventQueue) WaitForEventUntil(timeout *Timeout, event *Event) bool {
 	ok := C.al_wait_for_event_until(queue.raw, &queue.event, (*C.ALLEGRO_TIMEOUT)(timeout))
 	if !ok {
-		return nil, false
+		return false
 	}
-	return queue.newEvent(), true
+	queue.fillEvent(event)
+	return true
 }
 
 // like WaitForEventUntil, but don't return an event and leave everything on the queue
@@ -449,103 +501,88 @@ func (queue *EventQueue) JustWaitForEventUntil(timeout *Timeout) bool {
 	return bool(C.al_wait_for_event_until(queue.raw, nil, (*C.ALLEGRO_TIMEOUT)(timeout)))
 }
 
-func (queue *EventQueue) newEvent() *Event {
-	ev := Event{
-		Type:      (EventType)(C.get_event_type(&queue.event)),
-		Source:    (*EventSource)(C.get_event_source(&queue.event)),
-		Timestamp: float64(C.get_event_timestamp(&queue.event)),
-	}
-	switch ev.Type {
+func (queue *EventQueue) fillEvent(event *Event) {
+	event.Type = (EventType)(C.get_event_type(&queue.event))
+	event.Source = (*EventSource)(C.get_event_source(&queue.event))
+	event.Timestamp = float64(C.get_event_timestamp(&queue.event))
+	switch event.Type {
 	case EVENT_JOYSTICK_AXIS:
-		id := (*Joystick)(C.get_event_joystick_id(&queue.event))
-		stick := int(C.get_event_joystick_stick(&queue.event))
-		axis := int(C.get_event_joystick_axis(&queue.event))
-		pos := float32(C.get_event_joystick_pos(&queue.event))
-		ev.Joystick = JoystickEventInfo{Id: id, Stick: stick, Axis: axis, Pos: pos}
+		event.Joystick.Id = (*Joystick)(C.get_event_joystick_id(&queue.event))
+		event.Joystick.Stick = int(C.get_event_joystick_stick(&queue.event))
+		event.Joystick.Axis = int(C.get_event_joystick_axis(&queue.event))
+		event.Joystick.Pos = float32(C.get_event_joystick_pos(&queue.event))
 
 	case EVENT_JOYSTICK_BUTTON_DOWN, EVENT_JOYSTICK_BUTTON_UP:
-		id := (*Joystick)(C.get_event_joystick_id(&queue.event))
-		button := int(C.get_event_joystick_button(&queue.event))
-		ev.Joystick = JoystickEventInfo{Id: id, Button: button}
+		event.Joystick.Id = (*Joystick)(C.get_event_joystick_id(&queue.event))
+		event.Joystick.Button = int(C.get_event_joystick_button(&queue.event))
 
 	case EVENT_JOYSTICK_CONFIGURATION:
-		ev.Joystick = JoystickEventInfo{}
+		// no information
 
 	case EVENT_KEY_DOWN, EVENT_KEY_UP:
-		keycode := (KeyCode)(C.get_event_keyboard_keycode(&queue.event))
-		display := (*Display)(C.get_event_keyboard_display(&queue.event))
-		ev.Keyboard = KeyboardEventInfo{KeyCode: keycode, Display: display}
+		event.Keyboard.KeyCode = (KeyCode)(C.get_event_keyboard_keycode(&queue.event))
+		event.Keyboard.Display = (*Display)(C.get_event_keyboard_display(&queue.event))
 
 	case EVENT_KEY_CHAR:
-		keycode := (KeyCode)(C.get_event_keyboard_keycode(&queue.event))
-		unichar := int(C.get_event_keyboard_unichar(&queue.event))
-		modifiers := KeyModifier(C.get_event_keyboard_modifiers(&queue.event))
-		repeat := bool(C.get_event_keyboard_repeat(&queue.event))
-		display := (*Display)(C.get_event_keyboard_display(&queue.event))
-		ev.Keyboard = KeyboardEventInfo{KeyCode: keycode, Unichar: unichar, Modifiers: modifiers, Repeat: repeat, Display: display}
+		event.Keyboard.KeyCode = (KeyCode)(C.get_event_keyboard_keycode(&queue.event))
+		event.Keyboard.Unichar = int(C.get_event_keyboard_unichar(&queue.event))
+		event.Keyboard.Modifiers = KeyModifier(C.get_event_keyboard_modifiers(&queue.event))
+		event.Keyboard.Repeat = bool(C.get_event_keyboard_repeat(&queue.event))
+		event.Keyboard.Display = (*Display)(C.get_event_keyboard_display(&queue.event))
 
 	case EVENT_MOUSE_AXES:
-		x := int(C.get_event_mouse_x(&queue.event))
-		y := int(C.get_event_mouse_y(&queue.event))
-		z := int(C.get_event_mouse_z(&queue.event))
-		w := int(C.get_event_mouse_w(&queue.event))
-		dx := int(C.get_event_mouse_dx(&queue.event))
-		dy := int(C.get_event_mouse_dy(&queue.event))
-		dz := int(C.get_event_mouse_dz(&queue.event))
-		dw := int(C.get_event_mouse_dw(&queue.event))
-		display := (*Display)(C.get_event_mouse_display(&queue.event))
-		ev.Mouse = MouseEventInfo{X: x, Y: y, Z: z, W: w, Dx: dx, Dy: dy, Dz: dz, Dw: dw, Display: display}
+		event.Mouse.X = int(C.get_event_mouse_x(&queue.event))
+		event.Mouse.Y = int(C.get_event_mouse_y(&queue.event))
+		event.Mouse.Z = int(C.get_event_mouse_z(&queue.event))
+		event.Mouse.W = int(C.get_event_mouse_w(&queue.event))
+		event.Mouse.Dx = int(C.get_event_mouse_dx(&queue.event))
+		event.Mouse.Dy = int(C.get_event_mouse_dy(&queue.event))
+		event.Mouse.Dz = int(C.get_event_mouse_dz(&queue.event))
+		event.Mouse.Dw = int(C.get_event_mouse_dw(&queue.event))
+		event.Mouse.Display = (*Display)(C.get_event_mouse_display(&queue.event))
 
 	case EVENT_MOUSE_BUTTON_DOWN, EVENT_MOUSE_BUTTON_UP:
-		x := int(C.get_event_mouse_x(&queue.event))
-		y := int(C.get_event_mouse_y(&queue.event))
-		z := int(C.get_event_mouse_z(&queue.event))
-		w := int(C.get_event_mouse_w(&queue.event))
-		button := uint(C.get_event_mouse_button(&queue.event))
-		display := (*Display)(C.get_event_mouse_display(&queue.event))
-		ev.Mouse = MouseEventInfo{X: x, Y: y, Z: z, W: w, Button: button, Display: display}
+		event.Mouse.X = int(C.get_event_mouse_x(&queue.event))
+		event.Mouse.Y = int(C.get_event_mouse_y(&queue.event))
+		event.Mouse.Z = int(C.get_event_mouse_z(&queue.event))
+		event.Mouse.W = int(C.get_event_mouse_w(&queue.event))
+		event.Mouse.Button = uint(C.get_event_mouse_button(&queue.event))
+		event.Mouse.Display = (*Display)(C.get_event_mouse_display(&queue.event))
 
 	case EVENT_MOUSE_WARPED:
-		ev.Mouse = MouseEventInfo{}
+		// no information
 
 	case EVENT_MOUSE_ENTER_DISPLAY, EVENT_MOUSE_LEAVE_DISPLAY:
-		x := int(C.get_event_mouse_x(&queue.event))
-		y := int(C.get_event_mouse_y(&queue.event))
-		z := int(C.get_event_mouse_z(&queue.event))
-		w := int(C.get_event_mouse_w(&queue.event))
-		display := (*Display)(C.get_event_mouse_display(&queue.event))
-		ev.Mouse = MouseEventInfo{X: x, Y: y, Z: z, W: w, Display: display}
+		event.Mouse.X = int(C.get_event_mouse_x(&queue.event))
+		event.Mouse.Y = int(C.get_event_mouse_y(&queue.event))
+		event.Mouse.Z = int(C.get_event_mouse_z(&queue.event))
+		event.Mouse.W = int(C.get_event_mouse_w(&queue.event))
+		event.Mouse.Display = (*Display)(C.get_event_mouse_display(&queue.event))
 
 	case EVENT_TIMER:
-		source := (*Timer)(C.get_event_timer_source(&queue.event))
-		count := int64(C.get_event_timer_count(&queue.event))
-		ev.Timer = TimerEventInfo{Source: source, Count: count}
+		event.Timer.Source = (*Timer)(C.get_event_timer_source(&queue.event))
+		event.Timer.Count = int64(C.get_event_timer_count(&queue.event))
 
 	case EVENT_DISPLAY_EXPOSE, EVENT_DISPLAY_RESIZE:
-		source := (*Display)(C.get_event_display_source(&queue.event))
-		x := int(C.get_event_display_x(&queue.event))
-		y := int(C.get_event_display_y(&queue.event))
-		width := int(C.get_event_display_width(&queue.event))
-		height := int(C.get_event_display_height(&queue.event))
-		ev.Display = DisplayEventInfo{Source: source, X: x, Y: y, Width: width, Height: height}
+		event.Display.Source = (*Display)(C.get_event_display_source(&queue.event))
+		event.Display.X = int(C.get_event_display_x(&queue.event))
+		event.Display.Y = int(C.get_event_display_y(&queue.event))
+		event.Display.Width = int(C.get_event_display_width(&queue.event))
+		event.Display.Height = int(C.get_event_display_height(&queue.event))
 
 	case EVENT_DISPLAY_CLOSE, EVENT_DISPLAY_LOST, EVENT_DISPLAY_FOUND, EVENT_DISPLAY_SWITCH_OUT, EVENT_DISPLAY_SWITCH_IN:
-		source := (*Display)(C.get_event_display_source(&queue.event))
-		ev.Display = DisplayEventInfo{Source: source}
+		event.Display.Source = (*Display)(C.get_event_display_source(&queue.event))
 
 	case EVENT_DISPLAY_ORIENTATION:
-		source := (*Display)(C.get_event_display_source(&queue.event))
-		orientation := (DisplayOrientation)(C.get_event_display_orientation(&queue.event))
-		ev.Display = DisplayEventInfo{Source: source, Orientation: orientation}
+		event.Display.Source = (*Display)(C.get_event_display_source(&queue.event))
+		event.Display.Orientation = (DisplayOrientation)(C.get_event_display_orientation(&queue.event))
 
 	default:
-		source := (*EventSource)(C.get_event_user_source(&queue.event))
-		data1 := uintptr(C.get_event_user_data1(&queue.event))
-		data2 := uintptr(C.get_event_user_data2(&queue.event))
-		data3 := uintptr(C.get_event_user_data3(&queue.event))
-		data4 := uintptr(C.get_event_user_data4(&queue.event))
-		raw := C.get_user_event(&queue.event)
-		ev.User = UserEventInfo{Source: source, Data1: data1, Data2: data2, Data3: data3, Data4: data4, Raw: raw}
+		event.User.Source = (*EventSource)(C.get_event_user_source(&queue.event))
+		event.User.Data1 = uintptr(C.get_event_user_data1(&queue.event))
+		event.User.Data2 = uintptr(C.get_event_user_data2(&queue.event))
+		event.User.Data3 = uintptr(C.get_event_user_data3(&queue.event))
+		event.User.Data4 = uintptr(C.get_event_user_data4(&queue.event))
+		event.User.Raw = C.get_user_event(&queue.event)
 	}
-	return &ev
 }

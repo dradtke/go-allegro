@@ -731,3 +731,14 @@ func (f *File) SaveBitmap(ident string, bmp *Bitmap) error {
 
 //}}}
 
+// AsTarget() is a utility method for temporarily setting a bitmap as
+// the target bitmap, running the provided function, and then undoing
+// the change after the function exits. This is very useful for calling
+// functions that operate on the target bitmap, e.g. the drawing methods
+// provided by the primitives addon.
+func (bmp *Bitmap) AsTarget(f func()) {
+	old := TargetBitmap()
+	SetTargetBitmap(bmp)
+	f()
+	SetTargetBitmap(old)
+}

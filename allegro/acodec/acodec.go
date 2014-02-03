@@ -7,6 +7,11 @@ package acodec
 #include <allegro5/allegro_acodec.h>
 */
 import "C"
+import (
+	"errors"
+)
+
+// TODO: get Allegro to recognize the .oga extension.
 
 // This function registers all the known audio file type handlers for
 // al_load_sample, al_save_sample, al_load_audio_stream, etc.
@@ -16,10 +21,6 @@ func Init() error {
 		return errors.New("failed to initialize acodec addon")
 	}
 	return nil
-}
-
-func Shutdown() {
-	C.al_shutdown_acodec_addon()
 }
 
 // Returns the (compiled) version of the addon, in the same format as
