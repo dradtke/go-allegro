@@ -20,6 +20,7 @@ import (
 )
 
 type Sample C.ALLEGRO_SAMPLE
+type SampleInstance C.ALLEGRO_SAMPLE_INSTANCE
 
 func CreateSample(samples, freq uint, depth Depth, chan_conf ChannelConf) *Sample {
 	buf := C.create_sample_buffer(C.uint(samples),
@@ -31,6 +32,10 @@ func CreateSample(samples, freq uint, depth Depth, chan_conf ChannelConf) *Sampl
 		C.ALLEGRO_AUDIO_DEPTH(depth),
 		C.ALLEGRO_CHANNEL_CONF(chan_conf),
 		C.bool(true)))
+}
+
+func CreateSampleInstance(sample_data *Sample) *SampleInstance {
+    return (*SampleInstance)(C.al_create_sample_instance((*C.ALLEGRO_SAMPLE)(sample_data)))
 }
 
 func LoadSample(filename string) (*Sample, error) {

@@ -7,6 +7,6 @@ package allegro
 import "C"
 
 const (
-	DIRECT3D DisplayFlags = C.ALLEGRO_DIRECT3D
+	DIRECT3D DisplayFlags = C.ALLEGRO_DIRECT3D_INTERNAL
 )
 
