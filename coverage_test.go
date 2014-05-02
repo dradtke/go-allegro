@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"container/list"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -92,13 +93,21 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 	var (
 		source     []byte
 		sourceErr  error
-		headerRoot = filepath.Join("/", "usr", "include", "allegro5")
+		headerRoot string = os.Getenv("ALLEGRO_INCLUDE")
 	)
+
+    if headerRoot == "" {
+        headerRoot = filepath.Join("/", "usr", "include", "allegro5")
+    }
 
 	defer func() {
 		close(missingFuncs)
 		close(errs)
 	}()
+
+    if _, err := os.Stat(headerRoot); os.IsNotExist(err) {
+        return
+    }
 
 	// First walk the full root, looking for standard allegro functions.
 	source, sourceErr = getSource(packageRoot)
@@ -106,7 +115,11 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 		errs <- sourceErr
 		return
 	}
-	filepath.Walk(headerRoot, func(header string, info os.FileInfo, err error) error {
+
+    filepath.Walk(headerRoot, func(header string, info os.FileInfo, err error) error {
+        if info == nil {
+            return errors.New("no file info! headerRoot = " + headerRoot + ", header = " + header)
+        }
 		if info.IsDir() && info.Name() == "internal" {
 			return filepath.SkipDir
 		} else if info.IsDir() || !strings.HasSuffix(info.Name(), ".h") {

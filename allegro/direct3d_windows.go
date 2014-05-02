@@ -5,6 +5,7 @@ package allegro
 /*
 #cgo pkg-config: allegro-5.0
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_direct3d.h>
 */
 import "C"
 import (
@@ -17,7 +18,7 @@ type Direct3DTexture C.LPDIRECT3DTEXTURE9
 // Returns the Direct3D device of the display. The return value is undefined if
 // the display was not created with the Direct3D flag.
 func (d *Display) D3DDevice() (Direct3DDevice, error) {
-	device := C.al_get_d3d_device()
+	device := C.al_get_d3d_device((*C.ALLEGRO_DISPLAY)(d))
 	if device == nil {
 		return nil, errors.New("failed to get D3D device; did you forget the Direct3D display flag?")
 	}
