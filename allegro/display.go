@@ -8,6 +8,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"unsafe"
 )
 
 type Display C.ALLEGRO_DISPLAY
@@ -366,6 +367,15 @@ func (d *Display) Resize(width, height int) error {
 // Changes the icon associated with the display (window).
 func (d *Display) SetDisplayIcon(icon *Bitmap) {
 	C.al_set_display_icon((*C.ALLEGRO_DISPLAY)(d), (*C.ALLEGRO_BITMAP)(icon))
+}
+
+func (d *Display) SetDisplayIcons(icons []*Bitmap) {
+    n_icons := len(icons)
+    icons_ := make([]*C.ALLEGRO_BITMAP, n_icons)
+    for i := 0; i<n_icons; i++ {
+        icons_[i] = (*C.ALLEGRO_BITMAP)(icons[i])
+    }
+    C.al_set_display_icons((*C.ALLEGRO_DISPLAY)(d), C.int(n_icons), (**C.ALLEGRO_BITMAP)(unsafe.Pointer(&icons_[0])))
 }
 
 // Gets the pixel format of the display.

@@ -47,7 +47,7 @@ func Version() (major, minor, revision, release uint8) {
     major = uint8(v >> 24)
     minor = uint8((v >> 16) & 255)
     revision = uint8((v >> 8) & 255)
-    release = uint8(version & 255)
+    release = uint8(v & 255)
     return
 }
 
