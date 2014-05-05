@@ -18,8 +18,8 @@ A bare-bones program might look something like this:
 	const FPS int = 60
 
 	func main() {
-	    if !allegro.Install() {
-	        panic("failed to initialize allegro!")
+        if err := allegro.Install(); err != nil {
+	        panic(err)
 	    }
 	    defer allegro.Uninstall()
 
@@ -92,8 +92,11 @@ import (
 	"errors"
 )
 
-func Install() bool {
-    return bool(C._al_init())
+func Install() error {
+    if !bool(C._al_init()) {
+        return errors.New("failed to initialize allegro!")
+    }
+    return nil
 }
 
 func Uninstall() {
@@ -103,8 +106,13 @@ func Uninstall() {
 // Returns the (compiled) version of the Allegro library, packed into a single
 // integer as groups of 8 bits in the form (major << 24) | (minor << 16) |
 // (revision << 8) | release.
-func Version() uint32 {
-	return uint32(C.al_get_allegro_version())
+func Version() (major, minor, revision, release uint8) {
+    v := uint32(C.al_get_allegro_version())
+    major = uint8(v >> 24)
+    minor = uint8((v >> 16) & 255)
+    revision = uint8((v >> 8) & 255)
+    release = uint8(v & 255)
+    return
 }
 
 // Returns the current system configuration structure, or NULL if there is no

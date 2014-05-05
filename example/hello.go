@@ -8,8 +8,8 @@ import (
 const FPS int = 60
 
 func main() {
-    if !allegro.Install() {
-        panic("failed to initialize allegro!")
+    if err := allegro.Install(); err != nil {
+        panic(err)
     }
     defer allegro.Uninstall()
 

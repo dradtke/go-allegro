@@ -148,8 +148,8 @@ func (game *Game) Render() {
 }
 
 func main() {
-    if !allegro.Install() {
-        panic("failed to initialize allegro!")
+    if err := allegro.Install(); err != nil {
+        panic(err)
     }
     defer allegro.Uninstall()
 
