@@ -148,6 +148,11 @@ func (game *Game) Render() {
 }
 
 func main() {
+    if !allegro.Install() {
+        panic("failed to initialize allegro!")
+    }
+    defer allegro.Uninstall()
+
 	var (
 		display    *allegro.Display
 		eventQueue *allegro.EventQueue
@@ -225,13 +230,14 @@ func main() {
 	redraw := false
 	timer.Start()
 
+    var event allegro.Event
 	for running {
-		event := eventQueue.WaitForEvent(false)
+		eventQueue.WaitForEvent(&event)
 		switch event.Type {
-		case allegro.TimerEvent:
+		case allegro.EVENT_TIMER:
 			redraw = true
 			game.Update()
-		case allegro.DisplayCloseEvent:
+		case allegro.EVENT_DISPLAY_CLOSE:
 			running = false
 			break
 		default:
