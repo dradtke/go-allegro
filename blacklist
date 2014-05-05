@@ -93,7 +93,6 @@ al_set_thread_should_stop
 al_signal_cond
 al_start_thread
 al_toggle_display_flag
-al_uninstall_system
 al_unlock_mutex
 al_ustr_append
 al_ustr_append_chr

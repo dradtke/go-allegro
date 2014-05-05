@@ -1,75 +1,82 @@
-// Package allegro provides bindings to the core functionality of the
-// Allegro 5 API.
-//
-// In order to improve the readability of this API, many methods are annotated
-// with information pulled directly from Allegro's online C documentation.
-// Note that this means that method names and some other information may be
-// C-specific, but otherwise should still be useful.
-//
-// A bare-bones program might look something like this:
-//
-//     package main
-//
-//     import (
-//     	"github.com/dradtke/go-allegro/allegro"
-//     )
-//
-//     const FPS int = 60
-//
-//     func main() {
-//     	var (
-//     		display    *allegro.Display
-//     		eventQueue *allegro.EventQueue
-//     		running    bool = true
-//     		err        error
-//     	)
-//
-//     	// Create a 640x480 window and give it a title.
-//     	allegro.SetNewDisplayFlags(allegro.WINDOWED)
-//     	if display, err = allegro.CreateDisplay(640, 480); err == nil {
-//     		defer display.Destroy()
-//     		display.SetWindowTitle("Hello World")
-//     	} else {
-//     		panic(err)
-//     	}
-//
-//     	// Create an event queue. All of the event sources we care about should
-//     	// register themselves to this queue.
-//     	if eventQueue, err = allegro.CreateEventQueue(); err == nil {
-//     		defer eventQueue.Destroy()
-//     	} else {
-//     		panic(err)
-//     	}
-//
-//     	// Calculate the timeout value based on the desired FPS.
-//     	timeout := float64(1) / float64(FPS)
-//
-//     	// Register event sources.
-//     	eventQueue.RegisterEventSource(display.EventSource())
-//
-//     	// Set the screen to black.
-//     	allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
-//     	allegro.FlipDisplay()
-//
-//     	// Main loop.
-//     	for {
-//     		event, found := eventQueue.WaitForEventUntil(allegro.NewTimeout(timeout))
-//     		if found {
-//     			switch event.Type {
-//     				case allegro.EVENT_DISPLAY_CLOSE:
-//     					running = false
-//     					break
-//
-//     				// Handle other events here.
-//     			}
-//     		}
-//
-//     		if !running {
-//     			return
-//     		}
-//     	  }
-//     }
-//
+/*
+Package allegro provides bindings to the core functionality of the
+Allegro 5 API.
+
+In order to improve the readability of this API, many methods are annotated
+with information pulled directly from Allegro's online C documentation.
+Note that this means that method names and some other information may be
+C-specific, but otherwise should still be useful.
+
+A bare-bones program might look something like this:
+
+	package main
+
+	import (
+		"github.com/dradtke/go-allegro/allegro"
+	)
+
+	const FPS int = 60
+
+	func main() {
+	    if !allegro.Install() {
+	        panic("failed to initialize allegro!")
+	    }
+	    defer allegro.Uninstall()
+
+	    var (
+	        display    *allegro.Display
+	        eventQueue *allegro.EventQueue
+	        running    bool = true
+	        err        error
+	    )
+
+	    // Create a 640x480 window and give it a title.
+	    allegro.SetNewDisplayFlags(allegro.WINDOWED)
+	    if display, err = allegro.CreateDisplay(640, 480); err == nil {
+	        defer display.Destroy()
+	        display.SetWindowTitle("Hello World")
+	    } else {
+	        panic(err)
+	    }
+
+	    // Create an event queue. All of the event sources we care about should
+	    // register themselves to this queue.
+	    if eventQueue, err = allegro.CreateEventQueue(); err == nil {
+	        defer eventQueue.Destroy()
+	    } else {
+	        panic(err)
+	    }
+
+	    // Calculate the timeout value based on the desired FPS.
+	    timeout := float64(1) / float64(FPS)
+
+	    // Register event sources.
+	    eventQueue.RegisterEventSource(display.EventSource())
+
+	    // Set the screen to black.
+	    allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
+	    allegro.FlipDisplay()
+
+	    // Main loop.
+	    var event allegro.Event
+	    for {
+	        found := eventQueue.WaitForEventUntil(allegro.NewTimeout(timeout), &event)
+	        if found {
+	            switch event.Type {
+	            case allegro.EVENT_DISPLAY_CLOSE:
+	                running = false
+	                break
+
+	                // Handle other events here.
+	            }
+	        }
+
+	        if !running {
+	            return
+	        }
+	    }
+	}
+*/
 package allegro
 
 /*
@@ -85,10 +92,12 @@ import (
 	"errors"
 )
 
-func init() {
-	if !bool(C._al_init()) {
-		panic("failed to initialize allegro!")
-	}
+func Install() bool {
+    return bool(C._al_init())
+}
+
+func Uninstall() {
+    C.al_uninstall_system()
 }
 
 // Returns the (compiled) version of the Allegro library, packed into a single

@@ -1,3 +1,7 @@
-This folder contains examples for using `go-allegro`. The import paths for these examples assume that the `go-allegro` source is contained inside some `src/github.com/dradtke/go-allegro` in your `GOPATH`. In addition to that, they must be run from the `example` folder in order for the images to load correctly.
+Examples
+--------
 
-Assuming everything is set up correctly, a simple `go run` should be enough to run any of the examples.
+This folder contains a couple examples for using `go-allegro`. Assuming everything is installed correctly, you should be able to `go run` any of these files.
+
+1. `hello.go`: a very simple introduction. Creates a window and waits for the user to close it.
+2. `game.go`: a slightly more complicated example that creates and runs a very basic tile-based game engine.
