@@ -5,10 +5,7 @@ package color
 #cgo pkg-config: allegro_color-5.0
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_color.h>
-
-void free_string(char *data) {
-	al_free(data);
-}
+#include "../util.c"
 */
 import "C"
 import (

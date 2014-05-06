@@ -4,14 +4,11 @@ package dialog
 /*
 #cgo pkg-config: allegro_dialog-5.0
 #include <allegro5/allegro.h>
-#include <stdio.h>
 #include <allegro5/allegro_native_dialog.h>
+#include "../util.c"
 
-void free_string(char *data) {
-	al_free(data);
-}
-
-void append_to_log(ALLEGRO_TEXTLOG *log, char *str) {
+#include <stdio.h>
+static void append_to_log(ALLEGRO_TEXTLOG *log, char *str) {
 	al_append_native_text_log(log, str);
 }
 */
@@ -63,6 +60,17 @@ const (
 	TEXTLOG_NO_CLOSE  TextLogFlags = C.ALLEGRO_TEXTLOG_NO_CLOSE
 	TEXTLOG_MONOSPACE TextLogFlags = C.ALLEGRO_TEXTLOG_MONOSPACE
 )
+
+func Install() error {
+    if !bool(C.al_init_native_dialog_addon()) {
+        return errors.New("failed to initialize native dialog addon!")
+    }
+    return nil
+}
+
+func Shutdown() {
+    C.al_shutdown_native_dialog_addon()
+}
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.

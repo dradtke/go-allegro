@@ -4,18 +4,12 @@ package audio
 #cgo pkg-config: allegro_audio-5.0
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
-
-void free_string(char *str) {
-	al_free(str);
-}
-
-void *_al_malloc(unsigned int size) {
-    return al_malloc(size);
-}
+#include "../util.c"
 */
 import "C"
 import (
 	"errors"
+    "github.com/dradtke/go-allegro/allegro"
 	"fmt"
 )
 
@@ -33,8 +27,73 @@ func CreateSample(samples, freq uint, depth Depth, chan_conf ChannelConf) *Sampl
 		C.bool(true)))
 }
 
+func LoadSample(filename string) (*Sample, error) {
+	filename_ := C.CString(filename)
+	defer C.free_string(filename_)
+	s := C.al_load_sample(filename_)
+	if s == nil {
+		return nil, fmt.Errorf("failed to load sample '%s'", filename)
+	}
+	return (*Sample)(s), nil
+}
+
+func LoadSampleF(f *allegro.File, ident string) (*Sample, error) {
+    ident_ := C.CString(ident)
+    defer C.free_string(ident_)
+    if sample := C.al_load_sample_f((*C.ALLEGRO_FILE)(f), ident_); sample != nil {
+        return (*Sample)(sample), nil
+    }
+    return nil, errors.New("failed to load sample from file")
+}
+
+func (s *Sample) Save(filename string) error {
+    filename_ := C.CString(filename)
+    defer C.free_string(filename_)
+    if !bool(C.al_save_sample(filename_, (*C.ALLEGRO_SAMPLE)(s))) {
+        return fmt.Errorf("failed to save sample to '%s'", filename)
+    }
+    return nil
+}
+
+func (s *Sample) SaveF(f *allegro.File, ident string) error {
+    ident_ := C.CString(ident)
+    defer C.free_string(ident_)
+    if !bool(C.al_save_sample_f((*C.ALLEGRO_FILE)(f), ident_, (*C.ALLEGRO_SAMPLE)(s))) {
+        return errors.New("failed to save sample to file")
+    }
+    return nil
+}
+
 func CreateSampleInstance(sample_data *Sample) *SampleInstance {
     return (*SampleInstance)(C.al_create_sample_instance((*C.ALLEGRO_SAMPLE)(sample_data)))
+}
+
+func (s *SampleInstance) Play() error {
+    if !bool(C.al_play_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))) {
+        return errors.New("failed to play sample instance")
+    }
+    return nil
+}
+
+func (s *SampleInstance) Stop() error {
+    if !bool(C.al_stop_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))) {
+        return errors.New("failed to stop sample instance")
+    }
+    return nil
+}
+
+func (s *SampleInstance) AttachToMixer(mixer *Mixer) error {
+    if !bool(C.al_attach_sample_instance_to_mixer((*C.ALLEGRO_SAMPLE_INSTANCE)(s), (*C.ALLEGRO_MIXER)(mixer))) {
+        return errors.New("failed to attach sample instance to mixer")
+    }
+    return nil
+}
+
+func (s *SampleInstance) AttachToVoice(voice *Voice) error {
+    if !bool(C.al_attach_sample_instance_to_mixer((*C.ALLEGRO_SAMPLE_INSTANCE)(s), (*C.ALLEGRO_VOICE)(voice))) {
+        return errors.New("failed to attach sample instance to voice")
+    }
+    return nil
 }
 
 func (s *SampleInstance) Frequency() uint {
@@ -143,16 +202,6 @@ func (s *SampleInstance) Detach() error {
 
 func (s *SampleInstance) Destroy() {
     C.al_destroy_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))
-}
-
-func LoadSample(filename string) (*Sample, error) {
-	filename_ := C.CString(filename)
-	defer C.free_string(filename_)
-	s := C.al_load_sample(filename_)
-	if s == nil {
-		return nil, fmt.Errorf("failed to load sample '%s'", filename)
-	}
-	return (*Sample)(s), nil
 }
 
 func (s *Sample) Destroy() {

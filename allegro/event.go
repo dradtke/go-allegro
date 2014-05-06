@@ -396,12 +396,22 @@ func (queue *EventQueue) Destroy() {
 	C.al_destroy_event_queue((*C.ALLEGRO_EVENT_QUEUE)(queue))
 }
 
+// Shorthand method for registering anything with an EventSource() method.
+func (queue *EventQueue) Register(ob EventGenerator) {
+    queue.RegisterEventSource(ob.EventSource())
+}
+
 // Register the event source with the event queue specified. An event source
 // may be registered with any number of event queues simultaneously, or none.
 // Trying to register an event source with the same event queue more than once
 // does nothing.
 func (queue *EventQueue) RegisterEventSource(source *EventSource) {
 	C.al_register_event_source((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT_SOURCE)(source))
+}
+
+// Shorthand method for registering anything with an EventSource() method.
+func (queue *EventQueue) Unregister(ob EventGenerator) {
+    queue.UnregisterEventSource(ob.EventSource())
 }
 
 // Unregister an event source with an event queue. If the event source is not

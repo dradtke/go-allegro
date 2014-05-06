@@ -41,7 +41,7 @@ func main() {
     timeout := float64(1) / float64(FPS)
 
     // Register event sources.
-    eventQueue.RegisterEventSource(display.EventSource())
+    eventQueue.Register(display)
 
     // Set the screen to black.
     allegro.ClearToColor(allegro.MapRGB(0, 0, 0))

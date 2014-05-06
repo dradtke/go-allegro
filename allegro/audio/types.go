@@ -20,6 +20,11 @@ const (
 	AUDIO_DEPTH_UINT24   Depth = C.ALLEGRO_AUDIO_DEPTH_UINT24
 )
 
+func (depth Depth) Size() uint {
+    return uint(C.al_get_audio_depth_size(C.ALLEGRO_AUDIO_DEPTH(depth)))
+}
+
+
 type ChannelConf C.ALLEGRO_CHANNEL_CONF
 
 const (
@@ -31,6 +36,11 @@ const (
 	CHANNEL_CONF_6_1 ChannelConf = C.ALLEGRO_CHANNEL_CONF_6_1
 	CHANNEL_CONF_7_1 ChannelConf = C.ALLEGRO_CHANNEL_CONF_7_1
 )
+
+func (conf ChannelConf) ChannelCount() uint {
+    return uint(C.al_get_channel_count(C.ALLEGRO_CHANNEL_CONF(conf)))
+}
+
 
 type PlayMode C.ALLEGRO_PLAYMODE
 

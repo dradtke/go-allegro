@@ -16,10 +16,3 @@ func Version() (major, minor, revision, release uint8) {
     return
 }
 
-func (depth Depth) Size() uint {
-	return uint(C.al_get_audio_depth_size(C.ALLEGRO_AUDIO_DEPTH(depth)))
-}
-
-func (conf ChannelConf) ChannelCount() uint {
-	return uint(C.al_get_channel_count(C.ALLEGRO_CHANNEL_CONF(conf)))
-}

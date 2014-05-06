@@ -224,8 +224,8 @@ func main() {
 		panic(err)
 	}
 
-	eventQueue.RegisterEventSource(display.EventSource())
-	eventQueue.RegisterEventSource(timer.EventSource())
+	eventQueue.Register(display)
+	eventQueue.Register(timer)
 
 	redraw := false
 	timer.Start()
