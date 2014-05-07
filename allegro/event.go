@@ -604,3 +604,4 @@ func (event *Event) hydrate() {
 		event.User.Raw = C.get_user_event(&event.raw)
 	}
 }
+

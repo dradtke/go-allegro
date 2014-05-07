@@ -30,13 +30,13 @@ const (
 )
 
 // Initialise the font addon.
-func Init() {
+func Install() {
 	C.al_init_font_addon()
 }
 
 // Shut down the font addon. This is done automatically at program exit, but
 // can be called any time the user wishes as well.
-func Shutdown() {
+func Uninstall() {
 	C.al_shutdown_font_addon()
 }
 
@@ -111,8 +111,8 @@ func GrabFontFromBitmap(bmp *allegro.Bitmap, ranges [][2]int) (*Font, error) {
 	return (*Font)(f), nil
 }
 
-// Writes the NUL-terminated string text onto bmp at position x, y, using the
-// specified font.
+// Writes the NUL-terminated string text onto the target bitmap at position x,
+// y, using the specified font.
 func DrawText(font *Font, color allegro.Color, x, y float32, flags DrawFlags, text string) {
 	text_ := C.CString(text)
 	defer C._al_free_string(text_)
@@ -205,5 +205,6 @@ func (f *Font) TextDimensions(text string) (bbx, bby, bbw, bbh int) {
 		&cbbx, &cbby, &cbbw, &cbbh)
 	return int(cbbx), int(cbby), int(cbbw), int(cbbh)
 }
+
 
 

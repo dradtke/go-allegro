@@ -29,12 +29,12 @@ const (
 
 // Call this after al_init_font_addon to make al_load_font recognize ".ttf" and
 // other formats supported by al_load_ttf_font.
-func Init() {
+func Install() {
 	C.al_init_ttf_addon()
 }
 
 // Unloads the ttf addon again. You normally don't need to call this.
-func Shutdown() {
+func Uninstall() {
 	C.al_shutdown_ttf_addon()
 }
 
@@ -99,5 +99,6 @@ func LoadFontStretchF(file *allegro.File, filename string, w, h int, flags TtfFl
 	}
 	return (*font.Font)(unsafe.Pointer(f)), nil
 }
+
 
 

@@ -8,3 +8,4 @@ package allegro
 type EventGenerator interface {
     EventSource() *EventSource
 }
+

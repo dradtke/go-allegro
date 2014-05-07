@@ -89,6 +89,7 @@ al_run_detached_thread
 al_run_main
 al_set_errno
 al_set_fs_interface
+al_set_mixer_postprocess_callback
 al_set_new_file_interface
 al_set_path_drive
 al_set_path_extension

@@ -99,6 +99,7 @@ func Install() error {
     return nil
 }
 
+// Closes down the Allegro system.
 func Uninstall() {
     C.al_uninstall_system()
 }
@@ -116,7 +117,8 @@ func Version() (major, minor, revision, release uint8) {
 }
 
 // Returns the current system configuration structure, or NULL if there is no
-// active system driver. This is mainly used for configuring Allegro and its
+// active system driver. The returned configuration should not be destroyed
+// with al_destroy_config. This is mainly used for configuring Allegro and its
 // addons.
 func SystemConfig() (*Config, error) {
 	cfg := C.al_get_system_config()
@@ -157,4 +159,5 @@ func OrgName() string {
 func AppName() string {
 	return C.GoString(C.al_get_app_name())
 }
+
 

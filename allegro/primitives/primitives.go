@@ -27,7 +27,7 @@ type Point struct {
 }
 
 // Initializes the primitives addon.
-func Init() error {
+func Install() error {
 	ok := bool(C.al_init_primitives_addon())
 	if !ok {
 		return errors.New("failed to initialize primitives addon")
@@ -37,7 +37,7 @@ func Init() error {
 
 // Shut down the primitives addon. This is done automatically at program exit,
 // but can be called any time the user wishes as well.
-func Shutdown() {
+func Uninstall() {
 	C.al_shutdown_primitives_addon()
 }
 
@@ -351,4 +351,5 @@ func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segm
 		C.float(thickness),
 		C.int(num_segments))
 }
+
 

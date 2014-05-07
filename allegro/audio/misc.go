@@ -7,6 +7,8 @@ package audio
 */
 import "C"
 
+// Returns the (compiled) version of the addon, in the same format as
+// al_get_allegro_version.
 func Version() (major, minor, revision, release uint8) {
     v := uint32(C.al_get_allegro_audio_version())
     major = uint8(v >> 24)
@@ -15,4 +17,5 @@ func Version() (major, minor, revision, release uint8) {
     release = uint8(v & 255)
     return
 }
+
 

@@ -61,6 +61,7 @@ const (
 	TEXTLOG_MONOSPACE TextLogFlags = C.ALLEGRO_TEXTLOG_MONOSPACE
 )
 
+// Initialise the native dialog addon.
 func Install() error {
     if !bool(C.al_init_native_dialog_addon()) {
         return errors.New("failed to initialize native dialog addon!")
@@ -68,6 +69,7 @@ func Install() error {
     return nil
 }
 
+// Shut down the native dialog addon.
 func Shutdown() {
     C.al_shutdown_native_dialog_addon()
 }
@@ -214,5 +216,6 @@ func (log *TextLog) EventSource() (*allegro.EventSource) {
 	return (*allegro.EventSource)(unsafe.Pointer(
 		C.al_get_native_text_log_event_source((*C.ALLEGRO_TEXTLOG)(log))))
 }
+
 
 

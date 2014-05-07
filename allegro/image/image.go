@@ -13,7 +13,7 @@ import (
 
 // Initializes the image addon. This registers bitmap format handlers for
 // al_load_bitmap, al_load_bitmap_f, al_save_bitmap, al_save_bitmap_f.
-func Init() error {
+func Install() error {
 	ok := bool(C.al_init_image_addon())
 	if !ok {
 		return errors.New("failed to initialize image addon")
@@ -23,7 +23,7 @@ func Init() error {
 
 // Shut down the image addon. This is done automatically at program exit, but
 // can be called any time the user wishes as well.
-func Shutdown() {
+func Uninstall() {
 	C.al_shutdown_image_addon()
 }
 
@@ -37,5 +37,6 @@ func Version() (major, minor, revision, release uint8) {
     release = uint8(v & 255)
     return
 }
+
 
 

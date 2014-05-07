@@ -322,8 +322,8 @@ func (bmp *Bitmap) Flags() BitmapFlags {
 	return BitmapFlags(C.al_get_bitmap_flags((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
-// Destroys the given bitmap, freeing all resources used by it. Does nothing if
-// given the null pointer.
+// Destroys the given bitmap, freeing all resources used by it. This function
+// does nothing if the bitmap argument is NULL.
 func (bmp *Bitmap) Destroy() {
 	C.al_destroy_bitmap((*C.ALLEGRO_BITMAP)(bmp))
 }
@@ -742,3 +742,4 @@ func (bmp *Bitmap) AsTarget(f func()) {
 	f()
 	SetTargetBitmap(old)
 }
+

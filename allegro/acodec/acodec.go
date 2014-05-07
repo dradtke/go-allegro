@@ -15,7 +15,7 @@ import (
 
 // This function registers all the known audio file type handlers for
 // al_load_sample, al_save_sample, al_load_audio_stream, etc.
-func Init() error {
+func Install() error {
 	ok := bool(C.al_init_acodec_addon())
 	if !ok {
 		return errors.New("failed to initialize acodec addon")
@@ -33,5 +33,6 @@ func Version() (major, minor, revision, release uint8) {
     release = uint8(v & 255)
     return
 }
+
 
 

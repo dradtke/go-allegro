@@ -218,11 +218,11 @@ func WaitForVSync() error {
 	return nil
 }
 
-// Retrieves a display mode. Display parameters should not be changed between a
-// call of al_get_num_display_modes and al_get_display_mode. index must be
-// between 0 and the number returned from al_get_num_display_modes-1. mode must
-// be an allocated ALLEGRO_DISPLAY_MODE structure. This function will return
-// NULL on failure, and the mode parameter that was passed in on success.
+// Retrieves a fullscreen mode. Display parameters should not be changed
+// between a call of al_get_num_display_modes and al_get_display_mode. index
+// must be between 0 and the number returned from al_get_num_display_modes-1.
+// mode must be an allocated ALLEGRO_DISPLAY_MODE structure. This function will
+// return NULL on failure, and the mode parameter that was passed in on success.
 func (mode *DisplayMode) Get(index int) error {
 	result := C.al_get_display_mode(C.int(index), &mode.ptr)
 	if result == nil {
@@ -364,11 +364,15 @@ func (d *Display) Resize(width, height int) error {
 	return nil
 }
 
-// Changes the icon associated with the display (window).
+// Changes the icon associated with the display (window). Same as
+// al_set_display_icons with one icon.
 func (d *Display) SetDisplayIcon(icon *Bitmap) {
 	C.al_set_display_icon((*C.ALLEGRO_DISPLAY)(d), (*C.ALLEGRO_BITMAP)(icon))
 }
 
+// Changes the icons associated with the display (window). Multiple icons can
+// be provided for use in different contexts, e.g. window frame, taskbar,
+// alt-tab popup. The number of icons must be at least one.
 func (d *Display) SetDisplayIcons(icons []*Bitmap) {
     n_icons := len(icons)
     icons_ := make([]*C.ALLEGRO_BITMAP, n_icons)
@@ -384,4 +388,5 @@ func (d *Display) DisplayFormat() PixelFormat {
 }
 
 //}}}
+
 
