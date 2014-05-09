@@ -219,3 +219,4 @@ func (log *TextLog) EventSource() (*allegro.EventSource) {
 
 
 
+

@@ -102,3 +102,4 @@ func LoadFontStretchF(file *allegro.File, filename string, w, h int, flags TtfFl
 
 
 
+

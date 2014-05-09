@@ -58,3 +58,4 @@ type SampleID C.ALLEGRO_SAMPLE_ID
 
 const AUDIO_PAN_NONE float32 = -1000.0
 
+

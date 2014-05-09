@@ -17,6 +17,8 @@ al_destroy_mutex
 al_destroy_path
 al_destroy_thread
 al_draw_justified_ustr
+al_draw_soft_line
+al_draw_soft_triangle
 al_draw_ustr
 al_drop_path_tail
 al_fget_ustr

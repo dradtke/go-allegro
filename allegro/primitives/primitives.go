@@ -26,6 +26,78 @@ type Point struct {
 	Y float32
 }
 
+type Vertex struct {
+	X, Y, Z float32
+	Color   allegro.Color
+	U, V    float32
+
+	raw    C.ALLEGRO_VERTEX
+	inited bool
+}
+
+func (v Vertex) init() {
+	if v.inited {
+		return
+	}
+	v.raw.x = C.float(v.X)
+	v.raw.y = C.float(v.Y)
+	v.raw.z = C.float(v.Z)
+	v.raw.color = *((*C.ALLEGRO_COLOR)(unsafe.Pointer(&v.Color)))
+	v.raw.u = C.float(v.U)
+	v.raw.v = C.float(v.V)
+	v.inited = true
+}
+
+type VertexElement struct {
+    Attribute PrimAttr
+    Storage PrimStorage
+    Offset int
+
+	raw    C.ALLEGRO_VERTEX_ELEMENT
+	inited bool
+}
+
+func (v VertexElement) init() {
+    if v.inited {
+        return
+    }
+    v.raw.attribute = C.int(v.Attribute)
+    v.raw.storage = C.int(v.Storage)
+    v.raw.offset = C.int(v.Offset)
+    v.inited = true
+}
+
+type VertexDecl C.ALLEGRO_VERTEX_DECL
+
+type PrimType int
+
+const (
+	PRIM_POINT_LIST     PrimType = C.ALLEGRO_PRIM_POINT_LIST
+	PRIM_LINE_LIST      PrimType = C.ALLEGRO_PRIM_LINE_LIST
+	PRIM_LINE_STRIP     PrimType = C.ALLEGRO_PRIM_LINE_STRIP
+	PRIM_LINE_LOOP      PrimType = C.ALLEGRO_PRIM_LINE_LOOP
+	PRIM_TRIANGLE_LIST  PrimType = C.ALLEGRO_PRIM_TRIANGLE_LIST
+	PRIM_TRIANGLE_STRIP PrimType = C.ALLEGRO_PRIM_TRIANGLE_STRIP
+	PRIM_TRIANGLE_FAN   PrimType = C.ALLEGRO_PRIM_TRIANGLE_FAN
+)
+
+type PrimAttr int
+
+const (
+	PRIM_POSITION        PrimAttr = C.ALLEGRO_PRIM_POSITION
+	PRIM_COLOR_ATTR      PrimAttr = C.ALLEGRO_PRIM_COLOR_ATTR
+	PRIM_TEX_COORD       PrimAttr = C.ALLEGRO_PRIM_TEX_COORD
+	PRIM_TEX_COORD_PIXEL PrimAttr = C.ALLEGRO_PRIM_TEX_COORD_PIXEL
+)
+
+type PrimStorage int
+
+const (
+	PRIM_FLOAT_2 PrimStorage = C.ALLEGRO_PRIM_FLOAT_2
+	PRIM_FLOAT_3 PrimStorage = C.ALLEGRO_PRIM_FLOAT_3
+	PRIM_SHORT_2 PrimStorage = C.ALLEGRO_PRIM_SHORT_2
+)
+
 // Initializes the primitives addon.
 func Install() error {
 	ok := bool(C.al_init_primitives_addon())
@@ -44,12 +116,12 @@ func Uninstall() {
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
 func Version() (major, minor, revision, release uint8) {
-    v := uint32(C.al_get_allegro_primitives_version())
-    major = uint8(v >> 24)
-    minor = uint8((v >> 16) & 255)
-    revision = uint8((v >> 8) & 255)
-    release = uint8(v & 255)
-    return
+	v := uint32(C.al_get_allegro_primitives_version())
+	major = uint8(v >> 24)
+	minor = uint8((v >> 16) & 255)
+	revision = uint8((v >> 8) & 255)
+	release = uint8(v & 255)
+	return
 }
 
 // Draws a line segment between two points.
@@ -161,7 +233,7 @@ func CalculateArc(center Point, rx, ry, start_theta, delta_theta, thickness floa
 		C.float(thickness),
 		C.int(num_points))
 	buf := make([]Point, buffer_length)
-	for i := 0; i < (buffer_length*2); i += 2 {
+	for i := 0; i < (buffer_length * 2); i += 2 {
 		buf[i/2] = Point{float32(cbuf[i]), float32(cbuf[i+1])}
 	}
 	return buf
@@ -268,7 +340,7 @@ func CalculateSpline(points [4]Point, thickness float32, num_segments int) []Poi
 	if thickness <= 0 {
 		buffer_length *= 2
 	}
-	cpoints := []C.float {
+	cpoints := []C.float{
 		C.float(points[0].X), C.float(points[0].Y),
 		C.float(points[1].X), C.float(points[1].Y),
 		C.float(points[2].X), C.float(points[2].Y),
@@ -282,7 +354,7 @@ func CalculateSpline(points [4]Point, thickness float32, num_segments int) []Poi
 		C.float(thickness),
 		C.int(num_segments))
 	buf := make([]Point, buffer_length)
-	for i := 0; i < (buffer_length*2); i += 2 {
+	for i := 0; i < (buffer_length * 2); i += 2 {
 		buf[i/2] = Point{float32(cbuf[i]), float32(cbuf[i+1])}
 	}
 	return buf
@@ -290,7 +362,7 @@ func CalculateSpline(points [4]Point, thickness float32, num_segments int) []Poi
 
 // Draws a Bézier spline given 4 control points.
 func DrawSpline(points [4]Point, color allegro.Color, thickness float32) {
-	cpoints := []C.float {
+	cpoints := []C.float{
 		C.float(points[0].X), C.float(points[0].Y),
 		C.float(points[1].X), C.float(points[1].Y),
 		C.float(points[2].X), C.float(points[2].Y),
@@ -315,7 +387,7 @@ func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num
 	if thickness <= 0 {
 		buffer_length *= 2
 	}
-	cpoints := []C.float {
+	cpoints := []C.float{
 		C.float(points[0].X), C.float(points[0].Y),
 		C.float(points[1].X), C.float(points[1].Y),
 		C.float(points[2].X), C.float(points[2].Y),
@@ -330,7 +402,7 @@ func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num
 		C.float(thickness),
 		C.int(num_segments))
 	buf := make([]Point, buffer_length)
-	for i := 0; i < (buffer_length*2); i += 2 {
+	for i := 0; i < (buffer_length * 2); i += 2 {
 		buf[i/2] = Point{float32(cbuf[i]), float32(cbuf[i+1])}
 	}
 	return buf
@@ -352,4 +424,58 @@ func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segm
 		C.int(num_segments))
 }
 
+// Draws a subset of the passed vertex buffer.
+func DrawPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, start, end int, prim_type PrimType) int {
+	vertices_ := make([]C.ALLEGRO_VERTEX, len(vertices))
+	for i, vertex := range vertices {
+		// how does this perform?
+		vertex.init()
+		vertices_[i] = vertex.raw
+	}
+	drawn := C.al_draw_prim(unsafe.Pointer(&vertices_[0]),
+		(*C.ALLEGRO_VERTEX_DECL)(decl),
+		(*C.ALLEGRO_BITMAP)(texture),
+		C.int(start),
+		C.int(end),
+		C.int(prim_type))
+	return int(drawn)
+}
+
+// Draws a subset of the passed vertex buffer. This function uses an index
+// array to specify which vertices to use.
+func DrawIndexedPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, indices []int, num_vertices int, prim_type PrimType) int {
+	vertices_ := make([]C.ALLEGRO_VERTEX, len(vertices))
+	for i, vertex := range vertices {
+		// how does this perform?
+		vertex.init()
+		vertices_[i] = vertex.raw
+	}
+	indices_ := make([]C.int, len(indices))
+	for i, index := range indices {
+		indices_[i] = C.int(index)
+	}
+	drawn := C.al_draw_indexed_prim(unsafe.Pointer(&vertices_[0]),
+		(*C.ALLEGRO_VERTEX_DECL)(decl),
+		(*C.ALLEGRO_BITMAP)(texture),
+		(*C.int)(unsafe.Pointer(&indices_[0])),
+		C.int(num_vertices),
+		C.int(prim_type))
+	return int(drawn)
+}
+
+// Creates a vertex declaration, which describes a custom vertex format.
+func CreateVertexDecl(elements []VertexElement, stride int) *VertexDecl {
+    elements_ := make([]C.ALLEGRO_VERTEX_ELEMENT, len(elements))
+    for i, element := range elements {
+		// how does this perform?
+        element.init()
+        elements_[i] = element.raw
+    }
+    return (*VertexDecl)(C.al_create_vertex_decl((*C.ALLEGRO_VERTEX_ELEMENT)(unsafe.Pointer(&elements_[0])), C.int(stride)))
+}
+
+// Destroys a vertex declaration.
+func (v *VertexDecl) Destroy() {
+    C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
+}
 
