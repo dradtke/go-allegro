@@ -40,5 +40,3 @@ func IPhoneOverrideScreenScale(scale float32) {
     C.al_iphone_override_screen_scale(C.float(scale))
 }
 */
-
-

@@ -374,12 +374,12 @@ func (d *Display) SetDisplayIcon(icon *Bitmap) {
 // be provided for use in different contexts, e.g. window frame, taskbar,
 // alt-tab popup. The number of icons must be at least one.
 func (d *Display) SetDisplayIcons(icons []*Bitmap) {
-    n_icons := len(icons)
-    icons_ := make([]*C.ALLEGRO_BITMAP, n_icons)
-    for i := 0; i<n_icons; i++ {
-        icons_[i] = (*C.ALLEGRO_BITMAP)(icons[i])
-    }
-    C.al_set_display_icons((*C.ALLEGRO_DISPLAY)(d), C.int(n_icons), (**C.ALLEGRO_BITMAP)(unsafe.Pointer(&icons_[0])))
+	n_icons := len(icons)
+	icons_ := make([]*C.ALLEGRO_BITMAP, n_icons)
+	for i := 0; i < n_icons; i++ {
+		icons_[i] = (*C.ALLEGRO_BITMAP)(icons[i])
+	}
+	C.al_set_display_icons((*C.ALLEGRO_DISPLAY)(d), C.int(n_icons), (**C.ALLEGRO_BITMAP)(unsafe.Pointer(&icons_[0])))
 }
 
 // Gets the pixel format of the display.
@@ -388,6 +388,3 @@ func (d *Display) DisplayFormat() PixelFormat {
 }
 
 //}}}
-
-
-

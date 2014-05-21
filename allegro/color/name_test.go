@@ -21,7 +21,7 @@ func TestNames(t *testing.T) {
 	ast.Inspect(f, func(n ast.Node) bool {
 		var (
 			decl *ast.GenDecl
-			ok bool
+			ok   bool
 		)
 		if decl, ok = n.(*ast.GenDecl); !ok {
 			return true

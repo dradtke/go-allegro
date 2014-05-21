@@ -9,6 +9,3 @@ import "C"
 const (
 	DIRECT3D DisplayFlags = C.ALLEGRO_DIRECT3D_INTERNAL
 )
-
-
-

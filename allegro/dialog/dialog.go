@@ -63,26 +63,26 @@ const (
 
 // Initialise the native dialog addon.
 func Install() error {
-    if !bool(C.al_init_native_dialog_addon()) {
-        return errors.New("failed to initialize native dialog addon!")
-    }
-    return nil
+	if !bool(C.al_init_native_dialog_addon()) {
+		return errors.New("failed to initialize native dialog addon!")
+	}
+	return nil
 }
 
 // Shut down the native dialog addon.
 func Shutdown() {
-    C.al_shutdown_native_dialog_addon()
+	C.al_shutdown_native_dialog_addon()
 }
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
 func Version() (major, minor, revision, release uint8) {
-    v := uint32(C.al_get_allegro_native_dialog_version())
-    major = uint8(v >> 24)
-    minor = uint8((v >> 16) & 255)
-    revision = uint8((v >> 8) & 255)
-    release = uint8(v & 255)
-    return
+	v := uint32(C.al_get_allegro_native_dialog_version())
+	major = uint8(v >> 24)
+	minor = uint8((v >> 16) & 255)
+	revision = uint8((v >> 8) & 255)
+	release = uint8(v & 255)
+	return
 }
 
 // Creates a new native file dialog. You should only have one such dialog
@@ -190,33 +190,18 @@ func (log *TextLog) Close() {
 // (if the line would not be visible otherwise). This works like printf. A line
 // is continued until you add a newline character.
 func (log *TextLog) Append(format string, a ...interface{}) {
-	var text string
-	if len(a) == 0 {
-		text = format
-	} else {
-		text = fmt.Sprintf(format, a)
-	}
-	text_ := C.CString(text)
+	text_ := C.CString(fmt.Sprintf(text, a...))
 	defer C.free_string(text_)
 	// C.al_append_native_text_log()
 	C.append_to_log((*C.ALLEGRO_TEXTLOG)(log), text_)
 }
 
 func (log *TextLog) Appendln(format string, a ...interface{}) {
-	text := format + "\n"
-	if len(a) == 0 {
-		log.Append(text)
-	} else {
-		log.Append(text, a)
-	}
+	log.Append(format+"\n", a...)
 }
 
 // Get an event source for a text log window. The possible events are:
-func (log *TextLog) EventSource() (*allegro.EventSource) {
+func (log *TextLog) EventSource() *allegro.EventSource {
 	return (*allegro.EventSource)(unsafe.Pointer(
 		C.al_get_native_text_log_event_source((*C.ALLEGRO_TEXTLOG)(log))))
 }
-
-
-
-

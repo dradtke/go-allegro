@@ -54,8 +54,8 @@ func LoadStream(filename string, buffer_count, samples uint) (*Stream, error) {
 
 // Loads an audio file from ALLEGRO_FILE stream as it is needed.
 func LoadStreamF(f *allegro.File, ident string, buffer_count, samples uint) (*Stream, error) {
-    ident_ := C.CString(ident)
-    defer C.free_string(ident_)
+	ident_ := C.CString(ident)
+	defer C.free_string(ident_)
 	ptr := C.al_load_audio_stream_f((*C.ALLEGRO_FILE)(f), ident_, C.size_t(buffer_count), C.unsigned(samples))
 	if ptr == nil {
 		return nil, errors.New("failed to load audio stream from file")
@@ -281,5 +281,3 @@ func (s *Stream) SetLoopSecs(start, end float64) error {
 	}
 	return nil
 }
-
-

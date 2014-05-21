@@ -42,5 +42,3 @@ func ReserveSamples(reserve_samples int) error {
 	}
 	return nil
 }
-
-

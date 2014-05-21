@@ -83,5 +83,3 @@ func (v *Voice) SetPosition(val uint) error {
 	}
 	return nil
 }
-
-

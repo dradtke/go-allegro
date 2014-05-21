@@ -178,6 +178,3 @@ func (state *JoystickState) Get() {
 		}
 	}
 }
-
-
-

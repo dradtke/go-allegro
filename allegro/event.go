@@ -397,8 +397,10 @@ func (queue *EventQueue) Destroy() {
 }
 
 // Shorthand method for registering anything with an EventSource() method.
-func (queue *EventQueue) Register(ob EventGenerator) {
-    queue.RegisterEventSource(ob.EventSource())
+func (queue *EventQueue) Register(obs ...EventGenerator) {
+	for _, ob := range obs {
+		queue.RegisterEventSource(ob.EventSource())
+	}
 }
 
 // Register the event source with the event queue specified. An event source
@@ -411,7 +413,7 @@ func (queue *EventQueue) RegisterEventSource(source *EventSource) {
 
 // Shorthand method for registering anything with an EventSource() method.
 func (queue *EventQueue) Unregister(ob EventGenerator) {
-    queue.UnregisterEventSource(ob.EventSource())
+	queue.UnregisterEventSource(ob.EventSource())
 }
 
 // Unregister an event source with an event queue. If the event source is not
@@ -604,5 +606,3 @@ func (event *Event) hydrate() {
 		event.User.Raw = C.get_user_event(&event.raw)
 	}
 }
-
-

@@ -93,27 +93,27 @@ import (
 )
 
 func Install() error {
-    if !bool(C._al_init()) {
-        return errors.New("failed to initialize allegro!")
-    }
-    return nil
+	if !bool(C._al_init()) {
+		return errors.New("failed to initialize allegro!")
+	}
+	return nil
 }
 
 // Closes down the Allegro system.
 func Uninstall() {
-    C.al_uninstall_system()
+	C.al_uninstall_system()
 }
 
 // Returns the (compiled) version of the Allegro library, packed into a single
 // integer as groups of 8 bits in the form (major << 24) | (minor << 16) |
 // (revision << 8) | release.
 func Version() (major, minor, revision, release uint8) {
-    v := uint32(C.al_get_allegro_version())
-    major = uint8(v >> 24)
-    minor = uint8((v >> 16) & 255)
-    revision = uint8((v >> 8) & 255)
-    release = uint8(v & 255)
-    return
+	v := uint32(C.al_get_allegro_version())
+	major = uint8(v >> 24)
+	minor = uint8((v >> 16) & 255)
+	revision = uint8((v >> 8) & 255)
+	release = uint8(v & 255)
+	return
 }
 
 // Returns the current system configuration structure, or NULL if there is no
@@ -159,6 +159,3 @@ func OrgName() string {
 func AppName() string {
 	return C.GoString(C.al_get_app_name())
 }
-
-
-

@@ -23,9 +23,8 @@ const (
 // Return the size of a sample, in bytes, for the given format. The format is
 // one of the values listed under ALLEGRO_AUDIO_DEPTH.
 func (depth Depth) Size() uint {
-    return uint(C.al_get_audio_depth_size(C.ALLEGRO_AUDIO_DEPTH(depth)))
+	return uint(C.al_get_audio_depth_size(C.ALLEGRO_AUDIO_DEPTH(depth)))
 }
-
 
 type ChannelConf C.ALLEGRO_CHANNEL_CONF
 
@@ -42,9 +41,8 @@ const (
 // Return the number of channels for the given channel configuration, which is
 // one of the values listed under ALLEGRO_CHANNEL_CONF.
 func (conf ChannelConf) ChannelCount() uint {
-    return uint(C.al_get_channel_count(C.ALLEGRO_CHANNEL_CONF(conf)))
+	return uint(C.al_get_channel_count(C.ALLEGRO_CHANNEL_CONF(conf)))
 }
-
 
 type PlayMode C.ALLEGRO_PLAYMODE
 
@@ -57,5 +55,3 @@ const (
 type SampleID C.ALLEGRO_SAMPLE_ID
 
 const AUDIO_PAN_NONE float32 = -1000.0
-
-

@@ -6,7 +6,5 @@ package allegro
 // EventGenerator represents anything that can be registered with an
 // event queue.
 type EventGenerator interface {
-    EventSource() *EventSource
+	EventSource() *EventSource
 }
-
-

@@ -112,16 +112,16 @@ func (m *Mixer) Depth() Depth {
 
 // Return the mixer quality.
 func (m *Mixer) Quality() MixerQuality {
-    return MixerQuality(C.al_get_mixer_quality((*C.ALLEGRO_MIXER)(m)))
+	return MixerQuality(C.al_get_mixer_quality((*C.ALLEGRO_MIXER)(m)))
 }
 
 // Set the mixer quality. This can only succeed if the mixer does not have
 // anything attached to it.
 func (m *Mixer) SetQuality(quality MixerQuality) error {
-    if !bool(C.al_set_mixer_quality((*C.ALLEGRO_MIXER)(m), C.ALLEGRO_MIXER_QUALITY(quality))) {
-        return errors.New("failed to set new mixer quality")
-    }
-    return nil
+	if !bool(C.al_set_mixer_quality((*C.ALLEGRO_MIXER)(m), C.ALLEGRO_MIXER_QUALITY(quality))) {
+		return errors.New("failed to set new mixer quality")
+	}
+	return nil
 }
 
 // Return true if the mixer is playing.
@@ -131,33 +131,31 @@ func (m *Mixer) Playing() bool {
 
 // Change whether the mixer is playing.
 func (m *Mixer) SetPlaying(val bool) error {
-    if !bool(C.al_set_mixer_playing((*C.ALLEGRO_MIXER)(m), C.bool(val))) {
-        return fmt.Errorf("failed to set mixer playing to %v", val)
-    }
-    return nil
+	if !bool(C.al_set_mixer_playing((*C.ALLEGRO_MIXER)(m), C.bool(val))) {
+		return fmt.Errorf("failed to set mixer playing to %v", val)
+	}
+	return nil
 }
 
 // Attaches a mixer to a voice. The same rules as
 // al_attach_sample_instance_to_voice apply, with the exception of the depth
 // requirement.
 func (m *Mixer) AttachToVoice(voice *Voice) error {
-    if !bool(C.al_attach_mixer_to_voice((*C.ALLEGRO_MIXER)(m), (*C.ALLEGRO_VOICE)(voice))) {
-        return errors.New("failed to attach mixer to voice")
-    }
-    return nil
+	if !bool(C.al_attach_mixer_to_voice((*C.ALLEGRO_MIXER)(m), (*C.ALLEGRO_VOICE)(voice))) {
+		return errors.New("failed to attach mixer to voice")
+	}
+	return nil
 }
 
 // Return true if the mixer is attached to something.
 func (m *Mixer) Attached() bool {
-    return bool(C.al_get_mixer_attached((*C.ALLEGRO_MIXER)(m)))
+	return bool(C.al_get_mixer_attached((*C.ALLEGRO_MIXER)(m)))
 }
 
 // Detach the mixer from whatever it is attached to, if anything.
 func (m *Mixer) Detach() error {
-    if !bool(C.al_detach_mixer((*C.ALLEGRO_MIXER)(m))) {
-        return errors.New("failed to detach mixer")
-    }
-    return nil
+	if !bool(C.al_detach_mixer((*C.ALLEGRO_MIXER)(m))) {
+		return errors.New("failed to detach mixer")
+	}
+	return nil
 }
-
-

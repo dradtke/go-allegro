@@ -101,6 +101,3 @@ func (t *Transform) Invert() {
 func (t *Transform) CheckInverse(tol float32) bool {
 	return int(C.al_check_inverse((*C.ALLEGRO_TRANSFORM)(t), C.float(tol))) != 0
 }
-
-
-

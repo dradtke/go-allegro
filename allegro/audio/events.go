@@ -8,12 +8,10 @@ package audio
 */
 import "C"
 import (
-    "github.com/dradtke/go-allegro/allegro"
+	"github.com/dradtke/go-allegro/allegro"
 )
 
 const (
-    EVENT_AUDIO_STREAM_FRAGMENT allegro.EventType = C.ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT
-    EVENT_AUDIO_STREAM_FINISHED allegro.EventType = C.ALLEGRO_EVENT_AUDIO_STREAM_FINISHED
+	EVENT_AUDIO_STREAM_FRAGMENT allegro.EventType = C.ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT
+	EVENT_AUDIO_STREAM_FINISHED allegro.EventType = C.ALLEGRO_EVENT_AUDIO_STREAM_FINISHED
 )
-
-

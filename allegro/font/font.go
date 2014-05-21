@@ -44,11 +44,11 @@ func Uninstall() {
 // al_get_allegro_version.
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_font_version())
-    major = uint8(v >> 24)
-    minor = uint8((v >> 16) & 255)
-    revision = uint8((v >> 8) & 255)
-    release = uint8(v & 255)
-    return
+	major = uint8(v >> 24)
+	minor = uint8((v >> 16) & 255)
+	revision = uint8((v >> 8) & 255)
+	release = uint8(v & 255)
+	return
 }
 
 // Creates a monochrome bitmap font (8x8 pixels per character).
@@ -98,9 +98,9 @@ func GrabFontFromBitmap(bmp *allegro.Bitmap, ranges [][2]int) (*Font, error) {
 		return nil, errors.New("no ranges specified")
 	}
 	c_ranges := make([]C.int, n_ranges)
-	for i := 0; i<len(ranges); i++ {
-		for j := 0; j<len(ranges[i]); j++ {
-			c_ranges[2*i + j] = C.int(ranges[i][j])
+	for i := 0; i < len(ranges); i++ {
+		for j := 0; j < len(ranges[i]); j++ {
+			c_ranges[2*i+j] = C.int(ranges[i][j])
 		}
 	}
 	f := C.al_grab_font_from_bitmap((*C.ALLEGRO_BITMAP)(unsafe.Pointer(bmp)),
@@ -205,7 +205,3 @@ func (f *Font) TextDimensions(text string) (bbx, bby, bbw, bbh int) {
 		&cbbx, &cbby, &cbbw, &cbbh)
 	return int(cbbx), int(cbby), int(cbbw), int(cbbh)
 }
-
-
-
-

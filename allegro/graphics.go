@@ -742,5 +742,3 @@ func (bmp *Bitmap) AsTarget(f func()) {
 	f()
 	SetTargetBitmap(old)
 }
-
-

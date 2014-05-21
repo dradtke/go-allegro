@@ -49,22 +49,22 @@ func (v Vertex) init() {
 }
 
 type VertexElement struct {
-    Attribute PrimAttr
-    Storage PrimStorage
-    Offset int
+	Attribute PrimAttr
+	Storage   PrimStorage
+	Offset    int
 
 	raw    C.ALLEGRO_VERTEX_ELEMENT
 	inited bool
 }
 
 func (v VertexElement) init() {
-    if v.inited {
-        return
-    }
-    v.raw.attribute = C.int(v.Attribute)
-    v.raw.storage = C.int(v.Storage)
-    v.raw.offset = C.int(v.Offset)
-    v.inited = true
+	if v.inited {
+		return
+	}
+	v.raw.attribute = C.int(v.Attribute)
+	v.raw.storage = C.int(v.Storage)
+	v.raw.offset = C.int(v.Offset)
+	v.inited = true
 }
 
 type VertexDecl C.ALLEGRO_VERTEX_DECL
@@ -465,17 +465,16 @@ func DrawIndexedPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitma
 
 // Creates a vertex declaration, which describes a custom vertex format.
 func CreateVertexDecl(elements []VertexElement, stride int) *VertexDecl {
-    elements_ := make([]C.ALLEGRO_VERTEX_ELEMENT, len(elements))
-    for i, element := range elements {
+	elements_ := make([]C.ALLEGRO_VERTEX_ELEMENT, len(elements))
+	for i, element := range elements {
 		// how does this perform?
-        element.init()
-        elements_[i] = element.raw
-    }
-    return (*VertexDecl)(C.al_create_vertex_decl((*C.ALLEGRO_VERTEX_ELEMENT)(unsafe.Pointer(&elements_[0])), C.int(stride)))
+		element.init()
+		elements_[i] = element.raw
+	}
+	return (*VertexDecl)(C.al_create_vertex_decl((*C.ALLEGRO_VERTEX_ELEMENT)(unsafe.Pointer(&elements_[0])), C.int(stride)))
 }
 
 // Destroys a vertex declaration.
 func (v *VertexDecl) Destroy() {
-    C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
+	C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
 }
-

@@ -27,6 +27,3 @@ func freeString(data *C.char) {
 func SetMemoryInterface(memory_interface *C.ALLEGRO_MEMORY_INTERFACE) {
 	C.al_set_memory_interface(memory_interface)
 }
-
-
-
