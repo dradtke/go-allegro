@@ -9,6 +9,8 @@ import (
 	"errors"
 )
 
+type Keyboard C.ALLEGRO_KEYBOARD
+
 type KeyboardState C.ALLEGRO_KEYBOARD_STATE
 
 //{{{ key codes

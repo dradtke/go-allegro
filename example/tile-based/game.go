@@ -233,13 +233,15 @@ func main() {
     var event allegro.Event
 	for running {
 		eventQueue.WaitForEvent(&event)
-		switch event.Type {
-		case allegro.EVENT_TIMER:
+        switch eventQueue.WaitForEvent(&event).(type) {
+		case allegro.TimerEvent:
 			redraw = true
 			game.Update()
-		case allegro.EVENT_DISPLAY_CLOSE:
+
+		case allegro.DisplayCloseEvent:
 			running = false
 			break
+
 		default:
 			// unknown event
 		}

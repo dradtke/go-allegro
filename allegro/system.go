@@ -60,10 +60,9 @@ A bare-bones program might look something like this:
         // Main loop.
         var event allegro.Event
         for {
-            found := eventQueue.WaitForEventUntil(allegro.NewTimeout(timeout), &event)
-            if found {
-                switch event.Type {
-                case allegro.EVENT_DISPLAY_CLOSE:
+            if e, found := eventQueue.WaitForEventUntil(allegro.NewTimeout(timeout), &event); found {
+                switch e := e.(type) {
+                case allegro.DisplayCloseEvent:
                     running = false
                     break
 
