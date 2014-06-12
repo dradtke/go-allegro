@@ -27,7 +27,7 @@ func (source EventSource) InitUserEventSource() {
 // al_init_user_event_source. Returns false if the event source isn't
 // registered with any queues, hence the event wouldn't have been delivered
 // into any queues.
-func (source *EventSource) EmitUserEvent(data []uintptr) error {
+func (source *EventSource) EmitUserEvent(data ...uintptr) error {
     data_len := len(data)
 	if data_len > 4 {
 		return fmt.Errorf("too many parameters: %d > 4", data_len)
@@ -244,8 +244,9 @@ func (e *Event) cast() interface{} {
 		return (*display_switch_in_event)(unsafe.Pointer(e))
 	case C.ALLEGRO_EVENT_DISPLAY_ORIENTATION:
 		return (*display_orientation_event)(unsafe.Pointer(e))
+
 	default:
-		panic(fmt.Sprintf("tried to cast unknown event: %d", e[0]))
+        return (*user_event)(unsafe.Pointer(e))
 	}
 }
 

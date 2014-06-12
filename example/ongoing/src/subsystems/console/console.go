@@ -4,9 +4,13 @@ import (
 	"container/list"
 	"fmt"
 	al "github.com/dradtke/go-allegro/allegro"
-	"github.com/dradtke/go-allegro/example/ongoing/subsystems/graphics"
+	"github.com/dradtke/go-allegro/example/ongoing/src/config"
+	//"github.com/dradtke/go-allegro/example/ongoing/src/game"
+	//"github.com/dradtke/go-allegro/example/ongoing/src/util"
+	"github.com/dradtke/go-allegro/example/ongoing/src/subsystems/graphics"
 	"io"
 	"os"
+	"unicode"
 )
 
 const (
@@ -20,8 +24,10 @@ var (
 	is_blunk bool
 	blinker  *al.Timer
 	cmd      string
+    tmp string
 
 	color_map map[string]al.Color
+    submitter al.EventSource
 )
 
 type message struct {
@@ -43,6 +49,48 @@ func getSummary() (sum []message) {
 		sum = append(sum, e.Value.(message))
 	}
 	return
+}
+
+func HandleEvent(ev interface{}) bool {
+    switch e := ev.(type) {
+
+    case al.KeyDownEvent:
+        switch e.KeyCode() {
+
+        case al.KEY_F12:
+            visible = !visible
+            return true
+        }
+
+    case al.KeyCharEvent:
+        if visible {
+            switch e.KeyCode() {
+
+            case al.KEY_BACKSPACE:
+                backspaceCmd()
+                return true
+
+            case al.KEY_ENTER:
+                submitCmd()
+                return true
+
+            default:
+                unichar := rune(e.Unichar())
+                if unicode.IsPrint(unichar) {
+                    cmd += string(unichar)
+                    return true
+                }
+            }
+        }
+
+    case al.TimerEvent:
+        if e.Source() == blinker {
+            is_blunk = !is_blunk
+            return true
+        }
+    }
+
+    return false
 }
 
 func Debug(msg string) {
@@ -69,20 +117,12 @@ func Errorf(msg string, v ...interface{}) {
 	log.PushBack(message{level: "ERROR", text: fmt.Sprintf(msg, v...)})
 }
 
-func Toggle() {
-	visible = !visible
+func Fatal(msg string) {
+    log.PushBack(message{level: "FATAL", text: msg})
 }
 
-func Visible() bool {
-	return visible
-}
-
-func SetVisible(v bool) {
-	visible = v
-}
-
-func Blink() {
-	is_blunk = !is_blunk
+func Fatalf(msg string, v ...interface{}) {
+    log.PushBack(message{level: "FATAL", text: fmt.Sprintf(msg, v...)})
 }
 
 func Render() {
@@ -97,10 +137,6 @@ func Render() {
 	graphics.RenderConsole(lines, cmd, is_blunk)
 }
 
-func Blinker() *al.Timer {
-	return blinker
-}
-
 func Init(eventQueue *al.EventQueue) {
 	var err error
 	if blinker, err = al.CreateTimer(BLINK_SPEED); err != nil {
@@ -113,11 +149,15 @@ func Init(eventQueue *al.EventQueue) {
 		"DEBUG": al.MapRGB(0, 0, 255),
 		"INFO":  al.MapRGB(0, 255, 0),
 		"ERROR": al.MapRGB(255, 0, 0),
+		"FATAL": al.MapRGB(255, 0, 0),
 	}
+
+    submitter.InitUserEventSource()
+    eventQueue.RegisterEventSource(&submitter)
 }
 
-func Save(filename string) {
-	if f, err := os.Create(filename); err != nil {
+func Save() {
+	if f, err := os.Create(config.CONSOLE_FILE); err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
 	} else {
 		for e := log.Front(); e != nil; e = e.Next() {
@@ -127,21 +167,28 @@ func Save(filename string) {
 	}
 }
 
-func WriteCmd(c string) {
-	cmd += c
-}
-
-func BackspaceCmd() {
+func backspaceCmd() {
 	if cmd == "" {
 		return
 	}
 	cmd = cmd[:len(cmd)-1]
 }
 
-func SubmitCmd() {
+/* -- Submitter -- */
+
+
+func submitCmd() {
 	if cmd == "" {
 		return
 	}
-	Debugf("Submitted command: %s", cmd)
+    /*
+    if err := submitter.EmitUserEvent(util.Store(game.NewCommandEvent(cmd))); err != nil {
+        Errorf("Failed to submit command: %s", err.Error())
+    }
+    */
 	cmd = ""
+}
+
+func Toggle() {
+    visible = !visible
 }

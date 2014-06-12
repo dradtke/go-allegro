@@ -17,7 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dradtke/go-allegro/allegro"
-	"runtime"
+	//"runtime"
 	"strings"
 	"unsafe"
 )
@@ -190,7 +190,7 @@ func (log *TextLog) Close() {
 // (if the line would not be visible otherwise). This works like printf. A line
 // is continued until you add a newline character.
 func (log *TextLog) Append(format string, a ...interface{}) {
-	text_ := C.CString(fmt.Sprintf(text, a...))
+	text_ := C.CString(fmt.Sprintf(format, a...))
 	defer C.free_string(text_)
 	// C.al_append_native_text_log()
 	C.append_to_log((*C.ALLEGRO_TEXTLOG)(log), text_)

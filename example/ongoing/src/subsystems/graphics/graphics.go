@@ -4,7 +4,7 @@ import (
 	al "github.com/dradtke/go-allegro/allegro"
 	"github.com/dradtke/go-allegro/allegro/font"
 	prim "github.com/dradtke/go-allegro/allegro/primitives"
-	"github.com/dradtke/go-allegro/example/ongoing/config"
+	"github.com/dradtke/go-allegro/example/ongoing/src/config"
 )
 
 const (

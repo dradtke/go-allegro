@@ -6,6 +6,8 @@ import (
 
 var blank_color al.Color
 
+const CONSOLE_FILE = "build/console.txt"
+
 func init() {
     blank_color = al.MapRGB(0, 0, 0)
 }
@@ -20,4 +22,8 @@ func DisplayWidth() int {
 
 func DisplayHeight() int {
     return 480
+}
+
+func GameName() string {
+    return "Hello World"
 }
