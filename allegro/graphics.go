@@ -736,9 +736,10 @@ func (f *File) SaveBitmap(ident string, bmp *Bitmap) error {
 // the change after the function exits. This is very useful for calling
 // functions that operate on the target bitmap, e.g. the drawing methods
 // provided by the primitives addon.
-func (bmp *Bitmap) AsTarget(f func()) {
+func (bmp *Bitmap) AsTarget(f func()) *Bitmap {
 	old := TargetBitmap()
 	SetTargetBitmap(bmp)
 	f()
 	SetTargetBitmap(old)
+	return bmp
 }
