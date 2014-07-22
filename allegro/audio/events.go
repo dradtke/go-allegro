@@ -1,17 +1,21 @@
 package audio
 
-/*
-#cgo pkg-config: allegro_audio-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
-#include "../util.c"
-*/
-import "C"
-import (
-	"github.com/dradtke/go-allegro/allegro"
-)
+/* -- Audio Stream Fragment -- */
 
-const (
-	EVENT_AUDIO_STREAM_FRAGMENT allegro.EventType = C.ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT
-	EVENT_AUDIO_STREAM_FINISHED allegro.EventType = C.ALLEGRO_EVENT_AUDIO_STREAM_FINISHED
-)
+type AudioStreamFragment interface {
+	audio_stream_fragment()
+}
+
+type audio_stream_fragment_event struct{} // C.ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT
+
+func (e *audio_stream_fragment_event) audio_stream_fragment() {}
+
+/* -- Audio Stream Finished -- */
+
+type AudioStreamFinished interface {
+	audio_stream_finished()
+}
+
+type audio_stream_finished_event struct{} // C.ALLEGRO_EVENT_AUDIO_STREAM_FINISHED
+
+func (e *audio_stream_finished_event) audio_stream_finished() {}

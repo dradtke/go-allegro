@@ -78,10 +78,8 @@ A bare-bones program might look something like this:
 */
 package allegro
 
+// #include <allegro5/allegro.h>
 /*
-#cgo pkg-config: allegro-5.0
-#include <allegro5/allegro.h>
-
 bool _al_init() {
 	return al_init();
 }

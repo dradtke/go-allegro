@@ -1,15 +1,9 @@
 // Package memfile provides support for Allegro's memfile addon.
 package memfile
 
-/*
-#cgo pkg-config: allegro_memfile-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_memfile.h>
-
-void _al_free_string(char *data) {
-	al_free(data);
-}
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_memfile.h>
+// #include "../util.c"
 import "C"
 import (
 	"bytes"
@@ -41,7 +35,7 @@ func (m FileMode) String() string {
 // open.
 func Open(mem unsafe.Pointer, size int64, mode FileMode) (*allegro.File, error) {
 	mode_ := C.CString(mode.String())
-	defer C._al_free_string(mode_)
+	defer C.free_string(mode_)
 	f := C.al_open_memfile(mem, C.int64_t(size), mode_)
 	if f == nil {
 		return nil, errors.New("failed to open memfile")

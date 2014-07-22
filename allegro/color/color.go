@@ -1,12 +1,9 @@
 // Package color provides support for Allegro's color addon.
 package color
 
-/*
-#cgo pkg-config: allegro_color-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_color.h>
-#include "../util.c"
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_color.h>
+// #include "../util.c"
 import "C"
 import (
 	"fmt"

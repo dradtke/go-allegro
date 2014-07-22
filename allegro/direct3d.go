@@ -1,15 +1,16 @@
+// +build windows
+
 package allegro
 
-// WARNING: this file was written on Linux and therefore not yet tested.
-
-/*
-#cgo pkg-config: allegro-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_direct3d.h>
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_direct3d.h>
 import "C"
 import (
 	"errors"
+)
+
+const (
+	DIRECT3D DisplayFlags = C.ALLEGRO_DIRECT3D_INTERNAL
 )
 
 type Direct3DDevice C.LPDIRECT3DDEVICE9

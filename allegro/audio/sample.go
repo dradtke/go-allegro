@@ -1,11 +1,8 @@
 package audio
 
-/*
-#cgo pkg-config: allegro_audio-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
-#include "../util.c"
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_audio.h>
+// #include "../util.c"
 import "C"
 import (
 	"errors"

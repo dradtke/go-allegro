@@ -1,13 +1,10 @@
 // Package dialog provides support for Allegro's native dialog addon.
 package dialog
 
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_native_dialog.h>
+// #include "../util.c"
 /*
-#cgo pkg-config: allegro_dialog-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_native_dialog.h>
-#include "../util.c"
-
-#include <stdio.h>
 static void append_to_log(ALLEGRO_TEXTLOG *log, char *str) {
 	al_append_native_text_log(log, str);
 }

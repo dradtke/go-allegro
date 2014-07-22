@@ -1,10 +1,7 @@
 // Package allegro_main provides support for Allegro's main addon.
 package allegro_main
 
-/*
-#cgo pkg-config: allegro_main-5.0
-#include <allegro5/allegro.h>
-*/
+// #include <allegro5/allegro.h>
 import "C"
 
 // This package is empty, but needs to be included on some platforms
@@ -15,7 +12,3 @@ import "C"
 
 func init() {
 }
-
-
-
-

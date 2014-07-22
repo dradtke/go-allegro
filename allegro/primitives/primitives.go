@@ -1,11 +1,9 @@
 // Package primitives provides support for Allegro's primitives addon.
 package primitives
 
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_primitives.h>
 /*
-#cgo pkg-config: allegro_primitives-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_primitives.h>
-
 int get_stride() {
 	return 2 * sizeof(float);
 }
