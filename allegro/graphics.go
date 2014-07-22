@@ -1,25 +1,6 @@
 package allegro
 
-/*
-#cgo pkg-config: allegro-5.0
-#include <allegro5/allegro.h>
-
-void *locked_region_get_data(ALLEGRO_LOCKED_REGION *region) {
-	return region->data;
-}
-
-int locked_region_get_format(ALLEGRO_LOCKED_REGION *region) {
-	return region->format;
-}
-
-int locked_region_get_pitch(ALLEGRO_LOCKED_REGION *region) {
-	return region->pitch;
-}
-
-int locked_region_get_pixel_size(ALLEGRO_LOCKED_REGION *region) {
-	return region->pixel_size;
-}
-*/
+// #include <allegro5/allegro.h>
 import "C"
 import (
 	"errors"
@@ -30,7 +11,7 @@ import (
 
 type Color C.ALLEGRO_COLOR
 type Bitmap C.ALLEGRO_BITMAP
-type LockedRegion C.ALLEGRO_LOCKED_REGION
+type LockedRegion C.struct_ALLEGRO_LOCKED_REGION
 
 type DrawFlags int
 
@@ -678,19 +659,19 @@ func (c Color) UnmapRGBAf() (float32, float32, float32, float32) {
 // Miscellaneous Instance Methods {{{
 
 func (reg *LockedRegion) Data() uintptr {
-	return uintptr(C.locked_region_get_data((*C.ALLEGRO_LOCKED_REGION)(reg)))
+	return uintptr((*C.struct_ALLEGRO_LOCKED_REGION)(reg).data)
 }
 
 func (reg *LockedRegion) Format() PixelFormat {
-	return PixelFormat(C.locked_region_get_format((*C.ALLEGRO_LOCKED_REGION)(reg)))
+	return PixelFormat((*C.struct_ALLEGRO_LOCKED_REGION)(reg).format)
 }
 
 func (reg *LockedRegion) Pitch() int {
-	return int(C.locked_region_get_pitch((*C.ALLEGRO_LOCKED_REGION)(reg)))
+	return int((*C.struct_ALLEGRO_LOCKED_REGION)(reg).pitch)
 }
 
 func (reg *LockedRegion) PixelSize() int {
-	return int(C.locked_region_get_pixel_size((*C.ALLEGRO_LOCKED_REGION)(reg)))
+	return int((*C.struct_ALLEGRO_LOCKED_REGION)(reg).pixel_size)
 }
 
 // Return the number of bytes that a pixel of the given format occupies.

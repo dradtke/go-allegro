@@ -1,15 +1,9 @@
 // Package font provides support for Allegro's font addon.
 package font
 
-/*
-#cgo pkg-config: allegro_font-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_font.h>
-
-void _al_free_string(char *data) {
-	al_free(data);
-}
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_font.h>
+// #include "../util.c"
 import "C"
 import (
 	"errors"
@@ -64,7 +58,7 @@ func Builtin() (*Font, error) {
 // name of a known bitmap format, or else al_load_ttf_font.
 func LoadFont(filename string, size, flags int) (*Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_free_string(filename_)
+	defer C.free_string(filename_)
 	f := C.al_load_font(filename_, C.int(size), C.int(flags))
 	if f == nil {
 		return nil, fmt.Errorf("failed to load font '%s'", filename)
@@ -80,7 +74,7 @@ func LoadFont(filename string, size, flags int) (*Font, error) {
 // on it and only then pass it to al_grab_font_from_bitmap.
 func LoadBitmapFont(filename string) (*Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_free_string(filename_)
+	defer C.free_string(filename_)
 	f := C.al_load_bitmap_font(filename_)
 	if f == nil {
 		return nil, fmt.Errorf("failed to load bitmap font '%s'", filename)
@@ -115,7 +109,7 @@ func GrabFontFromBitmap(bmp *allegro.Bitmap, ranges [][2]int) (*Font, error) {
 // y, using the specified font.
 func DrawText(font *Font, color allegro.Color, x, y float32, flags DrawFlags, text string) {
 	text_ := C.CString(text)
-	defer C._al_free_string(text_)
+	defer C.free_string(text_)
 	C.al_draw_text((*C.ALLEGRO_FONT)(font),
 		*((*C.ALLEGRO_COLOR)(unsafe.Pointer(&color))), // is there an easier way to get this converted?
 		C.float(x),
@@ -127,7 +121,7 @@ func DrawText(font *Font, color allegro.Color, x, y float32, flags DrawFlags, te
 // Like al_draw_text, but justifies the string to the region x1-x2.
 func DrawJustifiedText(font *Font, color allegro.Color, x1, x2, y, diff float32, flags DrawFlags, text string) {
 	text_ := C.CString(text)
-	defer C._al_free_string(text_)
+	defer C.free_string(text_)
 	C.al_draw_justified_text((*C.ALLEGRO_FONT)(font),
 		*((*C.ALLEGRO_COLOR)(unsafe.Pointer(&color))), // is there an easier way to get this converted?
 		C.float(x1),
@@ -141,7 +135,7 @@ func DrawJustifiedText(font *Font, color allegro.Color, x1, x2, y, diff float32,
 func DrawTextf(font *Font, color allegro.Color, x, y float32, flags DrawFlags, format string, a ...interface{}) {
 	// C.al_draw_textf
 	text_ := C.CString(fmt.Sprintf(format, a...))
-	defer C._al_free_string(text_)
+	defer C.free_string(text_)
 	C.al_draw_text((*C.ALLEGRO_FONT)(font),
 		*((*C.ALLEGRO_COLOR)(unsafe.Pointer(&color))), // is there an easier way to get this converted?
 		C.float(x),
@@ -153,7 +147,7 @@ func DrawTextf(font *Font, color allegro.Color, x, y float32, flags DrawFlags, f
 func DrawJustifiedTextf(font *Font, color allegro.Color, x1, x2, y, diff float32, flags DrawFlags, format string, a ...interface{}) {
 	// C.al_draw_justified_textf
 	text_ := C.CString(fmt.Sprintf(format, a))
-	defer C._al_free_string(text_)
+	defer C.free_string(text_)
 	C.al_draw_justified_text((*C.ALLEGRO_FONT)(font),
 		*((*C.ALLEGRO_COLOR)(unsafe.Pointer(&color))), // is there an easier way to get this converted?
 		C.float(x1),
@@ -190,7 +184,7 @@ func (f *Font) Descent() int {
 // Calculates the length of a string in a particular font, in pixels.
 func (f *Font) TextWidth(text string) int {
 	text_ := C.CString(text)
-	defer C._al_free_string(text_)
+	defer C.free_string(text_)
 	return int(C.al_get_text_width((*C.ALLEGRO_FONT)(f), text_))
 }
 
@@ -200,7 +194,7 @@ func (f *Font) TextWidth(text string) int {
 func (f *Font) TextDimensions(text string) (bbx, bby, bbw, bbh int) {
 	var cbbx, cbby, cbbw, cbbh C.int
 	text_ := C.CString(text)
-	defer C._al_free_string(text_)
+	defer C.free_string(text_)
 	C.al_get_text_dimensions((*C.ALLEGRO_FONT)(f), text_,
 		&cbbx, &cbby, &cbbw, &cbbh)
 	return int(cbbx), int(cbby), int(cbbw), int(cbbh)

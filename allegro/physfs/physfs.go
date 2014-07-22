@@ -1,11 +1,8 @@
 // Package physfs provides support for Allegro's PhysicsFS addon.
 package physfs
 
-/*
-#cgo pkg-config: allegro_physfs-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_physfs.h>
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_physfs.h>
 import "C"
 
 // After calling this, subsequent calls to al_fopen will be handled by

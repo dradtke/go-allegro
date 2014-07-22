@@ -1,15 +1,14 @@
 package allegro
 
-/*
-#cgo pkg-config: allegro-5.0
-#include <allegro5/allegro.h>
-*/
+// #include <allegro5/allegro.h>
 import "C"
 import (
 	"errors"
 	"fmt"
 	"unsafe"
 )
+
+var registeredEvents = make(map[C.ALLEGRO_EVENT_TYPE]func(e *Event) interface{})
 
 var EmptyQueue = errors.New("event queue is empty")
 
@@ -28,25 +27,25 @@ func (source EventSource) InitUserEventSource() {
 // registered with any queues, hence the event wouldn't have been delivered
 // into any queues.
 func (source *EventSource) EmitUserEvent(data ...uintptr) error {
-    data_len := len(data)
+	data_len := len(data)
 	if data_len > 4 {
 		return fmt.Errorf("too many parameters: %d > 4", data_len)
 	}
 	var data1, data2, data3, data4 C.intptr_t = 0, 0, 0, 0
-    switch data_len {
-    case 4:
-        data4 = C.intptr_t(data[3])
-        fallthrough
-    case 3:
-        data3 = C.intptr_t(data[2])
-        fallthrough
-    case 2:
-        data2 = C.intptr_t(data[1])
-        fallthrough
-    case 1:
-        data1 = C.intptr_t(data[0])
-    }
-    event := C.struct_ALLEGRO_USER_EVENT{data1: data1, data2: data2, data3: data3, data4: data4};
+	switch data_len {
+	case 4:
+		data4 = C.intptr_t(data[3])
+		fallthrough
+	case 3:
+		data3 = C.intptr_t(data[2])
+		fallthrough
+	case 2:
+		data2 = C.intptr_t(data[1])
+		fallthrough
+	case 1:
+		data1 = C.intptr_t(data[0])
+	}
+	event := C.struct_ALLEGRO_USER_EVENT{data1: data1, data2: data2, data3: data3, data4: data4}
 	if ok := bool(C.al_emit_user_event((*C.ALLEGRO_EVENT_SOURCE)(source), (*C.ALLEGRO_EVENT)(unsafe.Pointer(&event)), nil)); !ok {
 		return errors.New("failed to emit user event")
 	}
@@ -124,10 +123,10 @@ func (queue *EventQueue) IsEmpty() bool {
 // of the queue. If the event queue is actually empty, this function returns
 // false and the contents of ret_event are unspecified.
 func (queue *EventQueue) PeekNextEvent(event *Event) (interface{}, error) {
-    if ok := bool(C.al_peek_next_event((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event))); !ok {
-        return nil, EmptyQueue
-    }
-    return event.cast(), nil
+	if ok := bool(C.al_peek_next_event((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event))); !ok {
+		return nil, EmptyQueue
+	}
+	return event.cast(), nil
 }
 
 // Drop (remove) the next event from the queue. If the queue is empty, nothing
@@ -146,10 +145,10 @@ func (queue *EventQueue) Flush() {
 // queue. If the event queue is empty, return false and the contents of
 // ret_event are unspecified.
 func (queue *EventQueue) GetNextEvent(event *Event) (interface{}, error) {
-    if ok := bool(C.al_get_next_event((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event))); !ok {
-        return nil, EmptyQueue
-    }
-    return event.cast(), nil
+	if ok := bool(C.al_get_next_event((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event))); !ok {
+		return nil, EmptyQueue
+	}
+	return event.cast(), nil
 }
 
 // Wait until the event queue specified is non-empty. If ret_event is not NULL,
@@ -169,13 +168,13 @@ func (queue *EventQueue) WaitForEvent(event *Event) interface{} {
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
 func (queue *EventQueue) WaitForEventTimed(event *Event, secs float32) (interface{}, bool) {
-    if ok := bool(C.al_wait_for_event_timed((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event), C.float(secs))); !ok {
-        return nil, false
-    }
-    if event == nil {
-        return nil, true
-    }
-    return event.cast(), true
+	if ok := bool(C.al_wait_for_event_timed((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event), C.float(secs))); !ok {
+		return nil, false
+	}
+	if event == nil {
+		return nil, true
+	}
+	return event.cast(), true
 }
 
 // Wait until the event queue specified is non-empty. If ret_event is not NULL,
@@ -183,19 +182,24 @@ func (queue *EventQueue) WaitForEventTimed(event *Event, secs float32) (interfac
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
 func (queue *EventQueue) WaitForEventUntil(timeout *Timeout, event *Event) (interface{}, bool) {
-    if ok := C.al_wait_for_event_until((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event), (*C.ALLEGRO_TIMEOUT)(timeout)); !ok {
-        return nil, false
-    }
-    if event == nil {
-        return nil, true
-    }
-    return event.cast(), true
+	if ok := C.al_wait_for_event_until((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event), (*C.ALLEGRO_TIMEOUT)(timeout)); !ok {
+		return nil, false
+	}
+	if event == nil {
+		return nil, true
+	}
+	return event.cast(), true
 }
 
 type Event C.union_ALLEGRO_EVENT
 
+// RegisterEventType() lets modules register their own event types.
+func RegisterEventType(t C.ALLEGRO_EVENT_TYPE, f func(*Event) interface{}) {
+	registeredEvents[t] = f
+}
+
 func (e *Event) cast() interface{} {
-	switch C.ALLEGRO_EVENT_TYPE(e[0]) {
+	switch t := C.ALLEGRO_EVENT_TYPE(e[0]); t {
 	case C.ALLEGRO_EVENT_JOYSTICK_AXIS:
 		return (*joystick_axis_event)(unsafe.Pointer(e))
 	case C.ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
@@ -214,19 +218,19 @@ func (e *Event) cast() interface{} {
 
 	case C.ALLEGRO_EVENT_MOUSE_AXES:
 		return (*mouse_axes_event)(unsafe.Pointer(e))
-    case C.ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-        return (*mouse_button_down_event)(unsafe.Pointer(e))
-    case C.ALLEGRO_EVENT_MOUSE_BUTTON_UP:
-        return (*mouse_button_up_event)(unsafe.Pointer(e))
-    case C.ALLEGRO_EVENT_MOUSE_WARPED:
-        return (*mouse_warped_event)(unsafe.Pointer(e))
-    case C.ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
-        return (*mouse_enter_display_event)(unsafe.Pointer(e))
-    case C.ALLEGRO_EVENT_MOUSE_LEAVE_DISPLAY:
-        return (*mouse_leave_display_event)(unsafe.Pointer(e))
+	case C.ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+		return (*mouse_button_down_event)(unsafe.Pointer(e))
+	case C.ALLEGRO_EVENT_MOUSE_BUTTON_UP:
+		return (*mouse_button_up_event)(unsafe.Pointer(e))
+	case C.ALLEGRO_EVENT_MOUSE_WARPED:
+		return (*mouse_warped_event)(unsafe.Pointer(e))
+	case C.ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
+		return (*mouse_enter_display_event)(unsafe.Pointer(e))
+	case C.ALLEGRO_EVENT_MOUSE_LEAVE_DISPLAY:
+		return (*mouse_leave_display_event)(unsafe.Pointer(e))
 
-    case C.ALLEGRO_EVENT_TIMER:
-        return (*timer_event)(unsafe.Pointer(e))
+	case C.ALLEGRO_EVENT_TIMER:
+		return (*timer_event)(unsafe.Pointer(e))
 
 	case C.ALLEGRO_EVENT_DISPLAY_EXPOSE:
 		return (*display_expose_event)(unsafe.Pointer(e))
@@ -246,7 +250,11 @@ func (e *Event) cast() interface{} {
 		return (*display_orientation_event)(unsafe.Pointer(e))
 
 	default:
-        return (*user_event)(unsafe.Pointer(e))
+		if f, ok := registeredEvents[t]; ok {
+			return f(e)
+		} else {
+			return (*user_event)(unsafe.Pointer(e))
+		}
 	}
 }
 
@@ -339,7 +347,7 @@ func (e *joystick_button_up_event) Button() int {
 
 type JoystickConfigurationEvent interface {
 	joystick_configuration()
-    Timestamp() float64
+	Timestamp() float64
 }
 
 type joystick_configuration_event C.struct_ALLEGRO_JOYSTICK_EVENT
@@ -347,7 +355,7 @@ type joystick_configuration_event C.struct_ALLEGRO_JOYSTICK_EVENT
 func (e *joystick_configuration_event) joystick_configuration() {}
 
 func (e *joystick_configuration_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 /* -- Key Down -- */
@@ -459,7 +467,7 @@ func (e *key_char_event) Display() *Display {
 
 type MouseAxesEvent interface {
 	mouse_axes()
-    Timestamp() float64
+	Timestamp() float64
 	X() int
 	Y() int
 	Z() int
@@ -476,7 +484,7 @@ type mouse_axes_event C.struct_ALLEGRO_MOUSE_EVENT
 func (e *mouse_axes_event) mouse_axes() {}
 
 func (e *mouse_axes_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 func (e *mouse_axes_event) X() int {
@@ -519,7 +527,7 @@ func (e *mouse_axes_event) Display() *Display {
 
 type MouseButtonDownEvent interface {
 	mouse_button_down()
-    Timestamp() float64
+	Timestamp() float64
 	X() int
 	Y() int
 	Z() int
@@ -533,7 +541,7 @@ type mouse_button_down_event C.struct_ALLEGRO_MOUSE_EVENT
 func (e *mouse_button_down_event) mouse_button_down() {}
 
 func (e *mouse_button_down_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 func (e *mouse_button_down_event) X() int {
@@ -564,7 +572,7 @@ func (e *mouse_button_down_event) Display() *Display {
 
 type MouseButtonUpEvent interface {
 	mouse_button_up()
-    Timestamp() float64
+	Timestamp() float64
 	X() int
 	Y() int
 	Z() int
@@ -578,7 +586,7 @@ type mouse_button_up_event C.struct_ALLEGRO_MOUSE_EVENT
 func (e *mouse_button_up_event) mouse_button_up() {}
 
 func (e *mouse_button_up_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 func (e *mouse_button_up_event) X() int {
@@ -609,7 +617,7 @@ func (e *mouse_button_up_event) Display() *Display {
 
 type MouseWarpedEvent interface {
 	mouse_warped()
-    Timestamp() float64
+	Timestamp() float64
 	X() int
 	Y() int
 	Z() int
@@ -626,7 +634,7 @@ type mouse_warped_event C.struct_ALLEGRO_MOUSE_EVENT
 func (e *mouse_warped_event) mouse_warped() {}
 
 func (e *mouse_warped_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 func (e *mouse_warped_event) X() int {
@@ -669,7 +677,7 @@ func (e *mouse_warped_event) Display() *Display {
 
 type MouseEnterDisplayEvent interface {
 	mouse_enter_display()
-    Timestamp() float64
+	Timestamp() float64
 	X() int
 	Y() int
 	Z() int
@@ -682,7 +690,7 @@ type mouse_enter_display_event C.struct_ALLEGRO_MOUSE_EVENT
 func (e *mouse_enter_display_event) mouse_enter_display() {}
 
 func (e *mouse_enter_display_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 func (e *mouse_enter_display_event) X() int {
@@ -709,7 +717,7 @@ func (e *mouse_enter_display_event) Display() *Display {
 
 type MouseLeaveDisplayEvent interface {
 	mouse_leave_display()
-    Timestamp() float64
+	Timestamp() float64
 	X() int
 	Y() int
 	Z() int
@@ -722,7 +730,7 @@ type mouse_leave_display_event C.struct_ALLEGRO_MOUSE_EVENT
 func (e *mouse_leave_display_event) mouse_leave_display() {}
 
 func (e *mouse_leave_display_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 func (e *mouse_leave_display_event) X() int {
@@ -748,10 +756,10 @@ func (e *mouse_leave_display_event) Display() *Display {
 /* -- Timer -- */
 
 type TimerEvent interface {
-    timer()
-    Timestamp() float64
-    Source() *Timer
-    Count() int64
+	timer()
+	Timestamp() float64
+	Source() *Timer
+	Count() int64
 }
 
 type timer_event C.struct_ALLEGRO_TIMER_EVENT
@@ -759,15 +767,15 @@ type timer_event C.struct_ALLEGRO_TIMER_EVENT
 func (e *timer_event) timer() {}
 
 func (e *timer_event) Timestamp() float64 {
-    return float64(e.timestamp)
+	return float64(e.timestamp)
 }
 
 func (e *timer_event) Source() *Timer {
-    return (*Timer)(e.source)
+	return (*Timer)(e.source)
 }
 
 func (e *timer_event) Count() int64 {
-    return int64(e.count)
+	return int64(e.count)
 }
 
 /* -- Display Expose -- */
@@ -975,16 +983,36 @@ func (e *display_orientation_event) Orientation() DisplayOrientation {
 	return DisplayOrientation(e.orientation)
 }
 
+/* -- Audio Stream Fragment -- */
+
+type AudioStreamFragment interface {
+	audio_stream_fragment()
+}
+
+type audio_stream_fragment_event struct{}
+
+func (e *audio_stream_fragment_event) audio_stream_fragment() {}
+
+/* -- Audio Stream Finished -- */
+
+type AudioStreamFinished interface {
+	audio_stream_finished()
+}
+
+type audio_stream_finished_event struct{}
+
+func (e *audio_stream_finished_event) audio_stream_finished() {}
+
 /* -- User -- */
 
 type UserEvent interface {
-    user()
-    Source() *EventSource
-    Data1() uintptr
-    Data2() uintptr
-    Data3() uintptr
-    Data4() uintptr
-    Unref()
+	user()
+	Source() *EventSource
+	Data1() uintptr
+	Data2() uintptr
+	Data3() uintptr
+	Data4() uintptr
+	Unref()
 }
 
 type user_event C.struct_ALLEGRO_USER_EVENT
@@ -992,23 +1020,23 @@ type user_event C.struct_ALLEGRO_USER_EVENT
 func (e *user_event) user() {}
 
 func (e *user_event) Source() *EventSource {
-    return (*EventSource)(e.source)
+	return (*EventSource)(e.source)
 }
 
 func (e *user_event) Data1() uintptr {
-    return uintptr(e.data1)
+	return uintptr(e.data1)
 }
 
 func (e *user_event) Data2() uintptr {
-    return uintptr(e.data2)
+	return uintptr(e.data2)
 }
 
 func (e *user_event) Data3() uintptr {
-    return uintptr(e.data3)
+	return uintptr(e.data3)
 }
 
 func (e *user_event) Data4() uintptr {
-    return uintptr(e.data4)
+	return uintptr(e.data4)
 }
 
 // Decrease the reference count of a user-defined event. This must be called on
@@ -1016,5 +1044,5 @@ func (e *user_event) Data4() uintptr {
 // al_wait_for_event, etc. which is reference counted. This function does
 // nothing if the event is not reference counted.
 func (e *user_event) Unref() {
-    C.al_unref_user_event((*C.ALLEGRO_USER_EVENT)(e))
+	C.al_unref_user_event((*C.ALLEGRO_USER_EVENT)(e))
 }

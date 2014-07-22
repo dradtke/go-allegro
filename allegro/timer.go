@@ -1,9 +1,6 @@
 package allegro
 
-/*
-#cgo pkg-config: allegro-5.0
-#include <allegro5/allegro.h>
-*/
+// #include <allegro5/allegro.h>
 import "C"
 import (
 	"errors"

@@ -1,10 +1,7 @@
 package allegro
 
-/*
-#cgo pkg-config: allegro-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_iphone.h>
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_iphone.h>
 import "C"
 
 /*

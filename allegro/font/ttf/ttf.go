@@ -1,21 +1,15 @@
 // Package ttf provides support for Allegro's TTF font addon.
 package ttf
 
-/*
-#cgo pkg-config: allegro_ttf-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_ttf.h>
-
-void _al_ttf_free_string(char *data) {
-	al_free(data);
-}
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_ttf.h>
+// #include "../../util.c"
 import "C"
 import (
 	"errors"
 	"fmt"
-	"github.com/dradtke/go-allegro/allegro/font"
 	"github.com/dradtke/go-allegro/allegro"
+	"github.com/dradtke/go-allegro/allegro/font"
 	"unsafe"
 )
 
@@ -41,19 +35,19 @@ func Uninstall() {
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
 func Version() (major, minor, revision, release uint8) {
-    v := uint32(C.al_get_allegro_ttf_version())
-    major = uint8(v >> 24)
-    minor = uint8((v >> 16) & 255)
-    revision = uint8((v >> 8) & 255)
-    release = uint8(v & 255)
-    return
+	v := uint32(C.al_get_allegro_ttf_version())
+	major = uint8(v >> 24)
+	minor = uint8((v >> 16) & 255)
+	revision = uint8((v >> 8) & 255)
+	release = uint8(v & 255)
+	return
 }
 
 // Loads a TrueType font from a file using the FreeType library. Quoting from
 // the FreeType FAQ this means support for many different font formats:
 func LoadFont(filename string, size int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_ttf_free_string(filename_)
+	defer C.free_string(filename_)
 	f := C.al_load_ttf_font(filename_, C.int(size), C.int(flags))
 	if f == nil {
 		return nil, fmt.Errorf("failed to load ttf font at '%s'", filename)
@@ -65,7 +59,7 @@ func LoadFont(filename string, size int, flags TtfFlags) (*font.Font, error) {
 // filename is only used to find possible additional files next to a font file.
 func LoadFontF(file *allegro.File, filename string, size int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_ttf_free_string(filename_)
+	defer C.free_string(filename_)
 	f := C.al_load_ttf_font_f((*C.ALLEGRO_FILE)(unsafe.Pointer(file)), filename_,
 		C.int(size), C.int(flags))
 	if f == nil {
@@ -78,7 +72,7 @@ func LoadFontF(file *allegro.File, filename string, size int, flags TtfFlags) (*
 // instead of a single size parameter.
 func LoadFontStretch(filename string, w, h int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_ttf_free_string(filename_)
+	defer C.free_string(filename_)
 	f := C.al_load_ttf_font_stretch(filename_, C.int(w), C.int(h), C.int(flags))
 	if f == nil {
 		return nil, fmt.Errorf("failed to load ttf font at '%s'", filename)
@@ -91,7 +85,7 @@ func LoadFontStretch(filename string, w, h int, flags TtfFlags) (*font.Font, err
 // file.
 func LoadFontStretchF(file *allegro.File, filename string, w, h int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
-	defer C._al_ttf_free_string(filename_)
+	defer C.free_string(filename_)
 	f := C.al_load_ttf_font_stretch_f((*C.ALLEGRO_FILE)(unsafe.Pointer(file)),
 		filename_, C.int(w), C.int(h), C.int(flags))
 	if f == nil {
@@ -99,7 +93,3 @@ func LoadFontStretchF(file *allegro.File, filename string, w, h int, flags TtfFl
 	}
 	return (*font.Font)(unsafe.Pointer(f)), nil
 }
-
-
-
-

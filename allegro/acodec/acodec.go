@@ -1,11 +1,8 @@
 // Package acodec provides support for Allegro's acodec addon.
 package acodec
 
-/*
-#cgo pkg-config: allegro_acodec-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_acodec.h>
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_acodec.h>
 import "C"
 import (
 	"errors"

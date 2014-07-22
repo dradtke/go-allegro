@@ -1,11 +1,8 @@
 // Package image provides support for Allegro's image addon.
 package image
 
-/*
-#cgo pkg-config: allegro_image-5.0
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_image.h>
-*/
+// #include <allegro5/allegro.h>
+// #include <allegro5/allegro_image.h>
 import "C"
 import (
 	"errors"
