@@ -10,7 +10,7 @@ set CGO_LDFLAGS=-L%ALLEGRO_HOME%\lib^ -lallegro-%ALLEGRO_VERSION%-monolith-%ALLE
 GOTO END
 
 :NOALLEGRO
-echo Please set the ALLEGRO_HOME and ALLEGRO_VERSION environment variables installation and try again.
+echo Please set the ALLEGRO_HOME and ALLEGRO_VERSION environment variables and try again.
 GOTO END
 
 :END

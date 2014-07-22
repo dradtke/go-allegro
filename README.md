@@ -24,6 +24,6 @@ Windows
 
 Download the Allegro 5 binaries [here](https://www.allegro.cc/files/) and extract the root folder somewhere.
 
-Set the `ALLEGRO_HOME` environment variable to this folder's absolute path, and set the `ALLEGRO_VERSION` environment variable to the version of Allegro downloaded, e.g. 5.0.10. You can also optionally set `ALLEGRO_LIB` to reflect which version you want to link against; the default value is `monolith-static-mt-debug`.
+Set the `ALLEGRO_HOME` environment variable to this folder's absolute path, and set `ALLEGRO_VERSION` to the version of Allegro downloaded, e.g. 5.0.10. You can also optionally set `ALLEGRO_LIB` to reflect which version you want to link against; the default value is `monolith-static-mt-debug`.
 
 Once that's done, run the included `setenv.bat`, and if no errors were reported, then you can then build and install the library as usual.
