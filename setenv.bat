@@ -2,11 +2,11 @@
 
 if "%ALLEGRO_HOME%" == "" GOTO NOALLEGRO
 if "%ALLEGRO_VERSION%" == "" GOTO NOALLEGRO
-if "%ALLEGRO_LIB%" == "" set ALLEGRO_LIB=monolith-static-mt-debug
+if "%ALLEGRO_LIB%" == "" set ALLEGRO_LIB=mt-debug
 
 :YESALLEGRO
 set CGO_CFLAGS=-I%ALLEGRO_HOME%\include
-set CGO_LDFLAGS=-L%ALLEGRO_HOME%\lib^ -lallegro-%ALLEGRO_VERSION%-%ALLEGRO_LIB%
+set CGO_LDFLAGS=-L%ALLEGRO_HOME%\bin^ -lallegro-%ALLEGRO_VERSION%-monolith-%ALLEGRO_LIB%
 GOTO END
 
 :NOALLEGRO
