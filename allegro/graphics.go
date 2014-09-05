@@ -9,6 +9,11 @@ import (
 
 /* Types and Enums */
 
+var (
+	BitmapIsNull      = errors.New("bitmap is null")
+	BitmapHasNoParent = errors.New("bitmap has no parent")
+)
+
 type Color C.ALLEGRO_COLOR
 type Bitmap C.ALLEGRO_BITMAP
 type LockedRegion C.struct_ALLEGRO_LOCKED_REGION
@@ -322,6 +327,9 @@ func (bmp *Bitmap) Height() int {
 // Draws an unscaled, unrotated bitmap at the given position to the current
 // target bitmap (see al_set_target_bitmap).
 func (bmp *Bitmap) Draw(dx, dy float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(dx),
 		C.float(dy),
@@ -331,6 +339,9 @@ func (bmp *Bitmap) Draw(dx, dy float32, flags DrawFlags) {
 
 // Draws a region of the given bitmap to the target bitmap.
 func (bmp *Bitmap) DrawRegion(sx, sy, sw, sh, dx, dy float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_bitmap_region((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(sx),
 		C.float(sy),
@@ -344,6 +355,9 @@ func (bmp *Bitmap) DrawRegion(sx, sy, sw, sh, dx, dy float32, flags DrawFlags) {
 
 // Draws a scaled version of the given bitmap to the target bitmap.
 func (bmp *Bitmap) DrawScaled(sx, sy, sw, sh, dx, dy, dw, dh float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_scaled_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(sx),
 		C.float(sy),
@@ -360,6 +374,9 @@ func (bmp *Bitmap) DrawScaled(sx, sy, sw, sh, dx, dy, dw, dh float32, flags Draw
 // Draws a rotated version of the given bitmap to the target bitmap. The bitmap
 // is rotated by 'angle' radians clockwise.
 func (bmp *Bitmap) DrawRotated(cx, cy, dx, dy, angle float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_rotated_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(cx),
 		C.float(cy),
@@ -372,15 +389,21 @@ func (bmp *Bitmap) DrawRotated(cx, cy, dx, dy, angle float32, flags DrawFlags) {
 // Returns the bitmap this bitmap is a sub-bitmap of. Returns NULL if this
 // bitmap is not a sub-bitmap.
 func (bmp *Bitmap) Parent() (*Bitmap, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
 	parent := C.al_get_parent_bitmap((*C.ALLEGRO_BITMAP)(bmp))
 	if parent == nil {
-		return nil, errors.New("bitmap has no parent")
+		return nil, BitmapHasNoParent
 	}
 	return (*Bitmap)(parent), nil
 }
 
 // Like al_draw_rotated_bitmap, but can also scale the bitmap.
 func (bmp *Bitmap) DrawScaledRotated(cx, cy, dx, dy, xscale, yscale, angle float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_scaled_rotated_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(cx),
 		C.float(cy),
@@ -396,6 +419,9 @@ func (bmp *Bitmap) DrawScaledRotated(cx, cy, dx, dy, xscale, yscale, angle float
 // Like al_draw_bitmap but multiplies all colors in the bitmap with the given
 // color. For example:
 func (bmp *Bitmap) DrawTinted(tint Color, dx, dy float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_tinted_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.ALLEGRO_COLOR(tint),
 		C.float(dx),
@@ -407,6 +433,9 @@ func (bmp *Bitmap) DrawTinted(tint Color, dx, dy float32, flags DrawFlags) {
 // Like al_draw_bitmap_region but multiplies all colors in the bitmap with the
 // given color.
 func (bmp *Bitmap) DrawTintedRegion(tint Color, sx, sy, sw, sh, dx, dy float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_tinted_bitmap_region((*C.ALLEGRO_BITMAP)(bmp),
 		C.ALLEGRO_COLOR(tint),
 		C.float(sx),
@@ -422,6 +451,9 @@ func (bmp *Bitmap) DrawTintedRegion(tint Color, sx, sy, sw, sh, dx, dy float32, 
 // Like al_draw_scaled_bitmap but multiplies all colors in the bitmap with the
 // given color.
 func (bmp *Bitmap) DrawTintedScaled(tint Color, sx, sy, sw, sh, dx, dy, dw, dh float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_tinted_scaled_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.ALLEGRO_COLOR(tint),
 		C.float(sx),
@@ -439,6 +471,9 @@ func (bmp *Bitmap) DrawTintedScaled(tint Color, sx, sy, sw, sh, dx, dy, dw, dh f
 // Like al_draw_rotated_bitmap but multiplies all colors in the bitmap with the
 // given color.
 func (bmp *Bitmap) DrawTintedRotated(tint Color, cx, cy, dx, dy, angle float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_tinted_rotated_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.ALLEGRO_COLOR(tint),
 		C.float(cx),
@@ -453,6 +488,9 @@ func (bmp *Bitmap) DrawTintedRotated(tint Color, cx, cy, dx, dy, angle float32, 
 // Like al_draw_scaled_rotated_bitmap but multiplies all colors in the bitmap
 // with the given color.
 func (bmp *Bitmap) DrawTintedScaledRotated(tint Color, cx, cy, dx, dy, xscale, yscale, angle float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_tinted_scaled_rotated_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.ALLEGRO_COLOR(tint),
 		C.float(cx),
@@ -469,6 +507,9 @@ func (bmp *Bitmap) DrawTintedScaledRotated(tint Color, cx, cy, dx, dy, xscale, y
 // Like al_draw_tinted_scaled_rotated_bitmap but you specify an area within the
 // bitmap to be drawn.
 func (bmp *Bitmap) DrawTintedScaledRotatedRegion(sx, sy, sw, sh float32, tint Color, cx, cy, dx, dy, xscale, yscale, angle float32, flags DrawFlags) {
+	if bmp == nil {
+		return
+	}
 	C.al_draw_tinted_scaled_rotated_bitmap_region((*C.ALLEGRO_BITMAP)(bmp),
 		C.float(sx),
 		C.float(sy),
@@ -491,6 +532,9 @@ func (bmp *Bitmap) DrawTintedScaledRotatedRegion(sx, sy, sw, sh float32, tint Co
 // (unless locked read only). Returns NULL if the bitmap cannot be locked, e.g.
 // the bitmap was locked previously and not unlocked.
 func (bmp *Bitmap) Lock(format PixelFormat, flags LockFlags) (*LockedRegion, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
 	reg := C.al_lock_bitmap((*C.ALLEGRO_BITMAP)(bmp), C.int(format), C.int(flags))
 	if reg == nil {
 		return nil, errors.New("failed to lock bitmap; is it already locked?")
@@ -503,6 +547,9 @@ func (bmp *Bitmap) Lock(format PixelFormat, flags LockFlags) (*LockedRegion, err
 // when it is unlocked. Locking only the region you indend to modify will be
 // faster than locking the whole bitmap.
 func (bmp *Bitmap) LockRegion(x, y, width, height int, format PixelFormat, flags LockFlags) (*LockedRegion, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
 	reg := C.al_lock_bitmap_region((*C.ALLEGRO_BITMAP)(bmp),
 		C.int(x),
 		C.int(y),
@@ -519,6 +566,9 @@ func (bmp *Bitmap) LockRegion(x, y, width, height int, format PixelFormat, flags
 
 // Returns whether or not a bitmap is already locked.
 func (bmp *Bitmap) IsLocked() bool {
+	if bmp == nil {
+		return false
+	}
 	return bool(C.al_is_bitmap_locked((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
@@ -526,6 +576,9 @@ func (bmp *Bitmap) IsLocked() bool {
 // display bitmap, the texture will be updated to match the system memory copy
 // (unless it was locked read only).
 func (bmp *Bitmap) Unlock() {
+	if bmp == nil {
+		return
+	}
 	C.al_unlock_bitmap((*C.ALLEGRO_BITMAP)(bmp))
 }
 
@@ -534,6 +587,9 @@ func (bmp *Bitmap) Unlock() {
 // pre-existing (parent) bitmap, but possibly with a different size and
 // clipping settings.
 func (bmp *Bitmap) CreateSubBitmap(x, y, w, h int) (*Bitmap, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
 	sub := C.al_create_sub_bitmap((*C.ALLEGRO_BITMAP)(bmp),
 		C.int(x), C.int(y), C.int(w), C.int(h))
 	if sub == nil {
@@ -544,10 +600,16 @@ func (bmp *Bitmap) CreateSubBitmap(x, y, w, h int) (*Bitmap, error) {
 
 // Returns true if the specified bitmap is a sub-bitmap, false otherwise.
 func (bmp *Bitmap) IsSubBitmap() bool {
+	if bmp == nil {
+		return false
+	}
 	return bool(C.al_is_sub_bitmap((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
 func (bmp *Bitmap) ParentBitmap() (*Bitmap, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
 	par := C.al_get_parent_bitmap((*C.ALLEGRO_BITMAP)(bmp))
 	if par == nil {
 		return nil, errors.New("no parent bitmap")
@@ -558,6 +620,9 @@ func (bmp *Bitmap) ParentBitmap() (*Bitmap, error) {
 // Create a new bitmap with al_create_bitmap, and copy the pixel data from the
 // old bitmap across.
 func (bmp *Bitmap) Clone() (*Bitmap, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
 	clone := C.al_clone_bitmap((*C.ALLEGRO_BITMAP)(bmp))
 	if clone == nil {
 		return nil, errors.New("failed to clone bitmap")
@@ -573,14 +638,23 @@ func (bmp *Bitmap) Clone() (*Bitmap, error) {
 // bitmap is compatible (things like a cached texture version can be used) and
 // false otherwise (blitting in the current display will be slow).
 func (bmp *Bitmap) IsCompatible() bool {
+	if bmp == nil {
+		return false
+	}
 	return bool(C.al_is_compatible_bitmap((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
 func (bmp *Bitmap) BitmapFlags() BitmapFlags {
+	if bmp == nil {
+		return 0
+	}
 	return BitmapFlags(C.al_get_bitmap_flags((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
 func (bmp *Bitmap) BitmapFormat() PixelFormat {
+	if bmp == nil {
+		return 0
+	}
 	return PixelFormat(C.al_get_bitmap_format((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
@@ -588,12 +662,18 @@ func (bmp *Bitmap) BitmapFormat() PixelFormat {
 // on non-memory bitmaps. Consider locking the bitmap if you are going to use
 // this function multiple times on the same bitmap.
 func (bmp *Bitmap) Pixel(x, y int) Color {
+	if bmp == nil {
+		return *new(Color)
+	}
 	return (Color)(C.al_get_pixel((*C.ALLEGRO_BITMAP)(bmp), C.int(x), C.int(y)))
 }
 
 // Convert the given mask color to an alpha channel in the bitmap. Can be used
 // to convert older 4.2-style bitmaps with magic pink to alpha-ready bitmaps.
 func (bmp *Bitmap) ConvertMaskToAlpha(mask_color Color) {
+	if bmp == nil {
+		return
+	}
 	C.al_convert_mask_to_alpha((*C.ALLEGRO_BITMAP)(bmp), C.ALLEGRO_COLOR(mask_color))
 }
 

@@ -198,6 +198,11 @@ func (key KeyCode) Name() string {
 	return C.GoString(name)
 }
 
+// Implement the Stringer interface.
+func (key KeyCode) String() string {
+    return key.Name()
+}
+
 // Overrides the state of the keyboard LED indicators. Set to -1 to return to
 // default behavior. False is returned if the current keyboard driver cannot
 // set LED indicators.
