@@ -1,6 +1,6 @@
 package allegro
 
-// #cgo !windows pkg-config: allegro-5.0
+// #cgo !windows pkg-config: allegro-5.0 allegro_main-5.0
 import "C"
 
 // Windows users should set the ALLEGRO_HOME environment variable

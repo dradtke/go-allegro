@@ -18,62 +18,59 @@ A bare-bones program might look something like this:
     const FPS int = 60
 
     func main() {
-        if err := allegro.Install(); err != nil {
-            panic(err)
-        }
-        defer allegro.Uninstall()
+    	var (
+    		display    *allegro.Display
+    		eventQueue *allegro.EventQueue
+    		running    bool = true
+    		err        error
+    	)
 
-        var (
-            display    *allegro.Display
-            eventQueue *allegro.EventQueue
-            running    bool = true
-            err        error
-        )
+    	allegro.Run(func() {
+    		// Create a 640x480 window and give it a title.
+    		allegro.SetNewDisplayFlags(allegro.WINDOWED)
+    		if display, err = allegro.CreateDisplay(640, 480); err == nil {
+    			defer display.Destroy()
+    			display.SetWindowTitle("Hello World")
+    		} else {
+    			panic(err)
+    		}
 
-        // Create a 640x480 window and give it a title.
-        allegro.SetNewDisplayFlags(allegro.WINDOWED)
-        if display, err = allegro.CreateDisplay(640, 480); err == nil {
-            defer display.Destroy()
-            display.SetWindowTitle("Hello World")
-        } else {
-            panic(err)
-        }
+    		// Create an event queue. All of the event sources we care about should
+    		// register themselves to this queue.
+    		if eventQueue, err = allegro.CreateEventQueue(); err == nil {
+    			defer eventQueue.Destroy()
+    		} else {
+    			panic(err)
+    		}
 
-        // Create an event queue. All of the event sources we care about should
-        // register themselves to this queue.
-        if eventQueue, err = allegro.CreateEventQueue(); err == nil {
-            defer eventQueue.Destroy()
-        } else {
-            panic(err)
-        }
+    		// Calculate the timeout value based on the desired FPS.
+    		timeout := float64(1) / float64(FPS)
 
-        // Calculate the timeout value based on the desired FPS.
-        timeout := float64(1) / float64(FPS)
+    		// Register event sources.
+    		eventQueue.Register(display)
 
-        // Register event sources.
-        eventQueue.Register(display)
+    		// Set the screen to black.
+    		allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
+    		allegro.FlipDisplay()
 
-        // Set the screen to black.
-        allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
-        allegro.FlipDisplay()
+    		// Main loop.
+    		var event allegro.Event
+    		for {
+    			if e, found := eventQueue.WaitForEventUntil(allegro.NewTimeout(timeout), &event); found {
+    				switch e.(type) {
+    				case allegro.DisplayCloseEvent:
+    					running = false
+    					break
 
-        // Main loop.
-        var event allegro.Event
-        for {
-            if e, found := eventQueue.WaitForEventUntil(allegro.NewTimeout(timeout), &event); found {
-                switch e := e.(type) {
-                case allegro.DisplayCloseEvent:
-                    running = false
-                    break
+    					// Handle other events here.
+    				}
+    			}
 
-                    // Handle other events here.
-                }
-            }
-
-            if !running {
-                return
-            }
-        }
+    			if !running {
+    				return
+    			}
+    		}
+    	})
     }
 */
 package allegro
@@ -88,18 +85,6 @@ import "C"
 import (
 	"errors"
 )
-
-func Install() error {
-	if !bool(C._al_init()) {
-		return errors.New("failed to initialize allegro!")
-	}
-	return nil
-}
-
-// Closes down the Allegro system.
-func Uninstall() {
-	C.al_uninstall_system()
-}
 
 // Returns the (compiled) version of the Allegro library, packed into a single
 // integer as groups of 8 bits in the form (major << 24) | (minor << 16) |
@@ -155,4 +140,16 @@ func OrgName() string {
 // Returns the global application name string.
 func AppName() string {
 	return C.GoString(C.al_get_app_name())
+}
+
+func install() error {
+	if !bool(C._al_init()) {
+		return errors.New("failed to initialize allegro!")
+	}
+	return nil
+}
+
+// Closes down the Allegro system.
+func uninstall() {
+	C.al_uninstall_system()
 }
