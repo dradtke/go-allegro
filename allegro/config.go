@@ -5,6 +5,8 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 type Config C.ALLEGRO_CONFIG
@@ -176,6 +178,66 @@ func (cfg *Config) NextConfigEntry(iter ConfigEntryIterator) (string, error) {
 		return "", fmt.Errorf("no more entries in this section")
 	}
 	return C.GoString(entry), nil
+}
+
+func (cfg *Config) Float32Value(section, key string) (float32, error) {
+	str, err := cfg.Value(section, key)
+	if err != nil {
+		return 0, err
+	}
+	str = strings.TrimSpace(stripComment(str))
+	val, err := strconv.ParseFloat(str, 32)
+	if err != nil {
+		return 0, err
+	}
+	return float32(val), nil
+}
+
+func (cfg *Config) Float64Value(section, key string) (float64, error) {
+	str, err := cfg.Value(section, key)
+	if err != nil {
+		return 0, err
+	}
+	str = strings.TrimSpace(stripComment(str))
+	val, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return 0, err
+	}
+	return float64(val), nil
+}
+
+func (cfg *Config) IntValue(section, key string) (int64, error) {
+	str, err := cfg.Value(section, key)
+	if err != nil {
+		return 0, err
+	}
+	str = strings.TrimSpace(stripComment(str))
+	val, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return val, nil
+}
+
+func (cfg *Config) UintValue(section, key string) (uint64, error) {
+	str, err := cfg.Value(section, key)
+	if err != nil {
+		return 0, err
+	}
+	str = strings.TrimSpace(stripComment(str))
+	val, err := strconv.ParseUint(str, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return val, nil
+}
+
+func stripComment(str string) string {
+	index := strings.Index(str, "#")
+	if index > -1 {
+		return str[:index]
+	}
+	return str
 }
 
 //}}}
