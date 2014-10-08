@@ -527,6 +527,18 @@ func (bmp *Bitmap) DrawTintedScaledRotatedRegion(sx, sy, sw, sh float32, tint Co
 	)
 }
 
+// Convenience method for acting on a locked Bitmap, which will automatically be
+// unlocked after the function completes.
+func (bmp *Bitmap) WhileLocked(format PixelFormat, flags LockFlags, f func()) error {
+	_, err := bmp.Lock(format, flags)
+	if err != nil {
+		return err
+	}
+	f()
+	bmp.Unlock()
+	return nil
+}
+
 // Lock an entire bitmap for reading or writing. If the bitmap is a display
 // bitmap it will be updated from system memory after the bitmap is unlocked
 // (unless locked read only). Returns NULL if the bitmap cannot be locked, e.g.
