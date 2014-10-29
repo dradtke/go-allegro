@@ -4,6 +4,6 @@ package allegro
 import "C"
 
 // Windows users should set the ALLEGRO_HOME environment variable
-// to the root of their Allegro 5 installation, then run `install.bat`
-// to install. *Nix users should make sure they have the appropriate
-// pkg-config .pc files available, then use the standard `go install`.
+// to the root of their Allegro 5 installation, then run `setenv.bat`
+// before installing. *Nix users should make sure they have the appropriate
+// pkg-config .pc files available.
