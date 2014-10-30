@@ -1,3 +1,4 @@
+// This example demonstrates a very crude tile-based game.
 package main
 
 import (
@@ -6,6 +7,13 @@ import (
 	"math"
 	"os"
 )
+
+const TILE_SIZE = 30
+const GOPHER_SIZE = 20
+const START_X = 6
+const START_Y = 6
+const GOPHER_SPEED = 6
+const FPS = 30
 
 var gameMap = [][]int{
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -26,12 +34,10 @@ var gameMap = [][]int{
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 }
 
-const TILE_SIZE = 30
-const GOPHER_SIZE = 20
-const START_X = 6
-const START_Y = 6
-const GOPHER_SPEED = 6
-const FPS = 30
+var (
+	DISPLAY_WIDTH = TILE_SIZE * len(gameMap[0]
+	DISPLAY_HEIGHT = TILE_SIZE * len(gameMap)
+)
 
 // Global game object.
 type Game struct {
@@ -148,111 +154,108 @@ func (game *Game) Render() {
 }
 
 func main() {
-    if err := allegro.Install(); err != nil {
-        panic(err)
-    }
-    defer allegro.Uninstall()
+	allegro.Run(func() {
+		var (
+			display    *allegro.Display
+			eventQueue *allegro.EventQueue
+			running    bool = true
+			err        error
+		)
 
-	var (
-		display    *allegro.Display
-		eventQueue *allegro.EventQueue
-		running    bool = true
-		err        error
-	)
+		game := new(Game)
+		game.tiles = make(map[int]*Tile)
 
-	game := new(Game)
-	game.tiles = make(map[int]*Tile)
-
-	if eventQueue, err = allegro.CreateEventQueue(); err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		return
-	} else {
-		defer eventQueue.Destroy()
-	}
-
-	if err := allegro.InstallKeyboard(); err != nil {
-		panic(err)
-	}
-
-	allegro.SetNewDisplayFlags(allegro.WINDOWED)
-	if display, err = allegro.CreateDisplay(600, 480); err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		return
-	} else {
-		defer display.Destroy()
-		display.SetWindowTitle("You Can't Leave!")
-	}
-
-	screen := allegro.TargetBitmap()
-
-	game.gopher = new(Gopher)
-	game.gopher.image = allegro.CreateBitmap(GOPHER_SIZE, GOPHER_SIZE)
-	allegro.SetTargetBitmap(game.gopher.image)
-	allegro.ClearToColor(allegro.MapRGB(0xFF, 0, 0))
-
-	game.gopher.w = float32(game.gopher.image.Width())
-	game.gopher.h = float32(game.gopher.image.Height())
-	game.gopher.x = float32((START_X * TILE_SIZE) - (game.gopher.w / 2))
-	game.gopher.y = float32((START_Y * TILE_SIZE) - (game.gopher.h / 2))
-
-	whiteTile := &Tile{id: 0}
-	whiteTile.image = allegro.CreateBitmap(TILE_SIZE, TILE_SIZE)
-	allegro.SetTargetBitmap(whiteTile.image)
-	allegro.ClearToColor(allegro.MapRGB(0xFF, 0xFF, 0xFF))
-	game.tiles[0] = whiteTile
-
-	blackTile := &Tile{id: 1}
-	blackTile.image = allegro.CreateBitmap(TILE_SIZE, TILE_SIZE)
-	allegro.SetTargetBitmap(blackTile.image)
-	allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
-	game.tiles[1] = blackTile
-
-	// create the background
-	game.background = allegro.CreateBitmap(len(gameMap[0])*TILE_SIZE, len(gameMap)*TILE_SIZE)
-	allegro.SetTargetBitmap(game.background)
-	allegro.HoldBitmapDrawing(true)
-	for y, row := range gameMap {
-		for x, tile := range row {
-			game.RenderTile(tile, x, y)
-		}
-	}
-	allegro.HoldBitmapDrawing(false)
-	allegro.SetTargetBitmap(screen)
-
-	timer, err := allegro.CreateTimer(1.0 / FPS)
-	if err != nil {
-		panic(err)
-	}
-
-	eventQueue.Register(display)
-	eventQueue.Register(timer)
-
-	redraw := false
-	timer.Start()
-
-    var event allegro.Event
-	for running {
-		eventQueue.WaitForEvent(&event)
-        switch eventQueue.WaitForEvent(&event).(type) {
-		case allegro.TimerEvent:
-			redraw = true
-			game.Update()
-
-		case allegro.DisplayCloseEvent:
-			running = false
-			break
-
-		default:
-			// unknown event
+		if eventQueue, err = allegro.CreateEventQueue(); err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			return
+		} else {
+			defer eventQueue.Destroy()
 		}
 
-		if !running {
-			break
+		if err := allegro.InstallKeyboard(); err != nil {
+			panic(err)
 		}
 
-		if redraw && eventQueue.IsEmpty() {
-			redraw = false
-			game.Render()
+		allegro.SetNewDisplayFlags(allegro.WINDOWED)
+		if display, err = allegro.CreateDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT); err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			return
+		} else {
+			defer display.Destroy()
+			display.SetWindowTitle("You Can't Leave!")
 		}
-	}
+
+		screen := allegro.TargetBitmap()
+
+		game.gopher = new(Gopher)
+		game.gopher.image = allegro.CreateBitmap(GOPHER_SIZE, GOPHER_SIZE)
+		allegro.SetTargetBitmap(game.gopher.image)
+		allegro.ClearToColor(allegro.MapRGB(0xFF, 0, 0))
+
+		game.gopher.w = float32(game.gopher.image.Width())
+		game.gopher.h = float32(game.gopher.image.Height())
+		game.gopher.x = float32((START_X * TILE_SIZE) - (game.gopher.w / 2))
+		game.gopher.y = float32((START_Y * TILE_SIZE) - (game.gopher.h / 2))
+
+		whiteTile := &Tile{id: 0}
+		whiteTile.image = allegro.CreateBitmap(TILE_SIZE, TILE_SIZE)
+		allegro.SetTargetBitmap(whiteTile.image)
+		allegro.ClearToColor(allegro.MapRGB(0xFF, 0xFF, 0xFF))
+		game.tiles[0] = whiteTile
+
+		blackTile := &Tile{id: 1}
+		blackTile.image = allegro.CreateBitmap(TILE_SIZE, TILE_SIZE)
+		allegro.SetTargetBitmap(blackTile.image)
+		allegro.ClearToColor(allegro.MapRGB(0, 0, 0))
+		game.tiles[1] = blackTile
+
+		// create the background
+		game.background = allegro.CreateBitmap(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+		allegro.SetTargetBitmap(game.background)
+		allegro.HoldBitmapDrawing(true)
+		for y, row := range gameMap {
+			for x, tile := range row {
+				game.RenderTile(tile, x, y)
+			}
+		}
+		allegro.HoldBitmapDrawing(false)
+		allegro.SetTargetBitmap(screen)
+
+		timer, err := allegro.CreateTimer(1.0 / FPS)
+		if err != nil {
+			panic(err)
+		}
+
+		eventQueue.Register(display)
+		eventQueue.Register(timer)
+
+		redraw := false
+		timer.Start()
+
+		var event allegro.Event
+		for running {
+			eventQueue.WaitForEvent(&event)
+			switch eventQueue.WaitForEvent(&event).(type) {
+			case allegro.TimerEvent:
+				redraw = true
+
+			case allegro.DisplayCloseEvent:
+				println("display close")
+				running = false
+
+			default:
+				// unknown event
+			}
+
+			if !running {
+				break
+			}
+
+			if redraw && eventQueue.IsEmpty() {
+				game.Update()
+				game.Render()
+				redraw = false
+			}
+		}
+	})
 }

@@ -1,3 +1,5 @@
+// This example opens a window and closes it when the user presses the
+// window's close button.
 package main
 
 import (
