@@ -17,8 +17,8 @@ type TtfFlags int
 
 const (
 	TTF_NO_KERNING  TtfFlags = C.ALLEGRO_TTF_NO_KERNING
-	TTF_MONOCHROME  TtfFlags = C.ALLEGRO_TTF_MONOCHROME
-	TTF_NO_AUTOHINT TtfFlags = C.ALLEGRO_TTF_NO_AUTOHINT
+	TTF_MONOCHROME           = C.ALLEGRO_TTF_MONOCHROME
+	TTF_NO_AUTOHINT          = C.ALLEGRO_TTF_NO_AUTOHINT
 )
 
 // Call this after al_init_font_addon to make al_load_font recognize ".ttf" and
