@@ -8,33 +8,30 @@ import (
 
 type MouseCursor C.ALLEGRO_MOUSE_CURSOR
 
-type MouseState struct {
-	X, Y, W, Z, Buttons int
-	ptr                 C.ALLEGRO_MOUSE_STATE
-}
+type MouseState C.struct_ALLEGRO_MOUSE_STATE
 
 type SystemMouseCursor C.ALLEGRO_SYSTEM_MOUSE_CURSOR
 
 const (
 	MouseCursorDefault     SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT
-	MouseCursorArrow       SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_ARROW
-	MouseCursorBusy        SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_BUSY
-	MouseCursorQuestion    SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_QUESTION
-	MouseCursorEdit        SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_EDIT
-	MouseCursorMove        SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_MOVE
-	MouseCursorResizeN     SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_N
-	MouseCursorResizeW     SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_W
-	MouseCursorResizeS     SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_S
-	MouseCursorResizeE     SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_E
-	MouseCursorResizeNw    SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NW
-	MouseCursorResizeSw    SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SW
-	MouseCursorResizeSe    SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SE
-	MouseCursorResizeNe    SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NE
-	MouseCursorProgress    SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_PROGRESS
-	MouseCursorPrecision   SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_PRECISION
-	MouseCursorLink        SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_LINK
-	MouseCursorAltSelect   SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_ALT_SELECT
-	MouseCursorUnavailable SystemMouseCursor = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_UNAVAILABLE
+	MouseCursorArrow                         = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_ARROW
+	MouseCursorBusy                          = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_BUSY
+	MouseCursorQuestion                      = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_QUESTION
+	MouseCursorEdit                          = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_EDIT
+	MouseCursorMove                          = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_MOVE
+	MouseCursorResizeN                       = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_N
+	MouseCursorResizeW                       = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_W
+	MouseCursorResizeS                       = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_S
+	MouseCursorResizeE                       = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_E
+	MouseCursorResizeNw                      = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NW
+	MouseCursorResizeSw                      = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SW
+	MouseCursorResizeSe                      = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SE
+	MouseCursorResizeNe                      = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NE
+	MouseCursorProgress                      = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_PROGRESS
+	MouseCursorPrecision                     = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_PRECISION
+	MouseCursorLink                          = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_LINK
+	MouseCursorAltSelect                     = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_ALT_SELECT
+	MouseCursorUnavailable                   = C.ALLEGRO_SYSTEM_MOUSE_CURSOR_UNAVAILABLE
 )
 
 // Install a mouse driver.
@@ -70,24 +67,43 @@ func MouseNumButtons() uint {
 // Save the state of the mouse specified at the time the function is called
 // into the given structure.
 func (state *MouseState) Get() {
-	C.al_get_mouse_state(&state.ptr)
-	state.X = int(state.ptr.x)
-	state.Y = int(state.ptr.y)
-	state.Z = int(state.ptr.z)
-	state.W = int(state.ptr.w)
-	state.Buttons = int(state.ptr.buttons)
+	C.al_get_mouse_state((*C.struct_ALLEGRO_MOUSE_STATE)(state))
+}
+
+func (state *MouseState) X() int {
+	return int(state.x)
+}
+
+func (state *MouseState) Y() int {
+	return int(state.y)
+}
+
+func (state *MouseState) W() int {
+	return int(state.w)
+}
+
+func (state *MouseState) Z() int {
+	return int(state.z)
+}
+
+func (state *MouseState) Buttons() int {
+	return int(state.buttons)
+}
+
+func (state *MouseState) Pressure() float32 {
+	return float32(state.pressure)
 }
 
 // Extract the mouse axis value from the saved state. The axes are numbered
 // from 0, in this order: x-axis, y-axis, z-axis, w-axis.
 func (state *MouseState) Axis(axis int) int {
-	return int(C.al_get_mouse_state_axis(&state.ptr, C.int(axis)))
+	return int(C.al_get_mouse_state_axis((*C.struct_ALLEGRO_MOUSE_STATE)(state), C.int(axis)))
 }
 
 // Return true if the mouse button specified was held down in the state
 // specified. Unlike most things, the first mouse button is numbered 1.
 func (state *MouseState) ButtonDown(button int) bool {
-	return bool(C.al_mouse_button_down(&state.ptr, C.int(button)))
+	return bool(C.al_mouse_button_down((*C.struct_ALLEGRO_MOUSE_STATE)(state), C.int(button)))
 }
 
 // Try to position the mouse at the given coordinates on the given display. The

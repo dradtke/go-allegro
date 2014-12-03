@@ -137,28 +137,56 @@ func (cfg *Config) Destroy() {
 // will return an empty string for the global section. The iterator parameter
 // will receive an opaque iterator which is used by al_get_next_config_section
 // to iterate over the remaining sections.
-func (cfg *Config) FirstConfigSection() (string, ConfigSectionIterator) {
+func (cfg *Config) FirstConfigSection() (string, *ConfigSectionIterator) {
 	var iter ConfigSectionIterator
 	section := C.al_get_first_config_section((*C.ALLEGRO_CONFIG)(cfg),
 		(**C.ALLEGRO_CONFIG_SECTION)(&iter))
-	return C.GoString(section), iter
+	return C.GoString(section), &iter
 }
 
 // Returns the name of the next section in the given config file or NULL if
 // there are no more sections. The iterator must have been obtained with
 // al_get_first_config_section first.
-func (cfg *Config) NextConfigSection(iter ConfigSectionIterator) (string, error) {
-	section := C.al_get_next_config_section((**C.ALLEGRO_CONFIG_SECTION)(&iter))
+func (cfg *Config) NextConfigSection(iter *ConfigSectionIterator) (string, error) {
+	section := C.al_get_next_config_section((**C.ALLEGRO_CONFIG_SECTION)(iter))
 	if section == nil {
 		return "", errors.New("no more sections in this config")
 	}
 	return C.GoString(section), nil
 }
 
+// Sections() returns a read-only channel of sections in the config file.
+// This makes it easy to iterate over them like so:
+//
+//    for section := range cfg.Sections() {
+//        // do stuff
+//    }
+func (cfg *Config) Sections() <-chan string {
+	sections := make(chan string)
+	go func() {
+		defer close(sections)
+		var (
+			s string
+			iter *ConfigSectionIterator
+			err error
+		)
+		s, iter = cfg.FirstConfigSection()
+		sections <- s
+		for {
+			s, err = cfg.NextConfigSection(iter)
+			if err != nil {
+				break
+			}
+			sections <- s
+		}
+	}()
+	return sections
+}
+
 // Returns the name of the first key in the given section in the given config
 // or NULL if the section is empty. The iterator works like the one for
 // al_get_first_config_section.
-func (cfg *Config) FirstConfigEntry(section string) (string, ConfigEntryIterator, error) {
+func (cfg *Config) FirstConfigEntry(section string) (string, *ConfigEntryIterator, error) {
 	section_ := C.CString(section)
 	defer freeString(section_)
 	var iter ConfigEntryIterator
@@ -167,17 +195,48 @@ func (cfg *Config) FirstConfigEntry(section string) (string, ConfigEntryIterator
 	if entry == nil {
 		return "", nil, fmt.Errorf("section '%s' has no entries", section)
 	}
-	return C.GoString(entry), iter, nil
+	return C.GoString(entry), &iter, nil
 }
 
 // Returns the next key for the iterator obtained by al_get_first_config_entry.
 // The iterator works like the one for al_get_next_config_section.
-func (cfg *Config) NextConfigEntry(iter ConfigEntryIterator) (string, error) {
-	entry := C.al_get_next_config_entry((**C.ALLEGRO_CONFIG_ENTRY)(&iter))
+func (cfg *Config) NextConfigEntry(iter *ConfigEntryIterator) (string, error) {
+	entry := C.al_get_next_config_entry((**C.ALLEGRO_CONFIG_ENTRY)(iter))
 	if entry == nil {
 		return "", fmt.Errorf("no more entries in this section")
 	}
 	return C.GoString(entry), nil
+}
+
+// Entries() returns a read-only channel of entries in the config file.
+// This makes it easy to iterate over them like so:
+//
+//    for entry := range cfg.Entries("Section Title") {
+//        // do stuff
+//    }
+func (cfg *Config) Entries(section string) <-chan string {
+	entries := make(chan string)
+	go func() {
+		defer close(entries)
+		var (
+			e string
+			iter *ConfigEntryIterator
+			err error
+		)
+		e, iter, err = cfg.FirstConfigEntry(section)
+		if err == nil {
+			return
+		}
+		entries <- e
+		for {
+			e, err = cfg.NextConfigEntry(iter)
+			if err != nil {
+				break
+			}
+			entries <- e
+		}
+	}()
+	return entries
 }
 
 func (cfg *Config) Float32Value(section, key string) (float32, error) {

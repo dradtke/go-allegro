@@ -14,80 +14,72 @@ type DisplayFlags int
 
 const (
 	WINDOWED                  DisplayFlags = C.ALLEGRO_WINDOWED
-	FULLSCREEN                DisplayFlags = C.ALLEGRO_FULLSCREEN
-	FULLSCREEN_WINDOW         DisplayFlags = C.ALLEGRO_FULLSCREEN_WINDOW
-	RESIZABLE                 DisplayFlags = C.ALLEGRO_RESIZABLE
-	OPENGL                    DisplayFlags = C.ALLEGRO_OPENGL
-	OPENGL_3_0                DisplayFlags = C.ALLEGRO_OPENGL_3_0
-	OPENGL_FORWARD_COMPATIBLE DisplayFlags = C.ALLEGRO_OPENGL_FORWARD_COMPATIBLE
-	FRAMELESS                 DisplayFlags = C.ALLEGRO_FRAMELESS
-	NOFRAME                   DisplayFlags = C.ALLEGRO_NOFRAME
-	GENERATE_EXPOSE_EVENTS    DisplayFlags = C.ALLEGRO_GENERATE_EXPOSE_EVENTS
+	FULLSCREEN                             = C.ALLEGRO_FULLSCREEN
+	FULLSCREEN_WINDOW                      = C.ALLEGRO_FULLSCREEN_WINDOW
+	RESIZABLE                              = C.ALLEGRO_RESIZABLE
+	OPENGL                                 = C.ALLEGRO_OPENGL
+	OPENGL_3_0                             = C.ALLEGRO_OPENGL_3_0
+	OPENGL_FORWARD_COMPATIBLE              = C.ALLEGRO_OPENGL_FORWARD_COMPATIBLE
+	FRAMELESS                              = C.ALLEGRO_FRAMELESS
+	NOFRAME                                = C.ALLEGRO_NOFRAME
+	GENERATE_EXPOSE_EVENTS                 = C.ALLEGRO_GENERATE_EXPOSE_EVENTS
 )
 
-type DisplayMode struct {
-	Width, Height, Format, RefreshRate int
-	ptr                                C.ALLEGRO_DISPLAY_MODE
-}
-
-type MonitorInfo struct {
-	X1, Y1, X2, Y2 int
-	ptr            C.ALLEGRO_MONITOR_INFO
-}
+type DisplayMode C.struct_ALLEGRO_DISPLAY_MODE
 
 type DisplayOption C.int
 
 const (
 	COLOR_SIZE             DisplayOption = C.ALLEGRO_COLOR_SIZE
-	RED_SIZE               DisplayOption = C.ALLEGRO_RED_SIZE
-	GREEN_SIZE             DisplayOption = C.ALLEGRO_GREEN_SIZE
-	BLUE_SIZE              DisplayOption = C.ALLEGRO_BLUE_SIZE
-	ALPHA_SIZE             DisplayOption = C.ALLEGRO_ALPHA_SIZE
-	RED_SHIFT              DisplayOption = C.ALLEGRO_RED_SHIFT
-	GREEN_SHIFT            DisplayOption = C.ALLEGRO_GREEN_SHIFT
-	BLUE_SHIFT             DisplayOption = C.ALLEGRO_BLUE_SHIFT
-	ALPHA_SHIFT            DisplayOption = C.ALLEGRO_ALPHA_SHIFT
-	ACC_RED_SIZE           DisplayOption = C.ALLEGRO_ACC_RED_SIZE
-	ACC_GREEN_SIZE         DisplayOption = C.ALLEGRO_ACC_GREEN_SIZE
-	ACC_BLUE_SIZE          DisplayOption = C.ALLEGRO_ACC_BLUE_SIZE
-	ACC_ALPHA_SIZE         DisplayOption = C.ALLEGRO_ACC_ALPHA_SIZE
-	STEREO                 DisplayOption = C.ALLEGRO_STEREO
-	AUX_BUFFERS            DisplayOption = C.ALLEGRO_AUX_BUFFERS
-	DEPTH_SIZE             DisplayOption = C.ALLEGRO_DEPTH_SIZE
-	STENCIL_SIZE           DisplayOption = C.ALLEGRO_STENCIL_SIZE
-	SAMPLE_BUFFERS         DisplayOption = C.ALLEGRO_SAMPLE_BUFFERS
-	SAMPLES                DisplayOption = C.ALLEGRO_SAMPLES
-	RENDER_METHOD          DisplayOption = C.ALLEGRO_RENDER_METHOD
-	FLOAT_COLOR            DisplayOption = C.ALLEGRO_FLOAT_COLOR
-	FLOAT_DEPTH            DisplayOption = C.ALLEGRO_FLOAT_DEPTH
-	SINGLE_BUFFER          DisplayOption = C.ALLEGRO_SINGLE_BUFFER
-	SWAP_METHOD            DisplayOption = C.ALLEGRO_SWAP_METHOD
-	COMPATIBLE_DISPLAY     DisplayOption = C.ALLEGRO_COMPATIBLE_DISPLAY
-	UPDATE_DISPLAY_REGION  DisplayOption = C.ALLEGRO_UPDATE_DISPLAY_REGION
-	VSYNC                  DisplayOption = C.ALLEGRO_VSYNC
-	MAX_BITMAP_SIZE        DisplayOption = C.ALLEGRO_MAX_BITMAP_SIZE
-	SUPPORT_NPOT_BITMAP    DisplayOption = C.ALLEGRO_SUPPORT_NPOT_BITMAP
-	CAN_DRAW_INTO_BITMAP   DisplayOption = C.ALLEGRO_CAN_DRAW_INTO_BITMAP
-	SUPPORT_SEPARATE_ALPHA DisplayOption = C.ALLEGRO_SUPPORT_SEPARATE_ALPHA
+	RED_SIZE                             = C.ALLEGRO_RED_SIZE
+	GREEN_SIZE                           = C.ALLEGRO_GREEN_SIZE
+	BLUE_SIZE                            = C.ALLEGRO_BLUE_SIZE
+	ALPHA_SIZE                           = C.ALLEGRO_ALPHA_SIZE
+	RED_SHIFT                            = C.ALLEGRO_RED_SHIFT
+	GREEN_SHIFT                          = C.ALLEGRO_GREEN_SHIFT
+	BLUE_SHIFT                           = C.ALLEGRO_BLUE_SHIFT
+	ALPHA_SHIFT                          = C.ALLEGRO_ALPHA_SHIFT
+	ACC_RED_SIZE                         = C.ALLEGRO_ACC_RED_SIZE
+	ACC_GREEN_SIZE                       = C.ALLEGRO_ACC_GREEN_SIZE
+	ACC_BLUE_SIZE                        = C.ALLEGRO_ACC_BLUE_SIZE
+	ACC_ALPHA_SIZE                       = C.ALLEGRO_ACC_ALPHA_SIZE
+	STEREO                               = C.ALLEGRO_STEREO
+	AUX_BUFFERS                          = C.ALLEGRO_AUX_BUFFERS
+	DEPTH_SIZE                           = C.ALLEGRO_DEPTH_SIZE
+	STENCIL_SIZE                         = C.ALLEGRO_STENCIL_SIZE
+	SAMPLE_BUFFERS                       = C.ALLEGRO_SAMPLE_BUFFERS
+	SAMPLES                              = C.ALLEGRO_SAMPLES
+	RENDER_METHOD                        = C.ALLEGRO_RENDER_METHOD
+	FLOAT_COLOR                          = C.ALLEGRO_FLOAT_COLOR
+	FLOAT_DEPTH                          = C.ALLEGRO_FLOAT_DEPTH
+	SINGLE_BUFFER                        = C.ALLEGRO_SINGLE_BUFFER
+	SWAP_METHOD                          = C.ALLEGRO_SWAP_METHOD
+	COMPATIBLE_DISPLAY                   = C.ALLEGRO_COMPATIBLE_DISPLAY
+	UPDATE_DISPLAY_REGION                = C.ALLEGRO_UPDATE_DISPLAY_REGION
+	VSYNC                                = C.ALLEGRO_VSYNC
+	MAX_BITMAP_SIZE                      = C.ALLEGRO_MAX_BITMAP_SIZE
+	SUPPORT_NPOT_BITMAP                  = C.ALLEGRO_SUPPORT_NPOT_BITMAP
+	CAN_DRAW_INTO_BITMAP                 = C.ALLEGRO_CAN_DRAW_INTO_BITMAP
+	SUPPORT_SEPARATE_ALPHA               = C.ALLEGRO_SUPPORT_SEPARATE_ALPHA
 )
 
 type Importance C.int
 
 const (
 	REQUIRE  Importance = C.ALLEGRO_REQUIRE
-	SUGGEST  Importance = C.ALLEGRO_SUGGEST
-	DONTCARE Importance = C.ALLEGRO_DONTCARE
+	SUGGEST             = C.ALLEGRO_SUGGEST
+	DONTCARE            = C.ALLEGRO_DONTCARE
 )
 
 type DisplayOrientation C.int
 
 const (
 	DISPLAY_ORIENTATION_0_DEGREES   DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_0_DEGREES
-	DISPLAY_ORIENTATION_90_DEGREES  DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_90_DEGREES
-	DISPLAY_ORIENTATION_180_DEGREES DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_180_DEGREES
-	DISPLAY_ORIENTATION_270_DEGREES DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_270_DEGREES
-	DISPLAY_ORIENTATION_FACE_UP     DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_UP
-	DISPLAY_ORIENTATION_FACE_DOWN   DisplayOrientation = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_DOWN
+	DISPLAY_ORIENTATION_90_DEGREES                     = C.ALLEGRO_DISPLAY_ORIENTATION_90_DEGREES
+	DISPLAY_ORIENTATION_180_DEGREES                    = C.ALLEGRO_DISPLAY_ORIENTATION_180_DEGREES
+	DISPLAY_ORIENTATION_270_DEGREES                    = C.ALLEGRO_DISPLAY_ORIENTATION_270_DEGREES
+	DISPLAY_ORIENTATION_FACE_UP                        = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_UP
+	DISPLAY_ORIENTATION_FACE_DOWN                      = C.ALLEGRO_DISPLAY_ORIENTATION_FACE_DOWN
 )
 
 // Create a display, or window, with the specified dimensions. The parameters
@@ -220,16 +212,33 @@ func WaitForVSync() error {
 // must be between 0 and the number returned from al_get_num_display_modes-1.
 // mode must be an allocated ALLEGRO_DISPLAY_MODE structure. This function will
 // return NULL on failure, and the mode parameter that was passed in on success.
-func (mode *DisplayMode) Get(index int) error {
-	result := C.al_get_display_mode(C.int(index), &mode.ptr)
+func GetDisplayMode(index int) (*DisplayMode, error) {
+	var mode C.struct_ALLEGRO_DISPLAY_MODE
+	result := C.al_get_display_mode(C.int(index), &mode)
 	if result == nil {
-		return fmt.Errorf("error getting display mode '%d'", index)
+		return nil, fmt.Errorf("error getting display mode '%d'", index)
 	}
-	mode.Width = int(result.width)
-	mode.Height = int(result.height)
-	mode.Format = int(result.format)
-	mode.RefreshRate = int(result.refresh_rate)
-	return nil
+	return (*DisplayMode)(&mode), nil
+}
+
+// Screen width.
+func (m *DisplayMode) Width() int {
+	return int(m.width)
+}
+
+// Screen height.
+func (m *DisplayMode) Height() int {
+	return int(m.height)
+}
+
+// Pixel format.
+func (m *DisplayMode) Format() PixelFormat {
+	return PixelFormat(m.format)
+}
+
+// Refresh rate. May be 0 if unknown.
+func (m *DisplayMode) RefreshRate() int {
+	return int(m.refresh_rate)
 }
 
 // Get the number of available fullscreen display modes for the current set of
@@ -239,41 +248,6 @@ func (mode *DisplayMode) Get(index int) error {
 // give a list of all modes for the default driver.
 func NumDisplayModes() int {
 	return int(C.al_get_num_display_modes())
-}
-
-// Gets the video adapter index where new displays will be created by the
-// calling thread, if previously set with al_set_new_display_adapter. Otherwise
-// returns ALLEGRO_DEFAULT_DISPLAY_ADAPTER.
-func NewDisplayAdapter() int {
-	return int(C.al_get_new_display_adapter())
-}
-
-// Sets the adapter to use for new displays created by the calling thread. The
-// adapter has a monitor attached to it. Information about the monitor can be
-// gotten using al_get_num_video_adapters and al_get_monitor_info.
-func SetNewDisplayAdapter(adapter int) {
-	C.al_set_new_display_adapter(C.int(adapter))
-}
-
-// Get information about a monitor's position on the desktop. adapter is a
-// number from 0 to al_get_num_video_adapters()-1.
-func (info *MonitorInfo) Get(adapter int) error {
-	success := bool(C.al_get_monitor_info(C.int(adapter), &info.ptr))
-	if !success {
-		return fmt.Errorf("error getting monitor info for adapter '%d'", adapter)
-	}
-	info.X1 = int(info.ptr.x1)
-	info.X2 = int(info.ptr.x2)
-	info.Y1 = int(info.ptr.y1)
-	info.Y2 = int(info.ptr.y2)
-	return nil
-}
-
-// Get the number of video "adapters" attached to the computer. Each video card
-// attached to the computer counts as one or more adapters. An adapter is thus
-// really a video port that can have a monitor connected to it.
-func NumVideoAdapters() int {
-	return int(C.al_get_num_video_adapters())
 }
 
 // Display Instance Methods {{{
