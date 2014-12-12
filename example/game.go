@@ -35,7 +35,7 @@ var gameMap = [][]int{
 }
 
 var (
-	DISPLAY_WIDTH = TILE_SIZE * len(gameMap[0]
+	DISPLAY_WIDTH  = TILE_SIZE * len(gameMap[0])
 	DISPLAY_HEIGHT = TILE_SIZE * len(gameMap)
 )
 
