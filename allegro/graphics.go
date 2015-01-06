@@ -539,6 +539,15 @@ func (bmp *Bitmap) WhileLocked(format PixelFormat, flags LockFlags, f func()) er
 	return nil
 }
 
+func (bmp *Bitmap) WithLockedTarget(format PixelFormat, flags LockFlags, f func()) error {
+	if _, err := bmp.Lock(format, flags); err != nil {
+		return err
+	}
+	bmp.AsTarget(f)
+	bmp.Unlock()
+	return nil
+}
+
 // Lock an entire bitmap for reading or writing. If the bitmap is a display
 // bitmap it will be updated from system memory after the bitmap is unlocked
 // (unless locked read only). Returns NULL if the bitmap cannot be locked, e.g.
