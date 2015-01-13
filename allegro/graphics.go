@@ -5,6 +5,8 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"image"
+	"image/color"
 )
 
 /* Types and Enums */
@@ -699,6 +701,31 @@ func (bmp *Bitmap) ConvertMaskToAlpha(mask_color Color) {
 }
 
 //}}}
+
+// image.Image conformity {{{
+func (bmp *Bitmap) ColorModel() color.Model {
+	// ???: always use this color model?
+	return color.RGBAModel
+}
+
+func (bmp *Bitmap) Bounds() image.Rectangle {
+	return image.Rect(0, 0, bmp.Width(), bmp.Height())
+}
+
+func (bmp *Bitmap) At(x, y int) color.Color {
+	return bmp.Pixel(x, y)
+}
+
+func (c Color) RGBA() (r, g, b, a uint32) {
+	fr, fg, fb, fa := c.UnmapRGBAf()
+	const max = 0xFFFF
+	return uint32(fr * max), uint32(fg * max), uint32(fb * max), uint32(fa * max)
+}
+
+var _ color.Color = (*Color)(nil)
+var _ image.Image = (*Bitmap)(nil)
+
+// }}}
 
 // Color Methods {{{
 
