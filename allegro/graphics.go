@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
 )
+
+const rgbaMAX = 0xFFFF
 
 /* Types and Enums */
 
@@ -716,14 +719,21 @@ func (bmp *Bitmap) At(x, y int) color.Color {
 	return bmp.Pixel(x, y)
 }
 
+func (bmp *Bitmap) Set(x, y int, c color.Color) {
+	r, g, b, a := c.RGBA()
+	bmp.AsTarget(func() {
+		PutPixel(x, y, MapRGBAf(float32(r)/rgbaMAX, float32(g)/rgbaMAX, float32(b)/rgbaMAX, float32(a)/rgbaMAX))
+	})
+}
+
 func (c Color) RGBA() (r, g, b, a uint32) {
 	fr, fg, fb, fa := c.UnmapRGBAf()
-	const max = 0xFFFF
-	return uint32(fr * max), uint32(fg * max), uint32(fb * max), uint32(fa * max)
+	return uint32(fr * rgbaMAX), uint32(fg * rgbaMAX), uint32(fb * rgbaMAX), uint32(fa * rgbaMAX)
 }
 
 var _ color.Color = (*Color)(nil)
 var _ image.Image = (*Bitmap)(nil)
+var _ draw.Image = (*Bitmap)(nil)
 
 // }}}
 
