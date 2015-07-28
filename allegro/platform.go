@@ -1,3 +1,5 @@
+// +build ignore
+
 package allegro
 
 // #include <allegro5/allegro.h>
