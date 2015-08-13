@@ -720,15 +720,20 @@ func (bmp *Bitmap) At(x, y int) color.Color {
 }
 
 func (bmp *Bitmap) Set(x, y int, c color.Color) {
-	r, g, b, a := c.RGBA()
 	bmp.AsTarget(func() {
-		PutPixel(x, y, MapRGBAf(float32(r)/rgbaMAX, float32(g)/rgbaMAX, float32(b)/rgbaMAX, float32(a)/rgbaMAX))
+		PutPixel(x, y, NewColor(c))
 	})
 }
 
 func (c Color) RGBA() (r, g, b, a uint32) {
 	fr, fg, fb, fa := c.UnmapRGBAf()
 	return uint32(fr * rgbaMAX), uint32(fg * rgbaMAX), uint32(fb * rgbaMAX), uint32(fa * rgbaMAX)
+}
+
+// NewColor converts a Go image.Color to an Allegro color value.
+func NewColor(c color.Color) Color {
+	r, g, b, a := c.RGBA()
+	return MapRGBAf(float32(r)/rgbaMAX, float32(g)/rgbaMAX, float32(b)/rgbaMAX, float32(a)/rgbaMAX)
 }
 
 var _ color.Color = (*Color)(nil)
