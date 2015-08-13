@@ -730,8 +730,13 @@ func (c Color) RGBA() (r, g, b, a uint32) {
 	return uint32(fr * rgbaMAX), uint32(fg * rgbaMAX), uint32(fb * rgbaMAX), uint32(fa * rgbaMAX)
 }
 
-// NewColor converts a Go image.Color to an Allegro color value.
+// NewColor converts a Go image.Color to an Allegro color value. If the parameter
+// is itself an Allegro color value, then it is cast and returned; otherwise, a
+// new value is constructed using MapRGBAf.
 func NewColor(c color.Color) Color {
+	if x, ok := c.(Color); ok {
+		return x
+	}
 	r, g, b, a := c.RGBA()
 	return MapRGBAf(float32(r)/rgbaMAX, float32(g)/rgbaMAX, float32(b)/rgbaMAX, float32(a)/rgbaMAX)
 }
