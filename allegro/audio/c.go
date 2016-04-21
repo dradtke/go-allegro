@@ -1,4 +1,4 @@
 package audio
 
-// #cgo !windows pkg-config: allegro_audio-5.0
+// #cgo !windows pkg-config: allegro_audio-5
 import "C"
