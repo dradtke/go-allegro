@@ -9,6 +9,11 @@ Function documentation is included in the source, but it's pulled directly from 
 
 A number of Allegro functions are blacklisted (via the `blacklist` file) because they either a) overlap with existing Go functionality, like UTF-8 support, or b) are too low-level and probably shouldn't be implemented in Go anyway, like registering new bitmap loaders. These exceptions aside, the bindings officially have 100% method coverage as of Allegro 5.0.10. You can verify this by running `go test coverage_test.go`; any methods found in a header file that aren't covered somewhere in the bindings will show up as unit test failures.
 
+Branching
+=========
+
+`master` is the default branch, but you should usually use one corresponding to your Allegro version. Check out the list of branches to see what's available.
+
 Installation
 ============
 
