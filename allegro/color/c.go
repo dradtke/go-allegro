@@ -1,4 +1,4 @@
 package color
 
-// #cgo !windows pkg-config: allegro_color-5.0
+// #cgo !windows pkg-config: allegro_color-5
 import "C"

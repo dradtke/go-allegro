@@ -1,4 +1,4 @@
 package acodec
 
-// #cgo !windows pkg-config: allegro_acodec-5.0
+// #cgo !windows pkg-config: allegro_acodec-5
 import "C"

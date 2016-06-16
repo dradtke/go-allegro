@@ -1,4 +1,4 @@
 package ttf
 
-// #cgo !windows pkg-config: allegro_ttf-5.0
+// #cgo !windows pkg-config: allegro_ttf-5
 import "C"
