@@ -1,4 +1,4 @@
 package memfile
 
-// #cgo !windows pkg-config: allegro_memfile-5.0
+// #cgo !windows pkg-config: allegro_memfile-5
 import "C"

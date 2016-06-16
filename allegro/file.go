@@ -86,7 +86,7 @@ func (f *File) Eof() bool {
 // Returns true if the error indicator is set on the given file, i.e. there was
 // some sort of previous error.
 func (f *File) HasError() bool {
-	return bool(C.al_ferror((*C.ALLEGRO_FILE)(f)))
+	return C.al_ferror((*C.ALLEGRO_FILE)(f)) != 0
 }
 
 // Clear the error indicator for the given file.
