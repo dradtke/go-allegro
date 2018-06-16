@@ -166,9 +166,9 @@ func (cfg *Config) Sections() <-chan string {
 	go func() {
 		defer close(sections)
 		var (
-			s string
+			s    string
 			iter *ConfigSectionIterator
-			err error
+			err  error
 		)
 		s, iter = cfg.FirstConfigSection()
 		sections <- s
@@ -219,9 +219,9 @@ func (cfg *Config) Entries(section string) <-chan string {
 	go func() {
 		defer close(entries)
 		var (
-			e string
+			e    string
 			iter *ConfigEntryIterator
-			err error
+			err  error
 		)
 		e, iter, err = cfg.FirstConfigEntry(section)
 		if err == nil {

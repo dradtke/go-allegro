@@ -5,10 +5,10 @@ package main
 
 import (
 	"bytes"
-	"golang.org/x/net/html"
 	"container/list"
 	"flag"
 	"fmt"
+	"golang.org/x/net/html"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -247,7 +247,7 @@ func Parse(href string, sources map[string]*list.List, wg *sync.WaitGroup) {
 			}
 			for {
 				commentLine, rest := TrimTo(text, 77)
-				lines.InsertBefore("// " + commentLine, e)
+				lines.InsertBefore("// "+commentLine, e)
 				if rest == "" {
 					break
 				} else {
