@@ -63,7 +63,6 @@ func SetNewDisplayAdapter(adapter int) {
 	C.al_set_new_display_adapter(C.int(adapter))
 }
 
-
 // Get the number of video "adapters" attached to the computer. Each video card
 // attached to the computer counts as one or more adapters. An adapter is thus
 // really a video port that can have a monitor connected to it.
