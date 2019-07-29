@@ -249,7 +249,7 @@ func SetBlender(op BlendingOperation, src, dst BlendingValue) {
 // the alpha channel. This is useful if your target bitmap also has an alpha
 // channel and the two alpha channels need to be combined in a different way
 // than the color components.
-func SetSeparateBlender(op BlendingOperation, src, dst, BlendingValue, alpha_op BlendingOperation, alpha_src, alpha_dst BlendingValue) {
+func SetSeparateBlender(op BlendingOperation, src, dst BlendingValue, alpha_op BlendingOperation, alpha_src, alpha_dst BlendingValue) {
 	C.al_set_separate_blender(
 		C.int(op),
 		C.int(src),
