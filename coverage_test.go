@@ -116,7 +116,7 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 	// First walk the full root, looking for standard allegro functions.
 	// Also include subpackages that include platform-specific functionality,
 	// but aren't separate modules.
-	source, sourceErr = getSource(packageRoot, filepath.Join(packageRoot, "x11"))
+	source, sourceErr = getSource(packageRoot, filepath.Join(packageRoot, "x11"), filepath.Join(packageRoot, "windows"))
 	if sourceErr != nil {
 		errs <- sourceErr
 		return
