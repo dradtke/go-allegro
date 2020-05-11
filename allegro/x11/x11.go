@@ -1,5 +1,5 @@
 // Package x11 provides support for Allegro's X11 functions.
-package acodec
+package x11
 
 // #include <allegro5/allegro_x.h>
 import "C"
