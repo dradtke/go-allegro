@@ -11,12 +11,31 @@ int get_stride() {
 import "C"
 import (
 	"errors"
-	"github.com/dradtke/go-allegro/allegro"
 	"unsafe"
+
+	"github.com/dradtke/go-allegro/allegro"
 )
 
 func col(color allegro.Color) C.ALLEGRO_COLOR {
 	return *((*C.ALLEGRO_COLOR)(unsafe.Pointer(&color)))
+}
+
+func cVertices(vertices []Vertex) []C.ALLEGRO_VERTEX {
+	vertices_ := make([]C.ALLEGRO_VERTEX, len(vertices))
+	for i, vertex := range vertices {
+		// how does this perform?
+		vertex.init()
+		vertices_[i] = vertex.raw
+	}
+	return vertices_
+}
+
+func cInts(v []int) []C.int {
+	x := make([]C.int, len(v))
+	for i := range v {
+		x[i] = C.int(v[i])
+	}
+	return x
 }
 
 type Point struct {
@@ -94,6 +113,15 @@ const (
 	PRIM_FLOAT_2 PrimStorage = C.ALLEGRO_PRIM_FLOAT_2
 	PRIM_FLOAT_3             = C.ALLEGRO_PRIM_FLOAT_3
 	PRIM_SHORT_2             = C.ALLEGRO_PRIM_SHORT_2
+)
+
+type LineJoin int
+
+const (
+	LINE_JOIN_NONE  LineJoin = C.ALLEGRO_LINE_JOIN_NONE
+	LINE_JOIN_BEVEL          = C.ALLEGRO_LINE_JOIN_BEVEL
+	LINE_JOIN_ROUND          = C.ALLEGRO_LINE_JOIN_ROUND
+	LINE_JOIN_MITER          = C.ALLEGRO_LINE_JOIN_MITER
 )
 
 // Initializes the primitives addon.
@@ -424,12 +452,7 @@ func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segm
 
 // Draws a subset of the passed vertex buffer.
 func DrawPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, start, end int, prim_type PrimType) int {
-	vertices_ := make([]C.ALLEGRO_VERTEX, len(vertices))
-	for i, vertex := range vertices {
-		// how does this perform?
-		vertex.init()
-		vertices_[i] = vertex.raw
-	}
+	vertices_ := cVertices(vertices)
 	drawn := C.al_draw_prim(unsafe.Pointer(&vertices_[0]),
 		(*C.ALLEGRO_VERTEX_DECL)(decl),
 		(*C.ALLEGRO_BITMAP)(texture),
@@ -442,16 +465,8 @@ func DrawPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, star
 // Draws a subset of the passed vertex buffer. This function uses an index
 // array to specify which vertices to use.
 func DrawIndexedPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, indices []int, num_vertices int, prim_type PrimType) int {
-	vertices_ := make([]C.ALLEGRO_VERTEX, len(vertices))
-	for i, vertex := range vertices {
-		// how does this perform?
-		vertex.init()
-		vertices_[i] = vertex.raw
-	}
-	indices_ := make([]C.int, len(indices))
-	for i, index := range indices {
-		indices_[i] = C.int(index)
-	}
+	vertices_ := cVertices(vertices)
+	indices_ := cInts(indices)
 	drawn := C.al_draw_indexed_prim(unsafe.Pointer(&vertices_[0]),
 		(*C.ALLEGRO_VERTEX_DECL)(decl),
 		(*C.ALLEGRO_BITMAP)(texture),
@@ -475,4 +490,47 @@ func CreateVertexDecl(elements []VertexElement, stride int) *VertexDecl {
 // Destroys a vertex declaration.
 func (v *VertexDecl) Destroy() {
 	C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
+}
+
+func DrawPolygon(vertices []Point, vertexCount int, joinStyle LineJoin, color allegro.Color, thickness float32, miterLimit float32) {
+	vertices_ := make([]float32, 0, len(vertices)*2)
+	for _, vertex := range vertices {
+		vertices_ = append(vertices_, vertex.X, vertex.Y)
+	}
+	C.al_draw_polygon(
+		(*C.float)(unsafe.Pointer(&vertices_[0])),
+		C.int(vertexCount),
+		C.int(joinStyle),
+		col(color),
+		C.float(thickness),
+		C.float(miterLimit),
+	)
+}
+
+func DrawFilledPolygon(vertices []Point, vertexCount int, color allegro.Color) {
+	vertices_ := make([]float32, 0, len(vertices)*2)
+	for _, vertex := range vertices {
+		vertices_ = append(vertices_, vertex.X, vertex.Y)
+	}
+	C.al_draw_filled_polygon(
+		(*C.float)(unsafe.Pointer(&vertices_[0])),
+		C.int(vertexCount),
+		col(color),
+	)
+}
+
+func DrawFilledPolygonWithHoles(vertices []Point, vertexCounts []int, color allegro.Color) {
+	vertices_ := make([]float32, 0, len(vertices)*2)
+	for _, vertex := range vertices {
+		vertices_ = append(vertices_, vertex.X, vertex.Y)
+	}
+	if vertexCounts[len(vertexCounts)-1] != 0 {
+		vertexCounts = append(vertexCounts, 0)
+	}
+	vertexCounts_ := cInts(vertexCounts)
+	C.al_draw_filled_polygon_with_holes(
+		(*C.float)(unsafe.Pointer(&vertices_[0])),
+		(*C.int)(unsafe.Pointer(&vertexCounts_[0])),
+		col(color),
+	)
 }
