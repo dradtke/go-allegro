@@ -46,7 +46,7 @@ func CurrentTransform() *Transform {
 // Makes a copy of a transformation.
 func (t *Transform) Copy() *Transform {
 	var dest C.ALLEGRO_TRANSFORM
-	C.al_copy_transform((*C.ALLEGRO_TRANSFORM)(t), &dest)
+	C.al_copy_transform(&dest, (*C.ALLEGRO_TRANSFORM)(t))
 	return (*Transform)(&dest)
 }
 
