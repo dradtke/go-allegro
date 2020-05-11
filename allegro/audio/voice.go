@@ -10,12 +10,10 @@ import (
 type Voice C.ALLEGRO_VOICE
 
 // Creates a voice structure and allocates a voice from the digital sound
-// driver. The passed frequency, sample format and channel configuration are
-// used as a hint to what kind of data will be sent to the voice. However, the
-// underlying sound driver is free to use non-matching values. For example it
-// may be the native format of the sound hardware. If a mixer is attached to
-// the voice, the mixer will convert from the mixer's format to the voice
-// format and care does not have to be taken for this.
+// driver. The passed frequency (in Hz), sample format and channel
+// configuration are used as a hint to what kind of data will be sent to the
+// voice. However, the underlying sound driver is free to use non-matching
+// values. For example, it may be the native format of the sound hardware.
 func CreateVoice(freq uint, depth Depth, chan_conf ChannelConf) *Voice {
 	return (*Voice)(C.al_create_voice(
 		C.uint(freq),
@@ -29,12 +27,12 @@ func (v *Voice) Destroy() {
 	C.al_destroy_voice((*C.ALLEGRO_VOICE)(v))
 }
 
-// Detaches the mixer or sample or stream from the voice.
+// Detaches the mixer, sample instance or audio stream from the voice.
 func (v *Voice) Detach() {
 	C.al_detach_voice((*C.ALLEGRO_VOICE)(v))
 }
 
-// Return the frequency of the voice, e.g. 44100.
+// Return the frequency of the voice (in Hz), e.g. 44100.
 func (v *Voice) Frequency() uint {
 	return uint(C.al_get_voice_frequency((*C.ALLEGRO_VOICE)(v)))
 }

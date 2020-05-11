@@ -5,9 +5,8 @@ package physfs
 // #include <allegro5/allegro_physfs.h>
 import "C"
 
-// After calling this, subsequent calls to al_fopen will be handled by
-// PHYSFS_open(). Operations on the files returned by al_fopen will then be
-// performed through PhysicsFS.
+// This function sets both the ALLEGRO_FILE_INTERFACE and ALLEGRO_FS_INTERFACE
+// for the calling thread.
 func UseFileInterface() {
 	C.al_set_physfs_file_interface()
 }

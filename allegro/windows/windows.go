@@ -7,8 +7,7 @@ import (
 	"github.com/dradtke/go-allegro/allegro"
 )
 
-// WindowHandle returns a uintptr to match the Handle type defined in
-// golang.org/x/sys/windows.
+// Returns the handle to the window that the passed display is using.
 func WindowHandle(d *allegro.Display) uintptr {
 	hwnd := C.al_get_win_window_handle((*C.ALLEGRO_DISPLAY)(d))
 	return hwnd

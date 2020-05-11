@@ -22,7 +22,7 @@ func IdentityTransform() *Transform {
 }
 
 // Builds a transformation given some parameters. This call is equivalent to
-// calling the transformations in this order: make identity, scale, rotate,
+// calling the transformations in this order: make identity, rotate, scale,
 // translate. This method is faster, however, than actually calling those
 // functions.
 func BuildTransform(x, y, sx, sy, theta float32) *Transform {

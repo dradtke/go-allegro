@@ -73,14 +73,13 @@ func (s *Sample) SaveF(f *allegro.File, ident string) error {
 	return nil
 }
 
-// Creates a sample stream, using the supplied data. This must be attached to a
-// voice or mixer before it can be played. The argument may be NULL. You can
-// then set the data later with al_set_sample.
+// Creates a sample instance, using the supplied sample data. The instance must
+// be attached to a mixer (or voice) in order to actually produce output.
 func CreateSampleInstance(sample_data *Sample) *SampleInstance {
 	return (*SampleInstance)(C.al_create_sample_instance((*C.ALLEGRO_SAMPLE)(sample_data)))
 }
 
-// Play an instance of a sample data. Returns true on success, false on failure.
+// Play the sample instance. Returns true on success, false on failure.
 func (s *SampleInstance) Play() error {
 	if !bool(C.al_play_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))) {
 		return errors.New("failed to play sample instance")
@@ -108,10 +107,11 @@ func (s *SampleInstance) AttachToMixer(mixer *Mixer) error {
 	return nil
 }
 
-// Attaches a sample to a voice, and allows it to play. The sample's volume and
-// loop mode will be ignored, and it must have the same frequency and depth
-// (including signed-ness) as the voice. This function may fail if the selected
-// driver doesn't support preloading sample data.
+// Attaches a sample instance to a voice, and allows it to play. The instance's
+// gain and loop mode will be ignored, and it must have the same frequency,
+// channel configuration and depth (including signed-ness) as the voice. This
+// function may fail if the selected driver doesn't support preloading sample
+// data.
 func (s *SampleInstance) AttachToVoice(voice *Voice) error {
 	if voice == nil {
 		return errors.New("cannot attach sample instance to null voice")
@@ -122,17 +122,20 @@ func (s *SampleInstance) AttachToVoice(voice *Voice) error {
 	return nil
 }
 
-// Return the frequency of the sample instance.
+// Return the frequency (in Hz) of the sample instance's sample data.
 func (s *SampleInstance) Frequency() uint {
 	return uint(C.al_get_sample_instance_frequency((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
-// Return the length of the sample instance in sample values.
+// Return the length of the sample instance in sample values. This property may
+// differ from the length of the instance's sample data.
 func (s *SampleInstance) Length() uint {
 	return uint(C.al_get_sample_instance_length((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
-// Set the length of the sample instance in sample values.
+// Set the length of the sample instance in sample values. This can be used to
+// play only parts of the underlying sample. Be careful not to exceed the
+// actual length of the sample data, though.
 func (s *SampleInstance) SetLength(val uint) error {
 	if !bool(C.al_set_sample_instance_length((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.unsigned(val))) {
 		return fmt.Errorf("failed to set sample instance length to %d", val)
@@ -153,12 +156,13 @@ func (s *SampleInstance) SetPosition(val uint) error {
 	return nil
 }
 
-// Return the relative playback speed.
+// Return the relative playback speed of the sample instance.
 func (s *SampleInstance) Speed() float32 {
 	return float32(C.al_get_sample_instance_speed((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
-// Set the relative playback speed. 1.0 is normal speed.
+// Set the relative playback speed of the sample instance. 1.0 means normal
+// speed.
 func (s *SampleInstance) SetSpeed(val float32) error {
 	if !bool(C.al_set_sample_instance_speed((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.float(val))) {
 		return fmt.Errorf("failed to set sample instance speed to %d", val)
@@ -166,12 +170,12 @@ func (s *SampleInstance) SetSpeed(val float32) error {
 	return nil
 }
 
-// Return the playback gain.
+// Return the playback gain of the sample instance.
 func (s *SampleInstance) Gain() float32 {
 	return float32(C.al_get_sample_instance_gain((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
-// Set the playback gain.
+// Set the playback gain of the sample instance.
 func (s *SampleInstance) SetGain(val float32) error {
 	if !bool(C.al_set_sample_instance_gain((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.float(val))) {
 		return fmt.Errorf("failed to set sample instance gain to %d", val)
@@ -179,7 +183,7 @@ func (s *SampleInstance) SetGain(val float32) error {
 	return nil
 }
 
-// Get the pan value.
+// Get the pan value of the sample instance.
 func (s *SampleInstance) Pan() float32 {
 	return float32(C.al_get_sample_instance_pan((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
@@ -196,22 +200,22 @@ func (s *SampleInstance) SetPan(val float32) error {
 	return nil
 }
 
-// Return the audio depth.
+// Return the audio depth of the sample instance's sample data.
 func (s *SampleInstance) Depth() Depth {
 	return Depth(C.al_get_sample_instance_depth((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
-// Return the channel configuration.
+// Return the channel configuration of the sample instance's sample data.
 func (s *SampleInstance) Channels() ChannelConf {
 	return ChannelConf(C.al_get_sample_instance_channels((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
-// Return the playback mode.
+// Return the playback mode of the sample instance.
 func (s *SampleInstance) PlayMode() PlayMode {
 	return PlayMode(C.al_get_sample_instance_playmode((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
-// Set the playback mode.
+// Set the playback mode of the sample instance.
 func (s *SampleInstance) SetPlayMode(val PlayMode) error {
 	if !bool(C.al_set_sample_instance_playmode((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.ALLEGRO_PLAYMODE(val))) {
 		return errors.New("failed to set sample instance playmode")
@@ -219,7 +223,8 @@ func (s *SampleInstance) SetPlayMode(val PlayMode) error {
 	return nil
 }
 
-// Return true if the sample instance is playing.
+// Return true if the sample instance is in the playing state. This may be true
+// even if the instance is not attached to anything.
 func (s *SampleInstance) Playing() bool {
 	return bool(C.al_get_sample_instance_playing((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
@@ -251,8 +256,8 @@ func (s *SampleInstance) Detach() error {
 	return nil
 }
 
-// Detaches the sample stream from anything it may be attached to and frees it
-// (the sample data is not freed!).
+// Detaches the sample instance from anything it may be attached to and frees
+// it (the sample data, i.e. its ALLEGRO_SAMPLE, is not freed!).
 func (s *SampleInstance) Destroy() {
 	C.al_destroy_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))
 }
@@ -281,17 +286,17 @@ func (s *Sample) Play(gain, pan, speed float32, loop PlayMode) (*SampleID, error
 	return &id, nil
 }
 
-// Return the channel configuration.
+// Return the channel configuration of the sample.
 func (s *Sample) Channels() ChannelConf {
 	return ChannelConf(C.al_get_sample_channels((*C.ALLEGRO_SAMPLE)(s)))
 }
 
-// Return the audio depth.
+// Return the audio depth of the sample.
 func (s *Sample) Depth() Depth {
 	return Depth(C.al_get_sample_depth((*C.ALLEGRO_SAMPLE)(s)))
 }
 
-// Return the frequency of the sample.
+// Return the frequency (in Hz) of the sample.
 func (s *Sample) Frequency() uint {
 	return uint(C.al_get_sample_frequency((*C.ALLEGRO_SAMPLE)(s)))
 }

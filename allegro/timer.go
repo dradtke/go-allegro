@@ -30,7 +30,9 @@ func (t *Timer) Destroy() {
 
 // Start the timer specified. From then, the timer's counter will increment at
 // a constant rate, and it will begin generating events. Starting a timer that
-// is already started does nothing.
+// is already started does nothing. Starting a timer that was stopped will
+// reset the timer's counter, effectively restarting the timer from the
+// beginning.
 func (t *Timer) Start() {
 	C.al_start_timer((*C.ALLEGRO_TIMER)(t))
 }
@@ -78,7 +80,8 @@ func (t *Timer) AddCount(diff int64) {
 	C.al_add_timer_count((*C.ALLEGRO_TIMER)(t), C.int64_t(diff))
 }
 
-// Retrieve the associated event source.
+// Retrieve the associated event source. Timers will generate events of type
+// ALLEGRO_EVENT_TIMER.
 func (t *Timer) EventSource() *EventSource {
 	return (*EventSource)(C.al_get_timer_event_source((*C.ALLEGRO_TIMER)(t)))
 }

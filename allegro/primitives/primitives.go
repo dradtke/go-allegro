@@ -232,12 +232,16 @@ func DrawFilledRoundedRectangle(p1, p2 Point, rx, ry float32, color allegro.Colo
 		col(color))
 }
 
-// Calculates an elliptical arc, and sets the vertices in the destination
-// buffer to the calculated positions. If thickness <= 0, then num_points of
-// points are required in the destination, otherwise twice as many are needed.
-// The destination buffer should consist of regularly spaced (by distance of
-// stride bytes) doublets of floats, corresponding to x and y coordinates of
-// the vertices.
+// When thickness <= 0 this function computes positions of num_points regularly
+// spaced points on an elliptical arc. When thickness > 0 this function
+// computes two sets of points, obtained as follows: the first set is obtained
+// by taking the points computed in the thickness <= 0 case and shifting them
+// by thickness / 2 outward, in a direction perpendicular to the arc curve. The
+// second set is the same, but shifted thickness / 2 inward relative to the
+// arc. The two sets of points are interleaved in the destination buffer (i.e.
+// the first pair of points will be collinear with the arc center, the first
+// point of the pair will be farther from the center than the second point; the
+// next pair will also be collinear, but at a different angle and so on).
 func CalculateArc(center Point, rx, ry, start_theta, delta_theta, thickness float32, num_points int) []Point {
 	if num_points == 0 {
 		return make([]Point, 0)
@@ -434,8 +438,9 @@ func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num
 	return buf
 }
 
-// Draws a series of straight lines given an array of points. The ribbon will
-// go through all of the passed points.
+// Draws a ribbon given an array of points. The ribbon will go through all of
+// the passed points. The points buffer should consist of regularly spaced
+// doublets of floats, corresponding to x and y coordinates of the vertices.
 func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segments int) {
 	cpoints := make([]C.float, len(points)*2)
 	for i := 0; i < len(points)*2; i += 2 {
@@ -450,7 +455,7 @@ func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segm
 		C.int(num_segments))
 }
 
-// Draws a subset of the passed vertex buffer.
+// Draws a subset of the passed vertex array.
 func DrawPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, start, end int, prim_type PrimType) int {
 	vertices_ := cVertices(vertices)
 	drawn := C.al_draw_prim(unsafe.Pointer(&vertices_[0]),
@@ -462,8 +467,8 @@ func DrawPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, star
 	return int(drawn)
 }
 
-// Draws a subset of the passed vertex buffer. This function uses an index
-// array to specify which vertices to use.
+// Draws a subset of the passed vertex array. This function uses an index array
+// to specify which vertices to use.
 func DrawIndexedPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, indices []int, num_vertices int, prim_type PrimType) int {
 	vertices_ := cVertices(vertices)
 	indices_ := cInts(indices)
@@ -492,6 +497,8 @@ func (v *VertexDecl) Destroy() {
 	C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
 }
 
+// Draw an unfilled polygon. This is the same as passing
+// ALLEGRO_LINE_CAP_CLOSED to al_draw_polyline.
 func DrawPolygon(vertices []Point, vertexCount int, joinStyle LineJoin, color allegro.Color, thickness float32, miterLimit float32) {
 	vertices_ := make([]float32, 0, len(vertices)*2)
 	for _, vertex := range vertices {
@@ -507,6 +514,8 @@ func DrawPolygon(vertices []Point, vertexCount int, joinStyle LineJoin, color al
 	)
 }
 
+// Draw a filled, simple polygon. Simple means it does not have to be convex
+// but must not be self-overlapping.
 func DrawFilledPolygon(vertices []Point, vertexCount int, color allegro.Color) {
 	vertices_ := make([]float32, 0, len(vertices)*2)
 	for _, vertex := range vertices {
@@ -519,6 +528,9 @@ func DrawFilledPolygon(vertices []Point, vertexCount int, color allegro.Color) {
 	)
 }
 
+// Draws a filled simple polygon with zero or more other simple polygons
+// subtracted from it - the holes. The holes cannot touch or intersect with the
+// outline of the filled polygon.
 func DrawFilledPolygonWithHoles(vertices []Point, vertexCounts []int, color allegro.Color) {
 	vertices_ := make([]float32, 0, len(vertices)*2)
 	for _, vertex := range vertices {

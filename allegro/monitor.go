@@ -8,8 +8,8 @@ import (
 
 type MonitorInfo C.struct_ALLEGRO_MONITOR_INFO
 
-// Get information about a monitor's position on the desktop. adapter is a number from
-// 0 to al_get_num_video_adapters()-1.
+// Get information about a monitor's position on the desktop. adapter is a
+// number from 0 to al_get_num_video_adapters()-1.
 func GetMonitorInfo(adapter int) (*MonitorInfo, error) {
 	var info C.struct_ALLEGRO_MONITOR_INFO
 	success := bool(C.al_get_monitor_info(C.int(adapter), &info))

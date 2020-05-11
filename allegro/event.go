@@ -22,10 +22,10 @@ func (source EventSource) InitUserEventSource() {
 	C.al_init_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(&source))
 }
 
-// Emit a user event. The event source must have been initialised with
-// al_init_user_event_source. Returns false if the event source isn't
-// registered with any queues, hence the event wouldn't have been delivered
-// into any queues.
+// Emit an event from a user event source. The event source must have been
+// initialised with al_init_user_event_source. Returns false if the event
+// source isn't registered with any queues, hence the event wouldn't have been
+// delivered into any queues.
 func (source *EventSource) EmitUserEvent(data ...uintptr) error {
 	data_len := len(data)
 	if data_len > 4 {
@@ -70,8 +70,8 @@ func (source *EventSource) Data() uintptr {
 	return uintptr(C.al_get_event_source_data((*C.ALLEGRO_EVENT_SOURCE)(source)))
 }
 
-// Create a new, empty event queue, returning a pointer to object if
-// successful. Returns NULL on error.
+// Create a new, empty event queue, returning a pointer to the newly created
+// object if successful. Returns NULL on error.
 func CreateEventQueue() (*EventQueue, error) {
 	q := C.al_create_event_queue()
 	if q == nil {

@@ -164,7 +164,8 @@ func (dialog *FileChooser) Count() int {
 	return int(C.al_get_native_file_dialog_count((*C.ALLEGRO_FILECHOOSER)(dialog)))
 }
 
-// Returns one of the selected paths.
+// Returns one of the selected paths with index i. The index should range from
+// 0 to the return value of al_get_native_file_dialog_count -1.
 func (dialog *FileChooser) Path(i int) (string, error) {
 	path := C.al_get_native_file_dialog_path((*C.ALLEGRO_FILECHOOSER)(dialog), C.size_t(i))
 	if path == nil {

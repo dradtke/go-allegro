@@ -29,9 +29,9 @@ func IsAudioInstalled() bool {
 }
 
 // Reserves a number of sample instances, attaching them to the default mixer.
-// If no default mixer is set when this function is called, then it will
-// automatically create a voice with an attached mixer, which becomes the
-// default mixer. This diagram illustrates the structures that are set up:
+// If no default mixer is set when this function is called, then it will create
+// one and attach it to the default voice. If no default voice has been set,
+// it, too, will be created.
 func ReserveSamples(reserve_samples int) error {
 	ok := bool(C.al_reserve_samples(C.int(reserve_samples)))
 	if !ok {

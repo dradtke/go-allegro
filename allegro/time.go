@@ -12,9 +12,9 @@ func NewTimeout(seconds float64) *Timeout {
 	return (*Timeout)(&timeout)
 }
 
-// Waits for the specified number seconds. This tells the system to pause the
-// current thread for the given amount of time. With some operating systems,
-// the accuracy can be in the order of 10ms. That is, even
+// Waits for the specified number of seconds. This tells the system to pause
+// the current thread for the given amount of time. With some operating
+// systems, the accuracy can be in the order of 10ms. That is, even
 func Rest(seconds float64) {
 	C.al_rest(C.double(seconds))
 }

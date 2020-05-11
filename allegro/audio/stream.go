@@ -91,7 +91,7 @@ func (s *Stream) Rewind() error {
 	return nil
 }
 
-// Return the stream frequency.
+// Return the stream frequency (in Hz).
 func (s *Stream) Frequency() uint {
 	return uint(C.al_get_audio_stream_frequency(s.ptr))
 }
@@ -111,12 +111,12 @@ func (s *Stream) Length() uint {
 	return uint(C.al_get_audio_stream_length(s.ptr))
 }
 
-// Return the relative playback speed.
+// Return the relative playback speed of the stream.
 func (s *Stream) Speed() float32 {
 	return float32(C.al_get_audio_stream_speed(s.ptr))
 }
 
-// Set the relative playback speed. 1.0 is normal speed.
+// Set the relative playback speed of the stream. 1.0 means normal speed.
 func (s *Stream) SetSpeed(val float32) error {
 	if !bool(C.al_set_audio_stream_speed(s.ptr, C.float(val))) {
 		return fmt.Errorf("failed to set audio stream speed to %f", val)
@@ -124,12 +124,12 @@ func (s *Stream) SetSpeed(val float32) error {
 	return nil
 }
 
-// Return the playback gain.
+// Return the playback gain of the stream.
 func (s *Stream) Gain() float32 {
 	return float32(C.al_get_audio_stream_gain(s.ptr))
 }
 
-// Set the playback gain.
+// Set the playback gain of the stream.
 func (s *Stream) SetGain(val float32) error {
 	if !bool(C.al_set_audio_stream_gain(s.ptr, C.float(val))) {
 		return fmt.Errorf("failed to set audio stream gain to %f", val)
@@ -137,7 +137,7 @@ func (s *Stream) SetGain(val float32) error {
 	return nil
 }
 
-// Get the pan value.
+// Get the pan value of the stream.
 func (s *Stream) Pan() float32 {
 	return float32(C.al_get_audio_stream_pan(s.ptr))
 }
@@ -167,12 +167,12 @@ func (s *Stream) SetPlaying(val bool) error {
 	return nil
 }
 
-// Return the playback mode.
+// Return the playback mode of the stream.
 func (s *Stream) PlayMode() PlayMode {
 	return PlayMode(C.al_get_audio_stream_playmode(s.ptr))
 }
 
-// Set the playback mode.
+// Set the playback mode of the stream.
 func (s *Stream) SetPlayMode(val PlayMode) error {
 	if !bool(C.al_set_audio_stream_playmode(s.ptr, C.ALLEGRO_PLAYMODE(val))) {
 		return fmt.Errorf("failed to set audio stream play mode to %v", val)
@@ -185,7 +185,8 @@ func (s *Stream) Attached() bool {
 	return bool(C.al_get_audio_stream_attached(s.ptr))
 }
 
-// Attach a stream to a mixer.
+// Attach an audio stream to a mixer. The stream must not already be attached
+// to anything.
 func (s *Stream) AttachToMixer(mixer *Mixer) error {
 	if !bool(C.al_attach_audio_stream_to_mixer(s.ptr, (*C.ALLEGRO_MIXER)(mixer))) {
 		return errors.New("failed to attach audio stream to mixer")
@@ -224,8 +225,8 @@ func (s *Stream) Detach() error {
 }
 
 // This function needs to be called for every successful call of
-// al_get_audio_stream_fragment to indicate that the buffer is filled with new
-// data.
+// al_get_audio_stream_fragment to indicate that the buffer (pointed to by val)
+// is filled with new data.
 func (s *Stream) Write(p []byte) (n int, err error) {
 	buffer := C.al_get_audio_stream_fragment(s.ptr)
 	if buffer == nil {

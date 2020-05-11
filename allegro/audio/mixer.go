@@ -18,8 +18,9 @@ const (
 	MIXER_QUALITY_CUBIC               = C.ALLEGRO_MIXER_QUALITY_CUBIC
 )
 
-// Creates a mixer stream, to attach sample streams or other mixers to. It will
-// mix into a buffer at the requested frequency and channel count.
+// Creates a mixer to attach sample instances, audio streams, or other mixers
+// to. It will mix into a buffer at the requested frequency (in Hz) and channel
+// count.
 func CreateMixer(freq uint, depth Depth, chan_conf ChannelConf) (*Mixer, error) {
 	mixer := C.al_create_mixer(C.unsigned(freq), C.ALLEGRO_AUDIO_DEPTH(depth), C.ALLEGRO_CHANNEL_CONF(chan_conf))
 	if mixer == nil {
@@ -37,7 +38,8 @@ func DefaultMixer() *Mixer {
 }
 
 // Sets the default mixer. All samples started with al_play_sample will be
-// stopped. If you are using your own mixer, this should be called before
+// stopped and all sample instances returned by al_lock_sample_id will be
+// invalidated. If you are using your own mixer, this should be called before
 // al_reserve_samples.
 func SetDefaultMixer(mixer *Mixer) error {
 	if !bool(C.al_set_default_mixer((*C.ALLEGRO_MIXER)(mixer))) {
@@ -46,8 +48,12 @@ func SetDefaultMixer(mixer *Mixer) error {
 	return nil
 }
 
-// Restores Allegro's default mixer. All samples started with al_play_sample
-// will be stopped. Returns true on success, false on error.
+// Restores Allegro's default mixer and attaches it to the default voice. If
+// the default mixer hasn't been created before, it will be created. If the
+// default voice hasn't been set via al_set_default_voice or created before, it
+// will also be created. All samples started with al_play_sample will be
+// stopped and all sample instances returned by al_lock_sample_id will be
+// invalidated.
 func RestoreDefaultMixer() error {
 	if !bool(C.al_restore_default_mixer()) {
 		return errors.New("failed to restore default mixer")
@@ -55,9 +61,10 @@ func RestoreDefaultMixer() error {
 	return nil
 }
 
-// Attaches a mixer onto another mixer. The same rules as with
-// al_attach_sample_instance_to_mixer apply, with the added caveat that both
-// mixers must be the same frequency. Returns true on success, false on error.
+// Attaches the mixer passed as the first argument onto the mixer passed as the
+// second argument. The first mixer (that is going to be attached) must not
+// already be attached to anything. Both mixers must use the same frequency,
+// audio depth and channel configuration.
 func (m *Mixer) AttachToMixer(mixer *Mixer) error {
 	if !bool(C.al_attach_mixer_to_mixer((*C.ALLEGRO_MIXER)(m), (*C.ALLEGRO_MIXER)(mixer))) {
 		return errors.New("failed to attach mixer to mixer")
@@ -65,18 +72,18 @@ func (m *Mixer) AttachToMixer(mixer *Mixer) error {
 	return nil
 }
 
-// Destroys the mixer stream.
+// Destroys the mixer.
 func (m *Mixer) Destroy() {
 	C.al_destroy_mixer((*C.ALLEGRO_MIXER)(m))
 }
 
-// Return the mixer frequency.
+// Return the mixer frequency (in Hz).
 func (m *Mixer) Frequency() uint {
 	return uint(C.al_get_mixer_frequency((*C.ALLEGRO_MIXER)(m)))
 }
 
-// Set the mixer frequency. This will only work if the mixer is not attached to
-// anything.
+// Set the mixer frequency (in Hz). This will only work if the mixer is not
+// attached to anything.
 func (m *Mixer) SetFrequency(val uint) error {
 	if !bool(C.al_set_mixer_frequency((*C.ALLEGRO_MIXER)(m), C.unsigned(val))) {
 		return fmt.Errorf("failed to set mixer frequency to %d", val)
@@ -134,9 +141,8 @@ func (m *Mixer) SetPlaying(val bool) error {
 	return nil
 }
 
-// Attaches a mixer to a voice. The same rules as
-// al_attach_sample_instance_to_voice apply, with the exception of the depth
-// requirement.
+// Attaches a mixer to a voice. It must have the same frequency and channel
+// configuration, but the depth may be different.
 func (m *Mixer) AttachToVoice(voice *Voice) error {
 	if !bool(C.al_attach_mixer_to_voice((*C.ALLEGRO_MIXER)(m), (*C.ALLEGRO_VOICE)(voice))) {
 		return errors.New("failed to attach mixer to voice")

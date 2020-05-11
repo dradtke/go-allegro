@@ -117,8 +117,8 @@ func NewBitmapFormat() PixelFormat {
 	return PixelFormat(C.al_get_new_bitmap_format())
 }
 
-// Sets the pixel format for newly created bitmaps. The default format is 0 and
-// means the display driver will choose the best format.
+// Sets the pixel format (ALLEGRO_PIXEL_FORMAT) for newly created bitmaps. The
+// default format is 0 and means the display driver will choose the best format.
 func SetNewBitmapFormat(format PixelFormat) {
 	C.al_set_new_bitmap_format(C.int(format))
 }
@@ -152,8 +152,9 @@ func ClearToColor(c Color) {
 	C.al_clear_to_color(C.ALLEGRO_COLOR(c))
 }
 
-// Loads an image file into an ALLEGRO_BITMAP. The file type is determined by
-// the extension.
+// Loads an image file into a new ALLEGRO_BITMAP. The file type is determined
+// by the extension, except if the file has no extension in which case
+// al_identify_bitmap is used instead.
 func LoadBitmap(filename string) (*Bitmap, error) {
 	filename_ := C.CString(filename)
 	defer freeString(filename_)
@@ -174,8 +175,8 @@ func LoadBitmap(filename string) (*Bitmap, error) {
 // While deferred bitmap drawing is enabled, the only functions that can be
 // used are the bitmap drawing functions and font drawing functions. Changing
 // the state such as the blending modes will result in undefined behaviour. One
-// exception to this rule are the transformations. It is possible to set a new
-// transformation while the drawing is held.
+// exception to this rule are the non-projection transformations. It is
+// possible to set a new transformation while the drawing is held.
 func HoldBitmapDrawing(hold bool) {
 	C.al_hold_bitmap_drawing(C.bool(hold))
 }
@@ -213,10 +214,11 @@ func PutBlendedPixel(x, y int, color Color) {
 }
 
 // Draws a single pixel at x, y. This function, unlike al_put_pixel, does
-// blending and, unlike al_put_blended_pixel, respects the transformations.
-// This function can be slow if called often; if you need to draw a lot of
-// pixels consider using al_draw_prim with ALLEGRO_PRIM_POINT_LIST from the
-// primitives addon.
+// blending and, unlike al_put_blended_pixel, respects the transformations
+// (that is, the pixel's position is transformed, but its size is unaffected -
+// it remains a pixel). This function can be slow if called often; if you need
+// to draw a lot of pixels consider using al_draw_prim with
+// ALLEGRO_PRIM_POINT_LIST from the primitives addon.
 func DrawPixel(x, y float32, color Color) {
 	C.al_draw_pixel(C.float(x), C.float(y), C.ALLEGRO_COLOR(color))
 }
@@ -392,7 +394,9 @@ func (bmp *Bitmap) DrawRotated(cx, cy, dx, dy, angle float32, flags DrawFlags) {
 }
 
 // Returns the bitmap this bitmap is a sub-bitmap of. Returns NULL if this
-// bitmap is not a sub-bitmap.
+// bitmap is not a sub-bitmap. This function always returns the real bitmap,
+// and never a sub-bitmap. This might NOT match what was passed to
+// al_create_sub_bitmap. Consider this code, for instance:
 func (bmp *Bitmap) Parent() (*Bitmap, error) {
 	if bmp == nil {
 		return nil, BitmapIsNull
@@ -556,7 +560,8 @@ func (bmp *Bitmap) WithLockedTarget(format PixelFormat, flags LockFlags, f func(
 // Lock an entire bitmap for reading or writing. If the bitmap is a display
 // bitmap it will be updated from system memory after the bitmap is unlocked
 // (unless locked read only). Returns NULL if the bitmap cannot be locked, e.g.
-// the bitmap was locked previously and not unlocked.
+// the bitmap was locked previously and not unlocked. This function also
+// returns NULL if the format is a compressed format.
 func (bmp *Bitmap) Lock(format PixelFormat, flags LockFlags) (*LockedRegion, error) {
 	if bmp == nil {
 		return nil, BitmapIsNull
@@ -569,9 +574,9 @@ func (bmp *Bitmap) Lock(format PixelFormat, flags LockFlags) (*LockedRegion, err
 }
 
 // Like al_lock_bitmap, but only locks a specific area of the bitmap. If the
-// bitmap is a display bitmap, only that area of the texture will be updated
-// when it is unlocked. Locking only the region you indend to modify will be
-// faster than locking the whole bitmap.
+// bitmap is a video bitmap, only that area of the texture will be updated when
+// it is unlocked. Locking only the region you indend to modify will be faster
+// than locking the whole bitmap.
 func (bmp *Bitmap) LockRegion(x, y, width, height int, format PixelFormat, flags LockFlags) (*LockedRegion, error) {
 	if bmp == nil {
 		return nil, BitmapIsNull
@@ -598,9 +603,9 @@ func (bmp *Bitmap) IsLocked() bool {
 	return bool(C.al_is_bitmap_locked((*C.ALLEGRO_BITMAP)(bmp)))
 }
 
-// Unlock a previously locked bitmap or bitmap region. If the bitmap is a
-// display bitmap, the texture will be updated to match the system memory copy
-// (unless it was locked read only).
+// Unlock a previously locked bitmap or bitmap region. If the bitmap is a video
+// bitmap, the texture will be updated to match the system memory copy (unless
+// it was locked read only).
 func (bmp *Bitmap) Unlock() {
 	if bmp == nil {
 		return
@@ -644,7 +649,10 @@ func (bmp *Bitmap) ParentBitmap() (*Bitmap, error) {
 }
 
 // Create a new bitmap with al_create_bitmap, and copy the pixel data from the
-// old bitmap across.
+// old bitmap across. The newly created bitmap will be created with the current
+// new bitmap flags, and not the ones that were used to create the original
+// bitmap. If the new bitmap is a memory bitmap, its projection bitmap is reset
+// to be orthographic.
 func (bmp *Bitmap) Clone() (*Bitmap, error) {
 	if bmp == nil {
 		return nil, BitmapIsNull
@@ -771,7 +779,7 @@ func MapRGBAf(r, g, b, a float32) Color {
 	return (Color)(C.al_map_rgba_f(C.float(r), C.float(g), C.float(b), C.float(a)))
 }
 
-// Retrieves components of an ALLEGRO_COLOR, ignoring alpha Components will
+// Retrieves components of an ALLEGRO_COLOR, ignoring alpha. Components will
 // range from 0-255.
 func (c Color) UnmapRGB() (byte, byte, byte) {
 	var r, g, b C.uchar
@@ -822,19 +830,22 @@ func (reg *LockedRegion) PixelSize() int {
 	return int((*C.struct_ALLEGRO_LOCKED_REGION)(reg).pixel_size)
 }
 
-// Return the number of bytes that a pixel of the given format occupies.
+// Return the number of bytes that a pixel of the given format occupies. For
+// blocked pixel formats (e.g. compressed formats), this returns 0.
 func (format PixelFormat) PixelSize() int {
 	return int(C.al_get_pixel_size(C.int(format)))
 }
 
-// Return the number of bits that a pixel of the given format occupies.
+// Return the number of bits that a pixel of the given format occupies. For
+// blocked pixel formats (e.g. compressed formats), this returns 0.
 func (format PixelFormat) PixelFormatBits() int {
 	return int(C.al_get_pixel_format_bits(C.int(format)))
 }
 
-// Loads an image from an ALLEGRO_FILE stream into an ALLEGRO_BITMAP. The file
-// type is determined by the passed 'ident' parameter, which is a file name
-// extension including the leading dot.
+// Loads an image from an ALLEGRO_FILE stream into a new ALLEGRO_BITMAP. The
+// file type is determined by the passed 'ident' parameter, which is a file
+// name extension including the leading dot. If (and only if) 'ident' is NULL,
+// the file type is determined with al_identify_bitmap_f instead.
 func (f *File) LoadBitmap(ident string) (*Bitmap, error) {
 	ident_ := C.CString(ident)
 	defer freeString(ident_)

@@ -31,7 +31,7 @@ func (e *Error) Error() string {
 }
 
 // Stores part of the state of the current thread in the given ALLEGRO_STATE
-// objects. The flags parameter can take any bit-combination of these flags:
+// object. The flags parameter can take any bit-combination of these flags:
 func StoreState(flags StateFlags) *State {
 	var state C.ALLEGRO_STATE
 	C.al_store_state(&state, C.int(flags))
@@ -51,7 +51,7 @@ func LastError() error {
 	return &Error{int(C.al_get_errno())}
 }
 
-// Set the error number for for the calling thread.
+// Set the error number for the calling thread.
 func SetLastError(e *Error) {
 	C.al_set_errno(C.int(e.Errno))
 }

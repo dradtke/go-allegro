@@ -107,7 +107,9 @@ func FlipDisplay() {
 
 // Does the same as al_flip_display, but tries to update only the specified
 // region. With many drivers this is not possible, but for some it can improve
-// performance.
+// performance. If this is not supported, this function falls back to the
+// behavior of al_flip_display. You can query the support for this function
+// using al_get_display_option(display, ALLEGRO_UPDATE_DISPLAY_REGION).
 func UpdateDisplayRegion(x, y, width, height int) {
 	C.al_update_display_region(C.int(x), C.int(y), C.int(width), C.int(height))
 }
@@ -172,7 +174,7 @@ func NewWindowPosition() (int, int) {
 
 // Sets where the top left pixel of the client area of newly created windows
 // (non-fullscreen) will be on screen, for displays created by the calling
-// thread. Negative values allowed on some multihead systems.
+// thread. Negative values are allowed on some multihead systems.
 func SetNewWindowPosition(x, y int) {
 	C.al_set_new_window_position(C.int(x), C.int(y))
 }
@@ -290,7 +292,8 @@ func (d *Display) SetWindowPosition(x, y int) {
 	C.al_set_window_position((*C.ALLEGRO_DISPLAY)(d), C.int(x), C.int(y))
 }
 
-// Retrieve the associated event source.
+// Retrieve the associated event source. See the documentation on events for a
+// list of the events displays will generate.
 func (d *Display) EventSource() *EventSource {
 	return (*EventSource)(C.al_get_display_event_source((*C.ALLEGRO_DISPLAY)(d)))
 }

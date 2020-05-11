@@ -83,8 +83,9 @@ func (f *File) Eof() bool {
 	return bool(C.al_feof((*C.ALLEGRO_FILE)(f)))
 }
 
-// Returns true if the error indicator is set on the given file, i.e. there was
-// some sort of previous error.
+// Returns non-zero if the error indicator is set on the given file, i.e. there
+// was some sort of previous error. The error code may be system or file
+// interface specific.
 func (f *File) HasError() bool {
 	return C.al_ferror((*C.ALLEGRO_FILE)(f)) != 0
 }

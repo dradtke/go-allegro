@@ -54,8 +54,8 @@ func Builtin() (*Font, error) {
 	return (*Font)(f), nil
 }
 
-// Loads a font from disk. This will use al_load_bitmap_font if you pass the
-// name of a known bitmap format, or else al_load_ttf_font.
+// Loads a font from disk. This will use al_load_bitmap_font_flags if you pass
+// the name of a known bitmap format, or else al_load_ttf_font.
 func LoadFont(filename string, size, flags int) (*Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -68,10 +68,8 @@ func LoadFont(filename string, size, flags int) (*Font, error) {
 	return font, nil
 }
 
-// Load a bitmap font from. It does this by first calling al_load_bitmap and
-// then al_grab_font_from_bitmap. If you want to for example load an old A4
-// font, you could load the bitmap yourself, then call al_convert_mask_to_alpha
-// on it and only then pass it to al_grab_font_from_bitmap.
+// Load a bitmap font from a file. This is done by first calling
+// al_load_bitmap_flags and then al_grab_font_from_bitmap.
 func LoadBitmapFont(filename string) (*Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)

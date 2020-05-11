@@ -87,8 +87,9 @@ func HsvToRgb(hue, saturation, value float32) (red, green, blue float32) {
 	return float32(cred), float32(cgreen), float32(cblue)
 }
 
-// Interprets an HTML styled hex number (e.g. #00faff) as a color. Components
-// that are malformed are set to 0.
+// Interprets an HTML-style hex number (e.g. #00faff) as a color. The only
+// accepted formats are "#RRGGBB" and "RRGGBB" where R, G, B are hexadecimal
+// digits [0-9A-Fa-f].
 func HtmlToRgb(str string) (red, green, blue float32) {
 	str_ := C.CString(str)
 	defer C.free_string(str_)

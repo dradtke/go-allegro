@@ -134,9 +134,9 @@ func (cfg *Config) Destroy() {
 }
 
 // Returns the name of the first section in the given config file. Usually this
-// will return an empty string for the global section. The iterator parameter
-// will receive an opaque iterator which is used by al_get_next_config_section
-// to iterate over the remaining sections.
+// will return an empty string for the global section, even it contains no
+// values. The iterator parameter will receive an opaque iterator which is used
+// by al_get_next_config_section to iterate over the remaining sections.
 func (cfg *Config) FirstConfigSection() (string, *ConfigSectionIterator) {
 	var iter ConfigSectionIterator
 	section := C.al_get_first_config_section((*C.ALLEGRO_CONFIG)(cfg),

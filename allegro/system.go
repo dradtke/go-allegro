@@ -98,10 +98,11 @@ func Version() (major, minor, revision, release uint8) {
 	return
 }
 
-// Returns the current system configuration structure, or NULL if there is no
-// active system driver. The returned configuration should not be destroyed
-// with al_destroy_config. This is mainly used for configuring Allegro and its
-// addons.
+// Returns the system configuration structure. The returned configuration
+// should not be destroyed with al_destroy_config. This is mainly used for
+// configuring Allegro and its addons. You may populate this configuration
+// before Allegro is installed to control things like the logging levels and
+// other features.
 func SystemConfig() (*Config, error) {
 	cfg := C.al_get_system_config()
 	if cfg == nil {
