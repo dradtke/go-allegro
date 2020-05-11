@@ -60,23 +60,27 @@ func buildRegex(macro string) *decl {
 	return &decl{macro, regexp.MustCompile(macro + `\((?P<type>.*), (?P<name>.*), \((?P<params>.*)\)\)`)}
 }
 
-func getSource(packageRoot string) ([]byte, error) {
-	var buf bytes.Buffer
-	err := filepath.Walk(packageRoot, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() && path != packageRoot {
-			return filepath.SkipDir
-		} else if !strings.HasSuffix(info.Name(), ".go") {
+func getSource(dirs ...string) ([]byte, error) {
+	var (
+		buf bytes.Buffer
+		err error
+	)
+	for _, dir := range dirs {
+		if err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() && path != dir {
+				return filepath.SkipDir
+			} else if !strings.HasSuffix(info.Name(), ".go") {
+				return nil
+			}
+			data, err2 := ioutil.ReadFile(path)
+			if err2 != nil {
+				return fmt.Errorf("can't read Go source file \"%s\": %s", path, err2.Error())
+			}
+			buf.Write(data)
 			return nil
+		}); err != nil {
+			return nil, err
 		}
-		data, err2 := ioutil.ReadFile(path)
-		if err2 != nil {
-			return fmt.Errorf("can't read Go source file \"%s\": %s", path, err2.Error())
-		}
-		buf.Write(data)
-		return nil
-	})
-	if err != nil {
-		panic(err)
 	}
 	return buf.Bytes(), err
 }
@@ -110,7 +114,9 @@ func scanHeaders(packageRoot string, missingFuncs chan *missingFunc, errs chan e
 	}
 
 	// First walk the full root, looking for standard allegro functions.
-	source, sourceErr = getSource(packageRoot)
+	// Also include subpackages that include platform-specific functionality,
+	// but aren't separate modules.
+	source, sourceErr = getSource(packageRoot, filepath.Join(packageRoot, "x11"))
 	if sourceErr != nil {
 		errs <- sourceErr
 		return
