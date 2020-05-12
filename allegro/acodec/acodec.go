@@ -20,6 +20,11 @@ func Install() error {
 	return nil
 }
 
+// Returns true if the acodec addon is initialized, otherwise returns false.
+func Installed() bool {
+	return bool(C.al_is_acodec_addon_initialized())
+}
+
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
 func Version() (major, minor, revision, release uint8) {

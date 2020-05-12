@@ -86,6 +86,20 @@ import (
 	"errors"
 )
 
+type SystemID int
+
+const (
+	SYSTEM_ID_UNKNOWN     SystemID = C.ALLEGRO_SYSTEM_ID_UNKNOWN
+	SYSTEM_ID_XGLX                 = C.ALLEGRO_SYSTEM_ID_XGLX
+	SYSTEM_ID_WINDOWS              = C.ALLEGRO_SYSTEM_ID_WINDOWS
+	SYSTEM_ID_MACOSX               = C.ALLEGRO_SYSTEM_ID_MACOSX
+	SYSTEM_ID_ANDROID              = C.ALLEGRO_SYSTEM_ID_ANDROID
+	SYSTEM_ID_IPHONE               = C.ALLEGRO_SYSTEM_ID_IPHONE
+	SYSTEM_ID_GP2XWIZ              = C.ALLEGRO_SYSTEM_ID_GP2XWIZ
+	SYSTEM_ID_RASPBERRYPI          = C.ALLEGRO_SYSTEM_ID_RASPBERRYPI
+	SYSTEM_ID_SDL                  = C.ALLEGRO_SYSTEM_ID_SDL
+)
+
 // Returns the (compiled) version of the Allegro library, packed into a single
 // integer as groups of 8 bits in the form (major << 24) | (minor << 16) |
 // (revision << 8) | release.
@@ -141,6 +155,29 @@ func OrgName() string {
 // Returns the global application name string.
 func AppName() string {
 	return C.GoString(C.al_get_app_name())
+}
+
+// Returns the number of CPU cores that the system Allegro is running on has
+// and which could be detected, or a negative number if detection failed. Even
+// if a positive number is returned, it might be that it is not correct. For
+// example, Allegro running on a virtual machine will return the amount of
+// CPU's of the VM, and not that of the underlying system.
+func CPUCount() int {
+	return int(C.al_get_cpu_count())
+}
+
+// Returns the size in MB of the random access memory that the system Allegro
+// is running on has and which could be detected, or a negative number if
+// detection failed. Even if a positive number is returned, it might be that it
+// is not correct. For example, Allegro running on a virtual machine will
+// return the amount of RAM of the VM, and not that of the underlying system.
+func RAMSize() int {
+	return int(C.al_get_ram_size())
+}
+
+// Returns the platform that Allegro is running on.
+func GetSystemID() SystemID {
+	return SystemID(C.al_get_system_id())
 }
 
 func install() error {

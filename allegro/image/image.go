@@ -18,6 +18,11 @@ func Install() error {
 	return nil
 }
 
+// Returns true if the image addon is initialized, otherwise returns false.
+func Installed() bool {
+	return bool(C.al_is_image_addon_initialized())
+}
+
 // Shut down the image addon. This is done automatically at program exit, but
 // can be called any time the user wishes as well.
 func Uninstall() {

@@ -28,6 +28,11 @@ func Install() {
 	C.al_init_font_addon()
 }
 
+// Returns true if the font addon is initialized, otherwise returns false.
+func Installed() bool {
+	return bool(C.al_is_font_addon_initialized())
+}
+
 // Shut down the font addon. This is done automatically at program exit, but
 // can be called any time the user wishes as well.
 func Uninstall() {

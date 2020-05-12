@@ -133,6 +133,11 @@ func Install() error {
 	return nil
 }
 
+// Returns true if the primitives addon is initialized, otherwise returns false.
+func Installed() bool {
+	return bool(C.al_is_primitives_addon_initialized())
+}
+
 // Shut down the primitives addon. This is done automatically at program exit,
 // but can be called any time the user wishes as well.
 func Uninstall() {

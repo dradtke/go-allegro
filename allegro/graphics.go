@@ -34,16 +34,17 @@ const (
 type BitmapFlags int
 
 const (
-	VIDEO_BITMAP           BitmapFlags = C.ALLEGRO_VIDEO_BITMAP
-	MEMORY_BITMAP                      = C.ALLEGRO_MEMORY_BITMAP
-	KEEP_BITMAP_FORMAT                 = C.ALLEGRO_KEEP_BITMAP_FORMAT
+	ALPHA_TEST             BitmapFlags = C.ALLEGRO_ALPHA_TEST
 	FORCE_LOCKING                      = C.ALLEGRO_FORCE_LOCKING
-	NO_PRESERVE_TEXTURE                = C.ALLEGRO_NO_PRESERVE_TEXTURE
-	ALPHA_TEST                         = C.ALLEGRO_ALPHA_TEST
-	MIN_LINEAR                         = C.ALLEGRO_MIN_LINEAR
+	KEEP_BITMAP_FORMAT                 = C.ALLEGRO_KEEP_BITMAP_FORMAT
+	KEEP_INDEX                         = C.ALLEGRO_KEEP_INDEX
 	MAG_LINEAR                         = C.ALLEGRO_MAG_LINEAR
+	MEMORY_BITMAP                      = C.ALLEGRO_MEMORY_BITMAP
+	MIN_LINEAR                         = C.ALLEGRO_MIN_LINEAR
 	MIPMAP                             = C.ALLEGRO_MIPMAP
 	NO_PREMULTIPLIED_ALPHA             = C.ALLEGRO_NO_PREMULTIPLIED_ALPHA
+	NO_PRESERVE_TEXTURE                = C.ALLEGRO_NO_PRESERVE_TEXTURE
+	VIDEO_BITMAP                       = C.ALLEGRO_VIDEO_BITMAP
 )
 
 type LockFlags int
@@ -167,6 +168,21 @@ func LoadBitmap(filename string) (*Bitmap, error) {
 	return bitmap, nil
 }
 
+// Loads an image file into a new ALLEGRO_BITMAP. The file type is determined
+// by the extension, except if the file has no extension in which case
+// al_identify_bitmap is used instead.
+func LoadBitmapFlags(filename string, flags BitmapFlags) (*Bitmap, error) {
+	filename_ := C.CString(filename)
+	defer freeString(filename_)
+	bmp := C.al_load_bitmap_flags(filename_, C.int(flags))
+	if bmp == nil {
+		return nil, fmt.Errorf("failed to load bitmap at '%s'", filename)
+	}
+	bitmap := (*Bitmap)(bmp)
+	//runtime.SetFinalizer(bitmap, bitmap.Destroy)
+	return bitmap, nil
+}
+
 // Enables or disables deferred bitmap drawing. This allows for efficient
 // drawing of many bitmaps that share a parent bitmap, such as sub-bitmaps from
 // a tilesheet or simply identical bitmaps. Drawing bitmaps that do not share a
@@ -278,6 +294,19 @@ func SeparateBlender() (op BlendingOperation, src, dst BlendingValue, alpha_op B
 	return BlendingOperation(cop), BlendingValue(csrc), BlendingValue(cdst), BlendingOperation(calpha_op), BlendingValue(calpha_src), BlendingValue(calpha_dst)
 }
 
+// Sets the color to use for blending when using the ALLEGRO_CONST_COLOR or
+// ALLEGRO_INVERSE_CONST_COLOR blend functions. See al_set_blender for more
+// information.
+func SetBlendColor(c Color) {
+	C.al_set_blend_color(C.ALLEGRO_COLOR(c))
+}
+
+// Returns the color currently used for constant color blending (white by
+// default).
+func BlendColor() Color {
+	return Color(C.al_get_blend_color())
+}
+
 // Return the display that is "current" for the calling thread, or NULL if
 // there is none.
 func CurrentDisplay() *Display {
@@ -287,6 +316,16 @@ func CurrentDisplay() *Display {
 // Same as al_set_target_bitmap(al_get_backbuffer(display));
 func SetTargetBackbuffer(d *Display) {
 	C.al_set_target_backbuffer((*C.ALLEGRO_DISPLAY)(d))
+}
+
+// If you create a bitmap when there is no current display (for example because
+// you have not called al_create_display in the current thread) and are using
+// the ALLEGRO_CONVERT_BITMAP bitmap flag (which is set by default) then the
+// bitmap will be created successfully, but as a memory bitmap. This function
+// converts all such bitmaps to proper video bitmaps belonging to the current
+// display.
+func ConvertMemoryBitmaps() {
+	C.al_convert_memory_bitmaps()
 }
 
 //}}}
@@ -329,6 +368,42 @@ func (bmp *Bitmap) Width() int {
 // Returns the height of a bitmap in pixels.
 func (bmp *Bitmap) Height() int {
 	return (int)(C.al_get_bitmap_height((*C.ALLEGRO_BITMAP)(bmp)))
+}
+
+// For a sub-bitmap, return it's x position within the parent.
+func (bmp *Bitmap) X() int {
+	return (int)(C.al_get_bitmap_x((*C.ALLEGRO_BITMAP)(bmp)))
+}
+
+// For a sub-bitmap, return it's y position within the parent.
+func (bmp *Bitmap) Y() int {
+	return (int)(C.al_get_bitmap_y((*C.ALLEGRO_BITMAP)(bmp)))
+}
+
+// For a sub-bitmap, changes the parent, position and size. This is the same as
+// destroying the bitmap and re-creating it with al_create_sub_bitmap - except
+// the bitmap pointer stays the same. This has many uses, for example an
+// animation player could return a single bitmap which can just be re-parented
+// to different animation frames without having to re-draw the contents. Or a
+// sprite atlas could re-arrange its sprites without having to invalidate all
+// existing bitmaps.
+func (bmp *Bitmap) Reparent(parent *Bitmap, x, y, w, h int) {
+	C.al_reparent_bitmap(
+		(*C.ALLEGRO_BITMAP)(bmp),
+		(*C.ALLEGRO_BITMAP)(parent),
+		C.int(x),
+		C.int(y),
+		C.int(w),
+		C.int(h),
+	)
+}
+
+// Converts the bitmap to the current bitmap flags and format. The bitmap will
+// be as if it was created anew with al_create_bitmap but retain its contents.
+// All of this bitmap's sub-bitmaps are also converted. If the new bitmap type
+// is memory, then the bitmap's projection bitmap is reset to be orthographic.
+func (bmp *Bitmap) Convert() {
+	C.al_convert_bitmap((*C.ALLEGRO_BITMAP)(bmp))
 }
 
 // Draws an unscaled, unrotated bitmap at the given position to the current
@@ -567,6 +642,44 @@ func (bmp *Bitmap) Lock(format PixelFormat, flags LockFlags) (*LockedRegion, err
 		return nil, BitmapIsNull
 	}
 	reg := C.al_lock_bitmap((*C.ALLEGRO_BITMAP)(bmp), C.int(format), C.int(flags))
+	if reg == nil {
+		return nil, errors.New("failed to lock bitmap; is it already locked?")
+	}
+	return (*LockedRegion)(reg), nil
+}
+
+// Like al_lock_bitmap, but allows locking bitmaps with a blocked pixel format
+// (i.e. a format for which al_get_pixel_block_width or
+// al_get_pixel_block_height do not return 1) in that format. To that end, this
+// function also does not allow format conversion. For bitmap formats with a
+// block size of 1, this function is identical to calling al_lock_bitmap(bmp,
+// al_get_bitmap_format(bmp), flags).
+func (bmp *Bitmap) LockBlocked(flags LockFlags) (*LockedRegion, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
+	reg := C.al_lock_bitmap_blocked((*C.ALLEGRO_BITMAP)(bmp), C.int(flags))
+	if reg == nil {
+		return nil, errors.New("failed to lock bitmap; is it already locked?")
+	}
+	return (*LockedRegion)(reg), nil
+}
+
+// Like al_lock_bitmap_blocked, but allows locking a sub-region, for
+// performance. Unlike al_lock_bitmap_region the region specified in terms of
+// blocks and not pixels.
+func (bmp *Bitmap) LockRegionBlocked(x, y, width, height int, flags LockFlags) (*LockedRegion, error) {
+	if bmp == nil {
+		return nil, BitmapIsNull
+	}
+	reg := C.al_lock_bitmap_region_blocked(
+		(*C.ALLEGRO_BITMAP)(bmp),
+		C.int(x),
+		C.int(y),
+		C.int(width),
+		C.int(height),
+		C.int(flags),
+	)
 	if reg == nil {
 		return nil, errors.New("failed to lock bitmap; is it already locked?")
 	}
@@ -850,6 +963,20 @@ func (f *File) LoadBitmap(ident string) (*Bitmap, error) {
 	ident_ := C.CString(ident)
 	defer freeString(ident_)
 	bmp := C.al_load_bitmap_f((*C.ALLEGRO_FILE)(f), ident_)
+	if bmp == nil {
+		return nil, errors.New("failed to load bitmap from file")
+	}
+	return (*Bitmap)(bmp), nil
+}
+
+// Loads an image from an ALLEGRO_FILE stream into a new ALLEGRO_BITMAP. The
+// file type is determined by the passed 'ident' parameter, which is a file
+// name extension including the leading dot. If (and only if) 'ident' is NULL,
+// the file type is determined with al_identify_bitmap_f instead.
+func (f *File) LoadBitmapFlags(ident string, flags BitmapFlags) (*Bitmap, error) {
+	ident_ := C.CString(ident)
+	defer freeString(ident_)
+	bmp := C.al_load_bitmap_flags_f((*C.ALLEGRO_FILE)(f), ident_, C.int(flags))
 	if bmp == nil {
 		return nil, errors.New("failed to load bitmap from file")
 	}

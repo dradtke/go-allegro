@@ -27,6 +27,11 @@ func Install() {
 	C.al_init_ttf_addon()
 }
 
+// Returns true if the TTF addon is initialized, otherwise returns false.
+func Installed() bool {
+	return bool(C.al_is_ttf_addon_initialized())
+}
+
 // Unloads the ttf addon again. You normally don't need to call this.
 func Uninstall() {
 	C.al_shutdown_ttf_addon()

@@ -179,6 +179,27 @@ func SetNewWindowPosition(x, y int) {
 	C.al_set_new_window_position(C.int(x), C.int(y))
 }
 
+// Returns the title that will be used when a new display is created. This
+// returns the value that al_set_window_title was called with. If that function
+// wasn't called yet, the value of al_get_app_name is returned as a default.
+// The current implementation returns a pointer to a static buffer of which you
+// should make a copy if you want to modify it.
+func NewWindowTitle() string {
+	return C.GoString(C.al_get_new_window_title())
+}
+
+// Set the title that will be used when a new display is created. Allegro uses
+// a static buffer of ALLEGRO_NEW_WINDOW_TITLE_MAX_SIZE to store this, so the
+// length of the titme you set must be less than this.
+func SetNewWindowTitle(title string) {
+	if len(title) > C.ALLEGRO_NEW_WINDOW_TITLE_MAX_SIZE {
+		panic("window title too long: " + title)
+	}
+	title_ := C.CString(title)
+	defer freeString(title_)
+	C.al_set_new_window_title(title_)
+}
+
 func ResetNewWindowPosition() {
 	C.al_set_new_window_position(C.INT_MAX, C.INT_MAX)
 }
@@ -359,6 +380,28 @@ func (d *Display) SetDisplayIcons(icons []*Bitmap) {
 // Gets the pixel format of the display.
 func (d *Display) DisplayFormat() PixelFormat {
 	return PixelFormat(C.al_get_display_format((*C.ALLEGRO_DISPLAY)(d)))
+}
+
+// This function returns a pointer to a string, allocated with al_malloc with
+// the text contents of the clipboard if available. If no text is available on
+// the clipboard then this function returns NULL. You must call al_free on the
+// returned pointer when you don't need it anymore.
+func (d *Display) ClipboardText() string {
+	text := C.al_get_clipboard_text((*C.ALLEGRO_DISPLAY)(d))
+	defer freeString(text)
+	return C.GoString(text)
+}
+
+// This function pastes the text given as an argument to the clipboard.
+func (d *Display) SetClipboardText(text string) {
+	text_ := C.CString(text)
+	defer freeString(text_)
+	C.al_set_clipboard_text((*C.ALLEGRO_DISPLAY)(d), text_)
+}
+
+// This function returns true if and only if the clipboard has text available.
+func (d *Display) ClipboardHasText() bool {
+	return bool(C.al_clipboard_has_text((*C.ALLEGRO_DISPLAY)(d)))
 }
 
 //}}}

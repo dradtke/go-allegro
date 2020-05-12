@@ -59,6 +59,8 @@ al_get_system_driver
 al_get_thread_should_stop
 al_get_ustr_dimensions
 al_get_ustr_width
+al_identify_bitmap
+al_identify_bitmap_f
 al_insert_path_component
 al_install_system
 al_is_system_installed
@@ -76,6 +78,7 @@ al_ref_ustr
 al_register_assert_handler
 al_register_audio_stream_loader
 al_register_audio_stream_loader_f
+al_register_bitmap_identifier
 al_register_bitmap_loader
 al_register_bitmap_loader_f
 al_register_bitmap_saver
