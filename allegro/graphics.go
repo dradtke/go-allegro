@@ -384,6 +384,27 @@ func ConvertMemoryBitmaps() {
 	C.al_convert_memory_bitmaps()
 }
 
+// Return the number of bytes that a block of pixels with this format occupies.
+//
+// See https://liballeg.org/a5docs/5.2.6/graphics.html#al_get_pixel_block_size
+func PixelBlockSize(format PixelFormat) int {
+	return int(C.al_get_pixel_block_size(C.int(format)))
+}
+
+// Return the width of the the pixel block for this format.
+//
+// See https://liballeg.org/a5docs/5.2.6/graphics.html#al_get_pixel_block_width
+func PixelBlockWidth(format PixelFormat) int {
+	return int(C.al_get_pixel_block_width(C.int(format)))
+}
+
+// Return the height of the the pixel block for this format.
+//
+// See https://liballeg.org/a5docs/5.2.6/graphics.html#al_get_pixel_block_height
+func PixelBlockHeight(format PixelFormat) int {
+	return int(C.al_get_pixel_block_height(C.int(format)))
+}
+
 //}}}
 
 // Bitmap Instance Methods {{{

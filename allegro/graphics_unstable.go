@@ -101,6 +101,15 @@ func BitmapBlender() (op BlendingOperation, src, dst BlendingValue) {
 	return BlendingOperation(op_), BlendingValue(src_), BlendingValue(dst_)
 }
 
+// Sets the function to use for blending when rendering to the target bitmap.
+// If no blender is set for a given bitmap at draw time, the values set for
+// al_set_blender/al_set_separate_blender are used instead.
+//
+// See https://liballeg.org/a5docs/5.2.6/graphics.html#al_set_bitmap_blender
+func SetBitmapBlender(op BlendingOperation, src, dst BlendingValue) {
+	C.al_set_bitmap_blender(C.int(op), C.int(src), C.int(dst))
+}
+
 // Returns the current blender being used by the target bitmap. You can pass
 // NULL for values you are not interested in.
 //
@@ -109,6 +118,23 @@ func SeparateBitmapBlender() (op BlendingOperation, src, dst BlendingValue, alph
 	var op_, src_, dst_, alphaOp_, alphaSrc_, alphaDst_ C.int
 	C.al_get_separate_bitmap_blender(&op_, &src_, &dst_, &alphaOp_, &alphaSrc_, &alphaDst_)
 	return BlendingOperation(op_), BlendingValue(src_), BlendingValue(dst_), BlendingOperation(alphaOp_), BlendingValue(alphaSrc_), BlendingValue(alphaDst_)
+}
+
+// Like al_set_bitmap_blender, but allows specifying a separate blending
+// operation for the alpha channel. This is useful if your target bitmap also
+// has an alpha channel and the two alpha channels need to be combined in a
+// different way than the color components.
+//
+// See https://liballeg.org/a5docs/5.2.6/graphics.html#al_set_separate_bitmap_blender
+func SetSeparateBitmapBlender(op BlendingOperation, src, dst BlendingValue, alpha_op BlendingOperation, alpha_src, alpha_dst BlendingValue) {
+	C.al_set_separate_bitmap_blender(
+		C.int(op),
+		C.int(src),
+		C.int(dst),
+		C.int(alpha_op),
+		C.int(alpha_src),
+		C.int(alpha_dst),
+	)
 }
 
 // Resets the blender for this bitmap to the default. After resetting the

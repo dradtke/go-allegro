@@ -80,6 +80,15 @@ func (cfg *Config) AddSection(name string) {
 	C.al_add_config_section((*C.ALLEGRO_CONFIG)(cfg), name_)
 }
 
+// Remove a section of a configuration.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_remove_config_section
+func (cfg *Config) RemoveSection(name string) {
+	name_ := C.CString(name)
+	defer freeString(name_)
+	C.al_remove_config_section((*C.ALLEGRO_CONFIG)(cfg), name_)
+}
+
 // Set a value in a section of a configuration. If the section doesn't yet
 // exist, it will be created. If a value already existed for the given key, it
 // will be overwritten. The section can be NULL or "" for the global section.
@@ -269,6 +278,15 @@ func (cfg *Config) Entries(section string) <-chan string {
 		}
 	}()
 	return entries
+}
+
+// Remove a key and its associated value in a section of a configuration.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_remove_config_key
+func (cfg *Config) RemoveKey(section, key string) bool {
+	section_, key_ := C.CString(section), C.CString(key)
+	defer freeStrings(section_, key_)
+	return bool(C.al_remove_config_key((*C.ALLEGRO_CONFIG)(cfg), section_, key_))
 }
 
 func (cfg *Config) Float32Value(section, key string) (float32, error) {

@@ -15,8 +15,20 @@ func free(data unsafe.Pointer) {
 	C._al_free(data)
 }
 
+func frees(xs ...unsafe.Pointer) {
+	for _, x := range xs {
+		free(x)
+	}
+}
+
 func freeString(data *C.char) {
 	C._al_free(unsafe.Pointer(data))
+}
+
+func freeStrings(xs ...*C.char) {
+	for _, x := range xs {
+		freeString(x)
+	}
 }
 
 // Override the memory management functions with implementations of
