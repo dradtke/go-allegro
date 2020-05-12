@@ -18,14 +18,18 @@ type EventQueue C.ALLEGRO_EVENT_QUEUE
 
 // Initialise an event source for emitting user events. The space for the event
 // source must already have been allocated.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_init_user_event_source
 func (source EventSource) InitUserEventSource() {
 	C.al_init_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(&source))
 }
 
-// Emit a user event. The event source must have been initialised with
-// al_init_user_event_source. Returns false if the event source isn't
-// registered with any queues, hence the event wouldn't have been delivered
-// into any queues.
+// Emit an event from a user event source. The event source must have been
+// initialised with al_init_user_event_source. Returns false if the event
+// source isn't registered with any queues, hence the event wouldn't have been
+// delivered into any queues.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_emit_user_event
 func (source *EventSource) EmitUserEvent(data ...uintptr) error {
 	data_len := len(data)
 	if data_len > 4 {
@@ -53,6 +57,8 @@ func (source *EventSource) EmitUserEvent(data ...uintptr) error {
 }
 
 // Destroy an event source initialised with al_init_user_event_source.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_destroy_user_event_source
 func (source *EventSource) DestroyUserEventSource() {
 	C.al_destroy_user_event_source((*C.ALLEGRO_EVENT_SOURCE)(source))
 }
@@ -60,18 +66,24 @@ func (source *EventSource) DestroyUserEventSource() {
 // Assign the abstract user data to the event source. Allegro does not use the
 // data internally for anything; it is simply meant as a convenient way to
 // associate your own data or objects with events.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_set_event_source_data
 func (source *EventSource) SetData(data uintptr) {
 	C.al_set_event_source_data((*C.ALLEGRO_EVENT_SOURCE)(source), C.intptr_t(data))
 }
 
 // Returns the abstract user data associated with the event source. If no data
 // was previously set, returns NULL.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_get_event_source_data
 func (source *EventSource) Data() uintptr {
 	return uintptr(C.al_get_event_source_data((*C.ALLEGRO_EVENT_SOURCE)(source)))
 }
 
-// Create a new, empty event queue, returning a pointer to object if
-// successful. Returns NULL on error.
+// Create a new, empty event queue, returning a pointer to the newly created
+// object if successful. Returns NULL on error.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_create_event_queue
 func CreateEventQueue() (*EventQueue, error) {
 	q := C.al_create_event_queue()
 	if q == nil {
@@ -83,6 +95,8 @@ func CreateEventQueue() (*EventQueue, error) {
 // Destroy the event queue specified. All event sources currently registered
 // with the queue will be automatically unregistered before the queue is
 // destroyed.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_destroy_event_queue
 func (queue *EventQueue) Destroy() {
 	C.al_destroy_event_queue((*C.ALLEGRO_EVENT_QUEUE)(queue))
 }
@@ -98,6 +112,8 @@ func (queue *EventQueue) Register(obs ...EventGenerator) {
 // may be registered with any number of event queues simultaneously, or none.
 // Trying to register an event source with the same event queue more than once
 // does nothing.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_register_event_source
 func (queue *EventQueue) RegisterEventSource(source *EventSource) {
 	C.al_register_event_source((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT_SOURCE)(source))
 }
@@ -109,11 +125,15 @@ func (queue *EventQueue) Unregister(ob EventGenerator) {
 
 // Unregister an event source with an event queue. If the event source is not
 // actually registered with the event queue, nothing happens.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_unregister_event_source
 func (queue *EventQueue) UnregisterEventSource(source *EventSource) {
 	C.al_unregister_event_source((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT_SOURCE)(source))
 }
 
 // Return true if the event queue specified is currently empty.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_is_event_queue_empty
 func (queue *EventQueue) IsEmpty() bool {
 	return bool(C.al_is_event_queue_empty((*C.ALLEGRO_EVENT_QUEUE)(queue)))
 }
@@ -122,6 +142,8 @@ func (queue *EventQueue) IsEmpty() bool {
 // ret_event and return true. The original event packet will remain at the head
 // of the queue. If the event queue is actually empty, this function returns
 // false and the contents of ret_event are unspecified.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_peek_next_event
 func (queue *EventQueue) PeekNextEvent(event *Event) (interface{}, error) {
 	if ok := bool(C.al_peek_next_event((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event))); !ok {
 		return nil, EmptyQueue
@@ -131,11 +153,15 @@ func (queue *EventQueue) PeekNextEvent(event *Event) (interface{}, error) {
 
 // Drop (remove) the next event from the queue. If the queue is empty, nothing
 // happens. Returns true if an event was dropped.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_drop_next_event
 func (queue *EventQueue) DropNextEvent() bool {
 	return bool(C.al_drop_next_event((*C.ALLEGRO_EVENT_QUEUE)(queue)))
 }
 
 // Drops all events, if any, from the queue.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_flush_event_queue
 func (queue *EventQueue) Flush() {
 	C.al_flush_event_queue((*C.ALLEGRO_EVENT_QUEUE)(queue))
 }
@@ -144,6 +170,8 @@ func (queue *EventQueue) Flush() {
 // into ret_event, returning true. The original event will be removed from the
 // queue. If the event queue is empty, return false and the contents of
 // ret_event are unspecified.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_get_next_event
 func (queue *EventQueue) GetNextEvent(event *Event) (interface{}, error) {
 	if ok := bool(C.al_get_next_event((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event))); !ok {
 		return nil, EmptyQueue
@@ -155,6 +183,8 @@ func (queue *EventQueue) GetNextEvent(event *Event) (interface{}, error) {
 // the first event in the queue will be copied into ret_event and removed from
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_wait_for_event
 func (queue *EventQueue) WaitForEvent(event *Event) interface{} {
 	C.al_wait_for_event((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event))
 	if event == nil {
@@ -167,6 +197,8 @@ func (queue *EventQueue) WaitForEvent(event *Event) interface{} {
 // the first event in the queue will be copied into ret_event and removed from
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_wait_for_event_timed
 func (queue *EventQueue) WaitForEventTimed(event *Event, secs float32) (interface{}, bool) {
 	if ok := bool(C.al_wait_for_event_timed((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event), C.float(secs))); !ok {
 		return nil, false
@@ -181,6 +213,8 @@ func (queue *EventQueue) WaitForEventTimed(event *Event, secs float32) (interfac
 // the first event in the queue will be copied into ret_event and removed from
 // the queue. If ret_event is NULL the first event is left at the head of the
 // queue.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_wait_for_event_until
 func (queue *EventQueue) WaitForEventUntil(timeout *Timeout, event *Event) (interface{}, bool) {
 	if ok := C.al_wait_for_event_until((*C.ALLEGRO_EVENT_QUEUE)(queue), (*C.ALLEGRO_EVENT)(event), (*C.ALLEGRO_TIMEOUT)(timeout)); !ok {
 		return nil, false
@@ -1043,6 +1077,8 @@ func (e *user_event) Data4() uintptr {
 // any user event that you get from al_get_next_event, al_peek_next_event,
 // al_wait_for_event, etc. which is reference counted. This function does
 // nothing if the event is not reference counted.
+//
+// See https://liballeg.org/a5docs/5.2.6/events.html#al_unref_user_event
 func (e *user_event) Unref() {
 	C.al_unref_user_event((*C.ALLEGRO_USER_EVENT)(e))
 }

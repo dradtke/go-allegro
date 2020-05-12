@@ -8,8 +8,10 @@ import (
 
 type MonitorInfo C.struct_ALLEGRO_MONITOR_INFO
 
-// Get information about a monitor's position on the desktop. adapter is a number from
-// 0 to al_get_num_video_adapters()-1.
+// Get information about a monitor's position on the desktop. adapter is a
+// number from 0 to al_get_num_video_adapters()-1.
+//
+// See https://liballeg.org/a5docs/5.2.6/monitor.html#al_get_monitor_info
 func GetMonitorInfo(adapter int) (*MonitorInfo, error) {
 	var info C.struct_ALLEGRO_MONITOR_INFO
 	success := bool(C.al_get_monitor_info(C.int(adapter), &info))
@@ -52,6 +54,8 @@ func (m *MonitorInfo) IsPrimary() bool {
 // Gets the video adapter index where new displays will be created by the
 // calling thread, if previously set with al_set_new_display_adapter. Otherwise
 // returns ALLEGRO_DEFAULT_DISPLAY_ADAPTER.
+//
+// See https://liballeg.org/a5docs/5.2.6/monitor.html#al_get_new_display_adapter
 func NewDisplayAdapter() int {
 	return int(C.al_get_new_display_adapter())
 }
@@ -59,14 +63,17 @@ func NewDisplayAdapter() int {
 // Sets the adapter to use for new displays created by the calling thread. The
 // adapter has a monitor attached to it. Information about the monitor can be
 // gotten using al_get_num_video_adapters and al_get_monitor_info.
+//
+// See https://liballeg.org/a5docs/5.2.6/monitor.html#al_set_new_display_adapter
 func SetNewDisplayAdapter(adapter int) {
 	C.al_set_new_display_adapter(C.int(adapter))
 }
 
-
 // Get the number of video "adapters" attached to the computer. Each video card
 // attached to the computer counts as one or more adapters. An adapter is thus
 // really a video port that can have a monitor connected to it.
+//
+// See https://liballeg.org/a5docs/5.2.6/monitor.html#al_get_num_video_adapters
 func NumVideoAdapters() int {
 	return int(C.al_get_num_video_adapters())
 }

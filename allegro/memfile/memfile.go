@@ -33,6 +33,8 @@ func (m FileMode) String() string {
 // Returns a file handle to the block of memory. All read and write operations
 // act upon the memory directly, so it must not be freed while the file remains
 // open.
+//
+// See https://liballeg.org/a5docs/5.2.6/memfile.html#al_open_memfile
 func Open(mem unsafe.Pointer, size int64, mode FileMode) (*allegro.File, error) {
 	mode_ := C.CString(mode.String())
 	defer C.free_string(mode_)
@@ -45,6 +47,8 @@ func Open(mem unsafe.Pointer, size int64, mode FileMode) (*allegro.File, error) 
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
+//
+// See https://liballeg.org/a5docs/5.2.6/memfile.html#al_get_allegro_memfile_version
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_memfile_version())
 	major = uint8(v >> 24)

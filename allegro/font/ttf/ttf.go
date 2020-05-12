@@ -23,17 +23,30 @@ const (
 
 // Call this after al_init_font_addon to make al_load_font recognize ".ttf" and
 // other formats supported by al_load_ttf_font.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_init_ttf_addon
 func Install() {
 	C.al_init_ttf_addon()
 }
 
+// Returns true if the TTF addon is initialized, otherwise returns false.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_is_ttf_addon_initialized
+func Installed() bool {
+	return bool(C.al_is_ttf_addon_initialized())
+}
+
 // Unloads the ttf addon again. You normally don't need to call this.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_shutdown_ttf_addon
 func Uninstall() {
 	C.al_shutdown_ttf_addon()
 }
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_get_allegro_ttf_version
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_ttf_version())
 	major = uint8(v >> 24)
@@ -45,6 +58,8 @@ func Version() (major, minor, revision, release uint8) {
 
 // Loads a TrueType font from a file using the FreeType library. Quoting from
 // the FreeType FAQ this means support for many different font formats:
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_load_ttf_font
 func LoadFont(filename string, size int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -57,6 +72,8 @@ func LoadFont(filename string, size int, flags TtfFlags) (*font.Font, error) {
 
 // Like al_load_ttf_font, but the font is read from the file handle. The
 // filename is only used to find possible additional files next to a font file.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_load_ttf_font_f
 func LoadFontF(file *allegro.File, filename string, size int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -70,6 +87,8 @@ func LoadFontF(file *allegro.File, filename string, size int, flags TtfFlags) (*
 
 // Like al_load_ttf_font, except it takes separate width and height parameters
 // instead of a single size parameter.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_load_ttf_font_stretch
 func LoadFontStretch(filename string, w, h int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -83,6 +102,8 @@ func LoadFontStretch(filename string, w, h int, flags TtfFlags) (*font.Font, err
 // Like al_load_ttf_font_stretch, but the font is read from the file handle.
 // The filename is only used to find possible additional files next to a font
 // file.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_load_ttf_font_stretch_f
 func LoadFontStretchF(file *allegro.File, filename string, w, h int, flags TtfFlags) (*font.Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)

@@ -37,24 +37,24 @@ func (m *Map) Height() int {
 
 type Tile *C.ALLEGRO_MAP_TILE
 
-type (t *Tile) Prop(name, def string) string {
-    name_ := C.CString(name)
-    defer C.free_string(name_)
-    def_ := C.CString(def)
-    defer C.free_string(def_)
-    p := C.al_get_tile_property((*C.ALLEGRO_MAP_TILE)(t), name_, def_)
-    defer C.free_string(p)
-    return C.GoString(p)
+func (t *Tile) Prop(name, def string) string {
+	name_ := C.CString(name)
+	defer C.free_string(name_)
+	def_ := C.CString(def)
+	defer C.free_string(def_)
+	p := C.al_get_tile_property((*C.ALLEGRO_MAP_TILE)(t), name_, def_)
+	defer C.free_string(p)
+	return C.GoString(p)
 }
 
 type Object *C.ALLEGRO_MAP_OBJECT
 
-type (o *Object) Prop(name, def string) string {
-    name_ := C.CString(name)
-    defer C.free_string(name_)
-    def_ := C.CString(def)
-    defer C.free_string(def_)
-    p := C.al_get_tile_property((*C.ALLEGRO_MAP_OBJECT)(o), name_, def_)
-    defer C.free_string(p)
-    return C.GoString(p)
+func (o *Object) Prop(name, def string) string {
+	name_ := C.CString(name)
+	defer C.free_string(name_)
+	def_ := C.CString(def)
+	defer C.free_string(def_)
+	p := C.al_get_tile_property((*C.ALLEGRO_MAP_OBJECT)(o), name_, def_)
+	defer C.free_string(p)
+	return C.GoString(p)
 }

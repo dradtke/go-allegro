@@ -24,18 +24,31 @@ const (
 )
 
 // Initialise the font addon.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_init_font_addon
 func Install() {
 	C.al_init_font_addon()
 }
 
+// Returns true if the font addon is initialized, otherwise returns false.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_is_font_addon_initialized
+func Installed() bool {
+	return bool(C.al_is_font_addon_initialized())
+}
+
 // Shut down the font addon. This is done automatically at program exit, but
 // can be called any time the user wishes as well.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_shutdown_font_addon
 func Uninstall() {
 	C.al_shutdown_font_addon()
 }
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_get_allegro_font_version
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_font_version())
 	major = uint8(v >> 24)
@@ -46,6 +59,8 @@ func Version() (major, minor, revision, release uint8) {
 }
 
 // Creates a monochrome bitmap font (8x8 pixels per character).
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_create_builtin_font
 func Builtin() (*Font, error) {
 	f := C.al_create_builtin_font()
 	if f == nil {
@@ -54,8 +69,10 @@ func Builtin() (*Font, error) {
 	return (*Font)(f), nil
 }
 
-// Loads a font from disk. This will use al_load_bitmap_font if you pass the
-// name of a known bitmap format, or else al_load_ttf_font.
+// Loads a font from disk. This will use al_load_bitmap_font_flags if you pass
+// the name of a known bitmap format, or else al_load_ttf_font.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_load_font
 func LoadFont(filename string, size, flags int) (*Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -68,10 +85,10 @@ func LoadFont(filename string, size, flags int) (*Font, error) {
 	return font, nil
 }
 
-// Load a bitmap font from. It does this by first calling al_load_bitmap and
-// then al_grab_font_from_bitmap. If you want to for example load an old A4
-// font, you could load the bitmap yourself, then call al_convert_mask_to_alpha
-// on it and only then pass it to al_grab_font_from_bitmap.
+// Load a bitmap font from a file. This is done by first calling
+// al_load_bitmap_flags and then al_grab_font_from_bitmap.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_load_bitmap_font
 func LoadBitmapFont(filename string) (*Font, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -86,6 +103,8 @@ func LoadBitmapFont(filename string) (*Font, error) {
 
 // Creates a new font from an Allegro bitmap. You can delete the bitmap after
 // the function returns as the font will contain a copy for itself.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_grab_font_from_bitmap
 func GrabFontFromBitmap(bmp *allegro.Bitmap, ranges [][2]int) (*Font, error) {
 	n_ranges := len(ranges) * 2
 	if n_ranges == 0 {
@@ -107,6 +126,8 @@ func GrabFontFromBitmap(bmp *allegro.Bitmap, ranges [][2]int) (*Font, error) {
 
 // Writes the NUL-terminated string text onto the target bitmap at position x,
 // y, using the specified font.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_draw_text
 func DrawText(font *Font, color allegro.Color, x, y float32, flags DrawFlags, text string) {
 	text_ := C.CString(text)
 	defer C.free_string(text_)
@@ -119,6 +140,8 @@ func DrawText(font *Font, color allegro.Color, x, y float32, flags DrawFlags, te
 }
 
 // Like al_draw_text, but justifies the string to the region x1-x2.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_draw_justified_text
 func DrawJustifiedText(font *Font, color allegro.Color, x1, x2, y, diff float32, flags DrawFlags, text string) {
 	text_ := C.CString(text)
 	defer C.free_string(text_)
@@ -159,6 +182,8 @@ func DrawJustifiedTextf(font *Font, color allegro.Color, x1, x2, y, diff float32
 }
 
 // Frees the memory being used by a font structure. Does nothing if passed NULL.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_destroy_font
 func (f *Font) Destroy() {
 	C.al_destroy_font((*C.ALLEGRO_FONT)(f))
 }
@@ -167,21 +192,29 @@ func (f *Font) Destroy() {
 // fonts this is simply the height of all glyph bitmaps. For truetype fonts it
 // is whatever the font file specifies. In particular, some special glyphs may
 // be higher than the height returned here.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_get_font_line_height
 func (f *Font) LineHeight() int {
 	return int(C.al_get_font_line_height((*C.ALLEGRO_FONT)(f)))
 }
 
 // Returns the ascent of the specified font.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_get_font_ascent
 func (f *Font) Ascent() int {
 	return int(C.al_get_font_ascent((*C.ALLEGRO_FONT)(f)))
 }
 
 // Returns the descent of the specified font.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_get_font_descent
 func (f *Font) Descent() int {
 	return int(C.al_get_font_descent((*C.ALLEGRO_FONT)(f)))
 }
 
 // Calculates the length of a string in a particular font, in pixels.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_get_text_width
 func (f *Font) TextWidth(text string) int {
 	text_ := C.CString(text)
 	defer C.free_string(text_)
@@ -191,6 +224,8 @@ func (f *Font) TextWidth(text string) int {
 // Sometimes, the al_get_text_width and al_get_font_line_height functions are
 // not enough for exact text placement, so this function returns some
 // additional information.
+//
+// See https://liballeg.org/a5docs/5.2.6/font.html#al_get_text_dimensions
 func (f *Font) TextDimensions(text string) (bbx, bby, bbw, bbh int) {
 	var cbbx, cbby, cbbw, cbbh C.int
 	text_ := C.CString(text)

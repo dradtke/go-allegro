@@ -86,9 +86,25 @@ import (
 	"errors"
 )
 
+type SystemID int
+
+const (
+	SYSTEM_ID_UNKNOWN     SystemID = C.ALLEGRO_SYSTEM_ID_UNKNOWN
+	SYSTEM_ID_XGLX                 = C.ALLEGRO_SYSTEM_ID_XGLX
+	SYSTEM_ID_WINDOWS              = C.ALLEGRO_SYSTEM_ID_WINDOWS
+	SYSTEM_ID_MACOSX               = C.ALLEGRO_SYSTEM_ID_MACOSX
+	SYSTEM_ID_ANDROID              = C.ALLEGRO_SYSTEM_ID_ANDROID
+	SYSTEM_ID_IPHONE               = C.ALLEGRO_SYSTEM_ID_IPHONE
+	SYSTEM_ID_GP2XWIZ              = C.ALLEGRO_SYSTEM_ID_GP2XWIZ
+	SYSTEM_ID_RASPBERRYPI          = C.ALLEGRO_SYSTEM_ID_RASPBERRYPI
+	SYSTEM_ID_SDL                  = C.ALLEGRO_SYSTEM_ID_SDL
+)
+
 // Returns the (compiled) version of the Allegro library, packed into a single
 // integer as groups of 8 bits in the form (major << 24) | (minor << 16) |
 // (revision << 8) | release.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_get_allegro_version
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_version())
 	major = uint8(v >> 24)
@@ -98,10 +114,13 @@ func Version() (major, minor, revision, release uint8) {
 	return
 }
 
-// Returns the current system configuration structure, or NULL if there is no
-// active system driver. The returned configuration should not be destroyed
-// with al_destroy_config. This is mainly used for configuring Allegro and its
-// addons.
+// Returns the system configuration structure. The returned configuration
+// should not be destroyed with al_destroy_config. This is mainly used for
+// configuring Allegro and its addons. You may populate this configuration
+// before Allegro is installed to control things like the logging levels and
+// other features.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_get_system_config
 func SystemConfig() (*Config, error) {
 	cfg := C.al_get_system_config()
 	if cfg == nil {
@@ -112,6 +131,8 @@ func SystemConfig() (*Config, error) {
 
 // This override the executable name used by al_get_standard_path for
 // ALLEGRO_EXENAME_PATH and ALLEGRO_RESOURCES_PATH.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_set_exe_name
 func SetExeName(path string) {
 	path_ := C.CString(path)
 	defer freeString(path_)
@@ -119,6 +140,8 @@ func SetExeName(path string) {
 }
 
 // Sets the global organization name.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_set_org_name
 func SetOrgName(name string) {
 	name_ := C.CString(name)
 	defer freeString(name_)
@@ -126,6 +149,8 @@ func SetOrgName(name string) {
 }
 
 // Sets the global application name.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_set_app_name
 func SetAppName(name string) {
 	name_ := C.CString(name)
 	defer freeString(name_)
@@ -133,13 +158,46 @@ func SetAppName(name string) {
 }
 
 // Returns the global organization name string.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_get_org_name
 func OrgName() string {
 	return C.GoString(C.al_get_org_name())
 }
 
 // Returns the global application name string.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_get_app_name
 func AppName() string {
 	return C.GoString(C.al_get_app_name())
+}
+
+// Returns the number of CPU cores that the system Allegro is running on has
+// and which could be detected, or a negative number if detection failed. Even
+// if a positive number is returned, it might be that it is not correct. For
+// example, Allegro running on a virtual machine will return the amount of
+// CPU's of the VM, and not that of the underlying system.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_get_cpu_count
+func CPUCount() int {
+	return int(C.al_get_cpu_count())
+}
+
+// Returns the size in MB of the random access memory that the system Allegro
+// is running on has and which could be detected, or a negative number if
+// detection failed. Even if a positive number is returned, it might be that it
+// is not correct. For example, Allegro running on a virtual machine will
+// return the amount of RAM of the VM, and not that of the underlying system.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_get_ram_size
+func RAMSize() int {
+	return int(C.al_get_ram_size())
+}
+
+// Returns the platform that Allegro is running on.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_get_system_id
+func GetSystemID() SystemID {
+	return SystemID(C.al_get_system_id())
 }
 
 func install() error {
@@ -150,6 +208,8 @@ func install() error {
 }
 
 // Closes down the Allegro system.
+//
+// See https://liballeg.org/a5docs/5.2.6/system.html#al_uninstall_system
 func uninstall() {
 	C.al_uninstall_system()
 }

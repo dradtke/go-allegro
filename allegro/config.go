@@ -14,6 +14,8 @@ type ConfigSectionIterator (*C.ALLEGRO_CONFIG_SECTION)
 type ConfigEntryIterator (*C.ALLEGRO_CONFIG_ENTRY)
 
 // Create an empty configuration structure.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_create_config
 func CreateConfig() *Config {
 	config := (*Config)(C.al_create_config())
 	//runtime.SetFinalizer(config, config.Destroy)
@@ -22,6 +24,8 @@ func CreateConfig() *Config {
 
 // Read a configuration file from disk. Returns NULL on error. The
 // configuration structure should be destroyed with al_destroy_config.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_load_config_file
 func LoadConfig(filename string) (*Config, error) {
 	filename_ := C.CString(filename)
 	defer freeString(filename_)
@@ -36,11 +40,15 @@ func LoadConfig(filename string) (*Config, error) {
 // configuration. Values in configuration 'cfg2' override those in 'cfg1'.
 // Neither of the input configuration structures are modified. Comments from
 // 'cfg2' are not retained.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_merge_config
 func MergeConfig(cfg1, cfg2 *Config) *Config {
 	return (*Config)(C.al_merge_config((*C.ALLEGRO_CONFIG)(cfg1), (*C.ALLEGRO_CONFIG)(cfg2)))
 }
 
 // Read a configuration file from an already open file.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_load_config_file_f
 func (f *File) LoadConfig() (*Config, error) {
 	cfg := C.al_load_config_file_f((*C.ALLEGRO_FILE)(f))
 	if cfg == nil {
@@ -50,6 +58,8 @@ func (f *File) LoadConfig() (*Config, error) {
 }
 
 // Write out a configuration file to an already open file.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_save_config_file_f
 func (f *File) SaveConfig(cfg *Config) error {
 	ok := bool(C.al_save_config_file_f((*C.ALLEGRO_FILE)(f), (*C.ALLEGRO_CONFIG)(cfg)))
 	if !ok {
@@ -62,6 +72,8 @@ func (f *File) SaveConfig(cfg *Config) error {
 
 // Add a section to a configuration structure with the given name. If the
 // section already exists then nothing happens.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_add_config_section
 func (cfg *Config) AddSection(name string) {
 	name_ := C.CString(name)
 	defer freeString(name_)
@@ -71,6 +83,8 @@ func (cfg *Config) AddSection(name string) {
 // Set a value in a section of a configuration. If the section doesn't yet
 // exist, it will be created. If a value already existed for the given key, it
 // will be overwritten. The section can be NULL or "" for the global section.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_set_config_value
 func (cfg *Config) SetValue(section, key, value string) {
 	section_ := C.CString(section)
 	key_ := C.CString(key)
@@ -85,6 +99,8 @@ func (cfg *Config) SetValue(section, key, value string) {
 // as long as the ALLEGRO_CONFIG structure is not destroyed. Copy the value if
 // you need a copy. The section can be NULL or "" for the global section.
 // Returns NULL if the section or key do not exist.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_get_config_value
 func (cfg *Config) Value(section, key string) (string, error) {
 	section_ := C.CString(section)
 	key_ := C.CString(key)
@@ -100,6 +116,8 @@ func (cfg *Config) Value(section, key string) (string, error) {
 // Add a comment in a section of a configuration. If the section doesn't yet
 // exist, it will be created. The section can be NULL or "" for the global
 // section.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_add_config_comment
 func (cfg *Config) AddComment(section, comment string) {
 	section_ := C.CString(section)
 	comment_ := C.CString(comment)
@@ -110,6 +128,8 @@ func (cfg *Config) AddComment(section, comment string) {
 
 // Write out a configuration file to disk. Returns true on success, false on
 // error.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_save_config_file
 func (cfg *Config) Save(filename string) error {
 	filename_ := C.CString(filename)
 	defer freeString(filename_)
@@ -123,20 +143,26 @@ func (cfg *Config) Save(filename string) error {
 // Merge one configuration structure into another. Values in configuration
 // 'add' override those in 'master'. 'master' is modified. Comments from 'add'
 // are not retained.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_merge_config_into
 func (cfg *Config) Merge(add *Config) {
 	C.al_merge_config_into((*C.ALLEGRO_CONFIG)(cfg), (*C.ALLEGRO_CONFIG)(add))
 }
 
 // Free the resources used by a configuration structure. Does nothing if passed
 // NULL.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_destroy_config
 func (cfg *Config) Destroy() {
 	C.al_destroy_config((*C.ALLEGRO_CONFIG)(cfg))
 }
 
 // Returns the name of the first section in the given config file. Usually this
-// will return an empty string for the global section. The iterator parameter
-// will receive an opaque iterator which is used by al_get_next_config_section
-// to iterate over the remaining sections.
+// will return an empty string for the global section, even it contains no
+// values. The iterator parameter will receive an opaque iterator which is used
+// by al_get_next_config_section to iterate over the remaining sections.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_get_first_config_section
 func (cfg *Config) FirstConfigSection() (string, *ConfigSectionIterator) {
 	var iter ConfigSectionIterator
 	section := C.al_get_first_config_section((*C.ALLEGRO_CONFIG)(cfg),
@@ -147,6 +173,8 @@ func (cfg *Config) FirstConfigSection() (string, *ConfigSectionIterator) {
 // Returns the name of the next section in the given config file or NULL if
 // there are no more sections. The iterator must have been obtained with
 // al_get_first_config_section first.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_get_next_config_section
 func (cfg *Config) NextConfigSection(iter *ConfigSectionIterator) (string, error) {
 	section := C.al_get_next_config_section((**C.ALLEGRO_CONFIG_SECTION)(iter))
 	if section == nil {
@@ -166,9 +194,9 @@ func (cfg *Config) Sections() <-chan string {
 	go func() {
 		defer close(sections)
 		var (
-			s string
+			s    string
 			iter *ConfigSectionIterator
-			err error
+			err  error
 		)
 		s, iter = cfg.FirstConfigSection()
 		sections <- s
@@ -186,6 +214,8 @@ func (cfg *Config) Sections() <-chan string {
 // Returns the name of the first key in the given section in the given config
 // or NULL if the section is empty. The iterator works like the one for
 // al_get_first_config_section.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_get_first_config_entry
 func (cfg *Config) FirstConfigEntry(section string) (string, *ConfigEntryIterator, error) {
 	section_ := C.CString(section)
 	defer freeString(section_)
@@ -200,6 +230,8 @@ func (cfg *Config) FirstConfigEntry(section string) (string, *ConfigEntryIterato
 
 // Returns the next key for the iterator obtained by al_get_first_config_entry.
 // The iterator works like the one for al_get_next_config_section.
+//
+// See https://liballeg.org/a5docs/5.2.6/config.html#al_get_next_config_entry
 func (cfg *Config) NextConfigEntry(iter *ConfigEntryIterator) (string, error) {
 	entry := C.al_get_next_config_entry((**C.ALLEGRO_CONFIG_ENTRY)(iter))
 	if entry == nil {
@@ -219,9 +251,9 @@ func (cfg *Config) Entries(section string) <-chan string {
 	go func() {
 		defer close(entries)
 		var (
-			e string
+			e    string
 			iter *ConfigEntryIterator
-			err error
+			err  error
 		)
 		e, iter, err = cfg.FirstConfigEntry(section)
 		if err == nil {

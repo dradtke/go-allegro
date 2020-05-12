@@ -5,10 +5,11 @@ package main
 
 import (
 	"bytes"
-	"golang.org/x/net/html"
 	"container/list"
 	"flag"
 	"fmt"
+	"go/format"
+	"golang.org/x/net/html"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -18,7 +19,7 @@ import (
 	"sync"
 )
 
-const ROOT_URL string = "http://alleg.sourceforge.net/a5docs/"
+const ROOT_URL string = "https://liballeg.org/a5docs/"
 
 var VERSION string
 
@@ -222,6 +223,7 @@ func Parse(href string, sources map[string]*list.List, wg *sync.WaitGroup) {
 		for node.Data != "p" {
 			node = node.NextSibling
 		}
+		node = node.NextSibling.NextSibling
 		found := false
 		for _, lines := range sources {
 			var e *list.Element
@@ -241,14 +243,19 @@ func Parse(href string, sources map[string]*list.List, wg *sync.WaitGroup) {
 				lines.Remove(e.Prev())
 			}
 			text := GetText(node)
+			if text == "Source Code" {
+				text = GetText(node.NextSibling.NextSibling)
+			}
 			if id == locate {
 				fmt.Printf("%s: %s\n", locate, text)
 				fmt.Printf("implemented at: %s\n", e.Value.(string))
 			}
 			for {
 				commentLine, rest := TrimTo(text, 77)
-				lines.InsertBefore("// " + commentLine, e)
+				lines.InsertBefore("// "+commentLine, e)
 				if rest == "" {
+					lines.InsertBefore("//", e)
+					lines.InsertBefore("// See "+ROOT_URL+VERSION+"/"+href+"#"+id, e)
 					break
 				} else {
 					text = rest
@@ -272,7 +279,7 @@ func main() {
 	index := Get("index.html")
 	content := Find(index, IsContentDiv)
 	apiContent := Find(content, func(child *html.Node) bool {
-		return child.Data == "h1" && Attr(child, "id") == "api"
+		return child.Data == "h1" && Attr(child, "id") == "core-api"
 	})
 	addonContent := Find(content, func(child *html.Node) bool {
 		return child.Data == "h1" && Attr(child, "id") == "addons"
@@ -295,7 +302,12 @@ func main() {
 		for e := lines.Front(); e != nil; e = e.Next() {
 			buf.WriteString(e.Value.(string) + "\n")
 		}
-		err := ioutil.WriteFile(path, buf.Bytes(), os.ModePerm)
+		code, err := format.Source(buf.Bytes())
+		if err != nil {
+			log.Println(buf.String())
+			log.Fatal(err)
+		}
+		err = ioutil.WriteFile(path, code, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
 		}

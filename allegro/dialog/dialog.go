@@ -59,6 +59,8 @@ const (
 )
 
 // Initialise the native dialog addon.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_init_native_dialog_addon
 func Install() error {
 	if !bool(C.al_init_native_dialog_addon()) {
 		return errors.New("failed to initialize native dialog addon!")
@@ -66,13 +68,25 @@ func Install() error {
 	return nil
 }
 
+// Returns true if the native dialog addon is initialized, otherwise returns
+// false.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_is_native_dialog_addon_initialized
+func Installed() bool {
+	return bool(C.al_is_native_dialog_addon_initialized())
+}
+
 // Shut down the native dialog addon.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_shutdown_native_dialog_addon
 func Shutdown() {
 	C.al_shutdown_native_dialog_addon()
 }
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_get_allegro_native_dialog_version
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_native_dialog_version())
 	major = uint8(v >> 24)
@@ -84,6 +98,8 @@ func Version() (major, minor, revision, release uint8) {
 
 // Creates a new native file dialog. You should only have one such dialog
 // opened at a time.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_create_native_file_dialog
 func CreateNativeFileDialog(initial_path, title, patterns string, flags FileChooserFlags) (*FileChooser, error) {
 	initial_path_ := C.CString(initial_path)
 	title_ := C.CString(title)
@@ -102,6 +118,8 @@ func CreateNativeFileDialog(initial_path, title, patterns string, flags FileChoo
 
 // Show the dialog window. The display may be NULL, otherwise the given display
 // is treated as the parent if possible.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_show_native_file_dialog
 func ShowNativeFileDialog(display *allegro.Display, dialog *FileChooser) error {
 	ok := bool(C.al_show_native_file_dialog((*C.ALLEGRO_DISPLAY)(unsafe.Pointer(display)),
 		(*C.ALLEGRO_FILECHOOSER)(dialog)))
@@ -114,6 +132,8 @@ func ShowNativeFileDialog(display *allegro.Display, dialog *FileChooser) error {
 // Show a native GUI message box. This can be used for example to display an
 // error message if creation of an initial display fails. The display may be
 // NULL, otherwise the given display is treated as the parent if possible.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_show_native_message_box
 func ShowNativeMessageBox(display *allegro.Display, title, heading, text string, flags MessageBoxFlags) MessageBoxResult {
 	title_ := C.CString(title)
 	heading_ := C.CString(heading)
@@ -148,6 +168,8 @@ func ShowNativeMessageBoxWithButtons(display *allegro.Display, title, heading, t
 // Opens a window to which you can append log messages with
 // al_append_native_text_log. This can be useful for debugging if you don't
 // want to depend on a console being available.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_open_native_text_log
 func OpenNativeTextLog(title string, flags TextLogFlags) (*TextLog, error) {
 	title_ := C.CString(title)
 	defer C.free_string(title_)
@@ -160,11 +182,16 @@ func OpenNativeTextLog(title string, flags TextLogFlags) (*TextLog, error) {
 }
 
 // Returns the number of files selected, or 0 if the dialog was cancelled.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_get_native_file_dialog_count
 func (dialog *FileChooser) Count() int {
 	return int(C.al_get_native_file_dialog_count((*C.ALLEGRO_FILECHOOSER)(dialog)))
 }
 
-// Returns one of the selected paths.
+// Returns one of the selected paths with index i. The index should range from
+// 0 to the return value of al_get_native_file_dialog_count -1.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_get_native_file_dialog_path
 func (dialog *FileChooser) Path(i int) (string, error) {
 	path := C.al_get_native_file_dialog_path((*C.ALLEGRO_FILECHOOSER)(dialog), C.size_t(i))
 	if path == nil {
@@ -174,11 +201,15 @@ func (dialog *FileChooser) Path(i int) (string, error) {
 }
 
 // Frees up all resources used by the file dialog.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_destroy_native_file_dialog
 func (dialog *FileChooser) Destroy() {
 	C.al_destroy_native_file_dialog((*C.ALLEGRO_FILECHOOSER)(dialog))
 }
 
 // Closes a message log window opened with al_open_native_text_log earlier.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_close_native_text_log
 func (log *TextLog) Close() {
 	C.al_close_native_text_log((*C.ALLEGRO_TEXTLOG)(log))
 }
@@ -186,6 +217,8 @@ func (log *TextLog) Close() {
 // Appends a line of text to the message log window and scrolls to the bottom
 // (if the line would not be visible otherwise). This works like printf. A line
 // is continued until you add a newline character.
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_append_native_text_log
 func (log *TextLog) Append(format string, a ...interface{}) {
 	text_ := C.CString(fmt.Sprintf(format, a...))
 	defer C.free_string(text_)
@@ -198,6 +231,8 @@ func (log *TextLog) Appendln(format string, a ...interface{}) {
 }
 
 // Get an event source for a text log window. The possible events are:
+//
+// See https://liballeg.org/a5docs/5.2.6/native_dialog.html#al_get_native_text_log_event_source
 func (log *TextLog) EventSource() *allegro.EventSource {
 	return (*allegro.EventSource)(unsafe.Pointer(
 		C.al_get_native_text_log_event_source((*C.ALLEGRO_TEXTLOG)(log))))

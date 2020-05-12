@@ -43,7 +43,7 @@ var (
 type Game struct {
 	gopher     *Gopher
 	background *allegro.Bitmap
-	keyboard   allegro.KeyboardState
+	keyboard   *allegro.KeyboardState
 	tiles      map[int]*Tile
 }
 
@@ -164,6 +164,7 @@ func main() {
 
 		game := new(Game)
 		game.tiles = make(map[int]*Tile)
+		game.keyboard = new(allegro.KeyboardState)
 
 		if eventQueue, err = allegro.CreateEventQueue(); err != nil {
 			fmt.Fprintf(os.Stderr, err.Error())
