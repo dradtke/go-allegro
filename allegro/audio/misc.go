@@ -6,6 +6,8 @@ import "C"
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_allegro_audio_version
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_audio_version())
 	major = uint8(v >> 24)

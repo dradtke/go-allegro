@@ -24,6 +24,8 @@ type Stream struct {
 // Creates an ALLEGRO_AUDIO_STREAM. The stream will be set to play by default.
 // It will feed audio data from a buffer, which is split into a number of
 // fragments.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_create_audio_stream
 func CreateStream(fragment_count, frag_samples, freq uint, depth Depth, chan_conf ChannelConf) *Stream {
 	sample_size := chan_conf.ChannelCount() * depth.Size()
 	buffer_size := frag_samples * sample_size
@@ -39,6 +41,8 @@ func CreateStream(fragment_count, frag_samples, freq uint, depth Depth, chan_con
 }
 
 // Loads an audio file from disk as it is needed.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_load_audio_stream
 func LoadStream(filename string, buffer_count, samples uint) (*Stream, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -50,6 +54,8 @@ func LoadStream(filename string, buffer_count, samples uint) (*Stream, error) {
 }
 
 // Loads an audio file from ALLEGRO_FILE stream as it is needed.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_load_audio_stream_f
 func LoadStreamF(f *allegro.File, ident string, buffer_count, samples uint) (*Stream, error) {
 	ident_ := C.CString(ident)
 	defer C.free_string(ident_)
@@ -64,11 +70,15 @@ func LoadStreamF(f *allegro.File, ident string, buffer_count, samples uint) (*St
 
 // Destroy an audio stream which was created with al_create_audio_stream or
 // al_load_audio_stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_destroy_audio_stream
 func (s *Stream) Destroy() {
 	C.al_destroy_audio_stream(s.ptr)
 }
 
 // Retrieve the associated event source.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_event_source
 func (s *Stream) EventSource() *allegro.EventSource {
 	return (*allegro.EventSource)(unsafe.Pointer(C.al_get_audio_stream_event_source(s.ptr)))
 }
@@ -76,6 +86,8 @@ func (s *Stream) EventSource() *allegro.EventSource {
 // You should call this to finalise an audio stream that you will no longer be
 // feeding, to wait for all pending buffers to finish playing. The stream's
 // playing state will change to false.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_drain_audio_stream
 func (s *Stream) Drain() {
 	C.al_drain_audio_stream(s.ptr)
 }
@@ -84,6 +96,8 @@ func (s *Stream) Drain() {
 // success. Currently this can only be called on streams created with
 // al_load_audio_stream, al_load_audio_stream_f and the format-specific
 // functions underlying those functions.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_rewind_audio_stream
 func (s *Stream) Rewind() error {
 	if !bool(C.al_rewind_audio_stream(s.ptr)) {
 		return errors.New("failed to rewind audio stream")
@@ -92,31 +106,43 @@ func (s *Stream) Rewind() error {
 }
 
 // Return the stream frequency (in Hz).
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_frequency
 func (s *Stream) Frequency() uint {
 	return uint(C.al_get_audio_stream_frequency(s.ptr))
 }
 
 // Return the stream channel configuration.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_channels
 func (s *Stream) Channels() ChannelConf {
 	return ChannelConf(C.al_get_audio_stream_channels(s.ptr))
 }
 
 // Return the stream audio depth.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_depth
 func (s *Stream) Depth() Depth {
 	return Depth(C.al_get_audio_stream_depth(s.ptr))
 }
 
 // Return the stream length in samples.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_length
 func (s *Stream) Length() uint {
 	return uint(C.al_get_audio_stream_length(s.ptr))
 }
 
 // Return the relative playback speed of the stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_speed
 func (s *Stream) Speed() float32 {
 	return float32(C.al_get_audio_stream_speed(s.ptr))
 }
 
 // Set the relative playback speed of the stream. 1.0 means normal speed.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_audio_stream_speed
 func (s *Stream) SetSpeed(val float32) error {
 	if !bool(C.al_set_audio_stream_speed(s.ptr, C.float(val))) {
 		return fmt.Errorf("failed to set audio stream speed to %f", val)
@@ -125,11 +151,15 @@ func (s *Stream) SetSpeed(val float32) error {
 }
 
 // Return the playback gain of the stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_gain
 func (s *Stream) Gain() float32 {
 	return float32(C.al_get_audio_stream_gain(s.ptr))
 }
 
 // Set the playback gain of the stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_audio_stream_gain
 func (s *Stream) SetGain(val float32) error {
 	if !bool(C.al_set_audio_stream_gain(s.ptr, C.float(val))) {
 		return fmt.Errorf("failed to set audio stream gain to %f", val)
@@ -138,6 +168,8 @@ func (s *Stream) SetGain(val float32) error {
 }
 
 // Get the pan value of the stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_pan
 func (s *Stream) Pan() float32 {
 	return float32(C.al_get_audio_stream_pan(s.ptr))
 }
@@ -147,6 +179,8 @@ func (s *Stream) Pan() float32 {
 // speaker; 0.0 means the sample is centre balanced. A special value
 // ALLEGRO_AUDIO_PAN_NONE disables panning and plays the stream at its original
 // level. This will be louder than a pan value of 0.0.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_audio_stream_pan
 func (s *Stream) SetPan(val float32) error {
 	if !bool(C.al_set_audio_stream_pan(s.ptr, C.float(val))) {
 		return fmt.Errorf("failed to set audio stream pan to %f", val)
@@ -155,11 +189,15 @@ func (s *Stream) SetPan(val float32) error {
 }
 
 // Return true if the stream is playing.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_playing
 func (s *Stream) Playing() bool {
 	return bool(C.al_get_audio_stream_playing(s.ptr))
 }
 
 // Change whether the stream is playing.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_audio_stream_playing
 func (s *Stream) SetPlaying(val bool) error {
 	if !bool(C.al_set_audio_stream_playing(s.ptr, C.bool(val))) {
 		return fmt.Errorf("failed to set audio stream playing to %v", val)
@@ -168,11 +206,15 @@ func (s *Stream) SetPlaying(val bool) error {
 }
 
 // Return the playback mode of the stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_playmode
 func (s *Stream) PlayMode() PlayMode {
 	return PlayMode(C.al_get_audio_stream_playmode(s.ptr))
 }
 
 // Set the playback mode of the stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_audio_stream_playmode
 func (s *Stream) SetPlayMode(val PlayMode) error {
 	if !bool(C.al_set_audio_stream_playmode(s.ptr, C.ALLEGRO_PLAYMODE(val))) {
 		return fmt.Errorf("failed to set audio stream play mode to %v", val)
@@ -181,12 +223,16 @@ func (s *Stream) SetPlayMode(val PlayMode) error {
 }
 
 // Return whether the stream is attached to something.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_attached
 func (s *Stream) Attached() bool {
 	return bool(C.al_get_audio_stream_attached(s.ptr))
 }
 
 // Attach an audio stream to a mixer. The stream must not already be attached
 // to anything.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_attach_audio_stream_to_mixer
 func (s *Stream) AttachToMixer(mixer *Mixer) error {
 	if !bool(C.al_attach_audio_stream_to_mixer(s.ptr, (*C.ALLEGRO_MIXER)(mixer))) {
 		return errors.New("failed to attach audio stream to mixer")
@@ -197,6 +243,8 @@ func (s *Stream) AttachToMixer(mixer *Mixer) error {
 // Attaches an audio stream to a voice. The same rules as
 // al_attach_sample_instance_to_voice apply. This may fail if the driver can't
 // create a voice with the buffer count and buffer size the stream uses.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_attach_audio_stream_to_voice
 func (s *Stream) AttachToVoice(voice *Voice) error {
 	if !bool(C.al_attach_audio_stream_to_voice(s.ptr, (*C.ALLEGRO_VOICE)(voice))) {
 		return errors.New("failed to attach audio stream to voice")
@@ -206,17 +254,23 @@ func (s *Stream) AttachToVoice(voice *Voice) error {
 
 // Returns the number of fragments this stream uses. This is the same value as
 // passed to al_create_audio_stream when a new stream is created.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_fragments
 func (s *Stream) Fragments() uint {
 	return uint(C.al_get_audio_stream_fragments(s.ptr))
 }
 
 // Returns the number of available fragments in the stream, that is, fragments
 // which are not currently filled with data for playback.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_available_audio_stream_fragments
 func (s *Stream) AvailableFragments() uint {
 	return uint(C.al_get_available_audio_stream_fragments(s.ptr))
 }
 
 // Detach the stream from whatever it's attached to, if anything.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_detach_audio_stream
 func (s *Stream) Detach() error {
 	if !bool(C.al_detach_audio_stream(s.ptr)) {
 		return errors.New("failed to detach audio stream")
@@ -227,6 +281,8 @@ func (s *Stream) Detach() error {
 // This function needs to be called for every successful call of
 // al_get_audio_stream_fragment to indicate that the buffer (pointed to by val)
 // is filled with new data.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_audio_stream_fragment
 func (s *Stream) Write(p []byte) (n int, err error) {
 	buffer := C.al_get_audio_stream_fragment(s.ptr)
 	if buffer == nil {
@@ -252,6 +308,8 @@ func (s *Stream) Write(p []byte) (n int, err error) {
 // Currently this can only be called on streams created with
 // al_load_audio_stream, al_load_audio_stream_f and the format-specific
 // functions underlying those functions.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_seek_audio_stream_secs
 func (s *Stream) SeekSecs(time float64) error {
 	if !bool(C.al_seek_audio_stream_secs(s.ptr, C.double(time))) {
 		return fmt.Errorf("failed to seek audio stream to %f", time)
@@ -261,11 +319,15 @@ func (s *Stream) SeekSecs(time float64) error {
 
 // Return the position of the stream in seconds. Currently this can only be
 // called on streams created with al_load_audio_stream.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_position_secs
 func (s *Stream) PositionSecs() float64 {
 	return float64(C.al_get_audio_stream_position_secs(s.ptr))
 }
 
 // Return the length of the stream in seconds, if known. Otherwise returns zero.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_stream_length_secs
 func (s *Stream) LengthSecs() float64 {
 	return float64(C.al_get_audio_stream_length_secs(s.ptr))
 }
@@ -273,6 +335,8 @@ func (s *Stream) LengthSecs() float64 {
 // Sets the loop points for the stream in seconds. Currently this can only be
 // called on streams created with al_load_audio_stream, al_load_audio_stream_f
 // and the format-specific functions underlying those functions.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_audio_stream_loop_secs
 func (s *Stream) SetLoopSecs(start, end float64) error {
 	if !bool(C.al_set_audio_stream_loop_secs(s.ptr, C.double(start), C.double(end))) {
 		return errors.New("failed to set stream loop")

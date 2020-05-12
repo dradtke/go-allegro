@@ -29,6 +29,8 @@ type stickState struct {
 
 // Install a joystick driver, returning true if successful. If a joystick
 // driver was already installed, returns true immediately.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_install_joystick
 func InstallJoystick() error {
 	success := bool(C.al_install_joystick())
 	if !success {
@@ -40,11 +42,15 @@ func InstallJoystick() error {
 // Uninstalls the active joystick driver. All outstanding ALLEGRO_JOYSTICK
 // structures are invalidated. If no joystick driver was active, this function
 // does nothing.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_uninstall_joystick
 func UninstallJoystick() {
 	C.al_uninstall_joystick()
 }
 
 // Returns true if al_install_joystick was called successfully.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_is_joystick_installed
 func IsJoystickInstalled() bool {
 	return bool(C.al_is_joystick_installed())
 }
@@ -54,6 +60,8 @@ func IsJoystickInstalled() bool {
 // generate an event of type ALLEGRO_EVENT_JOYSTICK_CONFIGURATION when a device
 // is plugged in or unplugged. In response, you should call
 // al_reconfigure_joysticks.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_reconfigure_joysticks
 func ReconfigureJoysticks() bool {
 	return bool(C.al_reconfigure_joysticks())
 }
@@ -61,6 +69,8 @@ func ReconfigureJoysticks() bool {
 // Return the number of joysticks currently on the system (or potentially on
 // the system). This number can change after al_reconfigure_joysticks is
 // called, in order to support hotplugging.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_num_joysticks
 func NumJoysticks() int {
 	return int(C.al_get_num_joysticks())
 }
@@ -68,6 +78,8 @@ func NumJoysticks() int {
 // Get a handle for a joystick on the system. The number may be from 0 to
 // al_get_num_joysticks-1. If successful a pointer to a joystick object is
 // returned, which represents a physical device. Otherwise NULL is returned.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick
 func GetJoystick(stick int) (*Joystick, error) {
 	joystick := (*Joystick)(C.al_get_joystick(C.int(stick)))
 	if joystick == nil {
@@ -77,6 +89,8 @@ func GetJoystick(stick int) (*Joystick, error) {
 }
 
 // This function currently does nothing.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_release_joystick
 func (j *Joystick) Release() {
 	C.al_release_joystick((*C.ALLEGRO_JOYSTICK)(j))
 }
@@ -85,17 +99,23 @@ func (j *Joystick) Release() {
 // configuration, the handle represents some physical device plugged into the
 // system. al_get_joystick returns active handles. After reconfiguration,
 // active handles may become inactive, and vice versa.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_active
 func (j *Joystick) Active() bool {
 	return bool(C.al_get_joystick_active((*C.ALLEGRO_JOYSTICK)(j)))
 }
 
 // Return the name of the given joystick.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_name
 func (j *Joystick) Name() string {
 	return C.GoString(C.al_get_joystick_name((*C.ALLEGRO_JOYSTICK)(j)))
 }
 
 // Return the name of the given "stick". If the stick doesn't exist, NULL is
 // returned.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_stick_name
 func (j *Joystick) StickName(stick int) (string, error) {
 	name_ := C.al_get_joystick_stick_name((*C.ALLEGRO_JOYSTICK)(j), C.int(stick))
 	if name_ == nil {
@@ -106,6 +126,8 @@ func (j *Joystick) StickName(stick int) (string, error) {
 
 // Return the name of the given axis. If the axis doesn't exist, NULL is
 // returned. Indices begin from 0.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_axis_name
 func (j *Joystick) AxisName(stick, axis int) (string, error) {
 	name_ := C.al_get_joystick_axis_name((*C.ALLEGRO_JOYSTICK)(j), C.int(stick), C.int(axis))
 	if name_ == nil {
@@ -116,6 +138,8 @@ func (j *Joystick) AxisName(stick, axis int) (string, error) {
 
 // Return the name of the given button. If the button doesn't exist, NULL is
 // returned. Indices begin from 0.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_button_name
 func (j *Joystick) ButtonName(stick int) (string, error) {
 	name_ := C.al_get_joystick_button_name((*C.ALLEGRO_JOYSTICK)(j), C.int(stick))
 	if name_ == nil {
@@ -126,29 +150,39 @@ func (j *Joystick) ButtonName(stick int) (string, error) {
 
 // Return the number of "sticks" on the given joystick. A stick has one or more
 // axes.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_num_sticks
 func (j *Joystick) NumSticks() int {
 	return int(C.al_get_joystick_num_sticks((*C.ALLEGRO_JOYSTICK)(j)))
 }
 
 // Return the number of axes on the given "stick". If the stick doesn't exist,
 // 0 is returned.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_num_axes
 func (j *Joystick) NumAxes(stick int) int {
 	return int(C.al_get_joystick_num_axes((*C.ALLEGRO_JOYSTICK)(j), C.int(stick)))
 }
 
 // Return the number of buttons on the joystick.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_num_buttons
 func (j *Joystick) NumButtons() int {
 	return int(C.al_get_joystick_num_buttons((*C.ALLEGRO_JOYSTICK)(j)))
 }
 
 // Return the flags of the given "stick". If the stick doesn't exist, NULL is
 // returned. Indices begin from 0.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_stick_flags
 func (j *Joystick) StickFlags(stick int) JoyFlags {
 	return JoyFlags(C.al_get_joystick_stick_flags((*C.ALLEGRO_JOYSTICK)(j), C.int(stick)))
 }
 
 // Returns the global joystick event source. All joystick events are generated
 // by this event source.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_event_source
 func JoystickEventSource() *EventSource {
 	return (*EventSource)(C.al_get_joystick_event_source())
 }
@@ -164,6 +198,8 @@ func (j *Joystick) State() *JoystickState {
 }
 
 // Get the current joystick state.
+//
+// See https://liballeg.org/a5docs/5.2.6/joystick.html#al_get_joystick_state
 func (state *JoystickState) Get() {
 	C.al_get_joystick_state((*C.ALLEGRO_JOYSTICK)(state.joystick), &state.ptr)
 	for i := 0; i < len(state.Button); i++ {

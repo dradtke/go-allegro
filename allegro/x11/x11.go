@@ -8,6 +8,8 @@ import (
 )
 
 // Retrieves the XID associated with the Allegro display.
+//
+// See https://liballeg.org/a5docs/5.2.6/platform.html#al_get_x_window_id
 func WindowID(d *allegro.Display) uint64 {
 	return uint64(C.al_get_x_window_id((*C.ALLEGRO_DISPLAY)(d)))
 }

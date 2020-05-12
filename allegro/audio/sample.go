@@ -17,6 +17,8 @@ type SampleInstance C.ALLEGRO_SAMPLE_INSTANCE
 // then the buffer will be freed with al_free when the sample data structure is
 // destroyed. For portability (especially Windows), the buffer should have been
 // allocated with al_malloc. Otherwise you should free the sample data yourself.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_create_sample
 func CreateSample(samples, freq uint, depth Depth, chan_conf ChannelConf) *Sample {
 	buf := C._al_malloc(C.uint(samples * chan_conf.ChannelCount() * depth.Size()))
 	return (*Sample)(C.al_create_sample(
@@ -29,6 +31,8 @@ func CreateSample(samples, freq uint, depth Depth, chan_conf ChannelConf) *Sampl
 }
 
 // Loads a few different audio file formats based on their extension.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_load_sample
 func LoadSample(filename string) (*Sample, error) {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -42,6 +46,8 @@ func LoadSample(filename string) (*Sample, error) {
 // Loads an audio file from an ALLEGRO_FILE stream into an ALLEGRO_SAMPLE. The
 // file type is determined by the passed 'ident' parameter, which is a file
 // name extension including the leading dot.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_load_sample_f
 func LoadSampleF(f *allegro.File, ident string) (*Sample, error) {
 	ident_ := C.CString(ident)
 	defer C.free_string(ident_)
@@ -53,6 +59,8 @@ func LoadSampleF(f *allegro.File, ident string) (*Sample, error) {
 
 // Writes a sample into a file. Currently, wav is the only supported format,
 // and the extension must be ".wav".
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_save_sample
 func (s *Sample) Save(filename string) error {
 	filename_ := C.CString(filename)
 	defer C.free_string(filename_)
@@ -64,6 +72,8 @@ func (s *Sample) Save(filename string) error {
 
 // Writes a sample into a ALLEGRO_FILE filestream. Currently, wav is the only
 // supported format, and the extension must be ".wav".
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_save_sample_f
 func (s *Sample) SaveF(f *allegro.File, ident string) error {
 	ident_ := C.CString(ident)
 	defer C.free_string(ident_)
@@ -75,11 +85,15 @@ func (s *Sample) SaveF(f *allegro.File, ident string) error {
 
 // Creates a sample instance, using the supplied sample data. The instance must
 // be attached to a mixer (or voice) in order to actually produce output.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_create_sample_instance
 func CreateSampleInstance(sample_data *Sample) *SampleInstance {
 	return (*SampleInstance)(C.al_create_sample_instance((*C.ALLEGRO_SAMPLE)(sample_data)))
 }
 
 // Play the sample instance. Returns true on success, false on failure.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_play_sample_instance
 func (s *SampleInstance) Play() error {
 	if !bool(C.al_play_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))) {
 		return errors.New("failed to play sample instance")
@@ -88,6 +102,8 @@ func (s *SampleInstance) Play() error {
 }
 
 // Stop an sample instance playing.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_stop_sample_instance
 func (s *SampleInstance) Stop() error {
 	if !bool(C.al_stop_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))) {
 		return errors.New("failed to stop sample instance")
@@ -97,6 +113,8 @@ func (s *SampleInstance) Stop() error {
 
 // Attach a sample instance to a mixer. The instance must not already be
 // attached to anything.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_attach_sample_instance_to_mixer
 func (s *SampleInstance) AttachToMixer(mixer *Mixer) error {
 	if mixer == nil {
 		return errors.New("cannot attach sample instance to null mixer")
@@ -112,6 +130,8 @@ func (s *SampleInstance) AttachToMixer(mixer *Mixer) error {
 // channel configuration and depth (including signed-ness) as the voice. This
 // function may fail if the selected driver doesn't support preloading sample
 // data.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_attach_sample_instance_to_voice
 func (s *SampleInstance) AttachToVoice(voice *Voice) error {
 	if voice == nil {
 		return errors.New("cannot attach sample instance to null voice")
@@ -123,12 +143,16 @@ func (s *SampleInstance) AttachToVoice(voice *Voice) error {
 }
 
 // Return the frequency (in Hz) of the sample instance's sample data.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_frequency
 func (s *SampleInstance) Frequency() uint {
 	return uint(C.al_get_sample_instance_frequency((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Return the length of the sample instance in sample values. This property may
 // differ from the length of the instance's sample data.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_length
 func (s *SampleInstance) Length() uint {
 	return uint(C.al_get_sample_instance_length((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
@@ -136,6 +160,8 @@ func (s *SampleInstance) Length() uint {
 // Set the length of the sample instance in sample values. This can be used to
 // play only parts of the underlying sample. Be careful not to exceed the
 // actual length of the sample data, though.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_sample_instance_length
 func (s *SampleInstance) SetLength(val uint) error {
 	if !bool(C.al_set_sample_instance_length((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.unsigned(val))) {
 		return fmt.Errorf("failed to set sample instance length to %d", val)
@@ -144,11 +170,15 @@ func (s *SampleInstance) SetLength(val uint) error {
 }
 
 // Get the playback position of a sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_position
 func (s *SampleInstance) Position() uint {
 	return uint(C.al_get_sample_instance_position((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Set the playback position of a sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_sample_instance_position
 func (s *SampleInstance) SetPosition(val uint) error {
 	if !bool(C.al_set_sample_instance_position((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.unsigned(val))) {
 		return fmt.Errorf("failed to set sample instance position to %d", val)
@@ -157,12 +187,16 @@ func (s *SampleInstance) SetPosition(val uint) error {
 }
 
 // Return the relative playback speed of the sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_speed
 func (s *SampleInstance) Speed() float32 {
 	return float32(C.al_get_sample_instance_speed((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Set the relative playback speed of the sample instance. 1.0 means normal
 // speed.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_sample_instance_speed
 func (s *SampleInstance) SetSpeed(val float32) error {
 	if !bool(C.al_set_sample_instance_speed((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.float(val))) {
 		return fmt.Errorf("failed to set sample instance speed to %d", val)
@@ -171,11 +205,15 @@ func (s *SampleInstance) SetSpeed(val float32) error {
 }
 
 // Return the playback gain of the sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_gain
 func (s *SampleInstance) Gain() float32 {
 	return float32(C.al_get_sample_instance_gain((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Set the playback gain of the sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_sample_instance_gain
 func (s *SampleInstance) SetGain(val float32) error {
 	if !bool(C.al_set_sample_instance_gain((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.float(val))) {
 		return fmt.Errorf("failed to set sample instance gain to %d", val)
@@ -184,6 +222,8 @@ func (s *SampleInstance) SetGain(val float32) error {
 }
 
 // Get the pan value of the sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_pan
 func (s *SampleInstance) Pan() float32 {
 	return float32(C.al_get_sample_instance_pan((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
@@ -193,6 +233,8 @@ func (s *SampleInstance) Pan() float32 {
 // speaker; 0.0 means the sample is centre balanced. A special value
 // ALLEGRO_AUDIO_PAN_NONE disables panning and plays the sample at its original
 // level. This will be louder than a pan value of 0.0.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_sample_instance_pan
 func (s *SampleInstance) SetPan(val float32) error {
 	if !bool(C.al_set_sample_instance_pan((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.float(val))) {
 		return fmt.Errorf("failed to set sample instance pan to %d", val)
@@ -201,21 +243,29 @@ func (s *SampleInstance) SetPan(val float32) error {
 }
 
 // Return the audio depth of the sample instance's sample data.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_depth
 func (s *SampleInstance) Depth() Depth {
 	return Depth(C.al_get_sample_instance_depth((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Return the channel configuration of the sample instance's sample data.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_channels
 func (s *SampleInstance) Channels() ChannelConf {
 	return ChannelConf(C.al_get_sample_instance_channels((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Return the playback mode of the sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_playmode
 func (s *SampleInstance) PlayMode() PlayMode {
 	return PlayMode(C.al_get_sample_instance_playmode((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Set the playback mode of the sample instance.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_sample_instance_playmode
 func (s *SampleInstance) SetPlayMode(val PlayMode) error {
 	if !bool(C.al_set_sample_instance_playmode((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.ALLEGRO_PLAYMODE(val))) {
 		return errors.New("failed to set sample instance playmode")
@@ -225,11 +275,15 @@ func (s *SampleInstance) SetPlayMode(val PlayMode) error {
 
 // Return true if the sample instance is in the playing state. This may be true
 // even if the instance is not attached to anything.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_playing
 func (s *SampleInstance) Playing() bool {
 	return bool(C.al_get_sample_instance_playing((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Change whether the sample instance is playing.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_set_sample_instance_playing
 func (s *SampleInstance) SetPlaying(val bool) error {
 	if !bool(C.al_set_sample_instance_playing((*C.ALLEGRO_SAMPLE_INSTANCE)(s), C.bool(val))) {
 		return fmt.Errorf("failed to set sample instance playing to %v", val)
@@ -238,17 +292,23 @@ func (s *SampleInstance) SetPlaying(val bool) error {
 }
 
 // Return whether the sample instance is attached to something.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_attached
 func (s *SampleInstance) Attached() bool {
 	return bool(C.al_get_sample_instance_attached((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Return the length of the sample instance in seconds, assuming a playback
 // speed of 1.0.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_instance_time
 func (s *SampleInstance) Time() float32 {
 	return float32(C.al_get_sample_instance_time((*C.ALLEGRO_SAMPLE_INSTANCE)(s)))
 }
 
 // Detach the sample instance from whatever it's attached to, if anything.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_detach_sample_instance
 func (s *SampleInstance) Detach() error {
 	if !bool(C.al_detach_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))) {
 		return errors.New("failed to detach sample instance")
@@ -258,12 +318,16 @@ func (s *SampleInstance) Detach() error {
 
 // Detaches the sample instance from anything it may be attached to and frees
 // it (the sample data, i.e. its ALLEGRO_SAMPLE, is not freed!).
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_destroy_sample_instance
 func (s *SampleInstance) Destroy() {
 	C.al_destroy_sample_instance((*C.ALLEGRO_SAMPLE_INSTANCE)(s))
 }
 
 // Free the sample data structure. If it was created with the free_buf
 // parameter set to true, then the buffer will be freed with al_free.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_destroy_sample
 func (s *Sample) Destroy() {
 	C.al_destroy_sample((*C.ALLEGRO_SAMPLE)(s))
 }
@@ -271,6 +335,8 @@ func (s *Sample) Destroy() {
 // Plays a sample on one of the sample instances created by al_reserve_samples.
 // Returns true on success, false on failure. Playback may fail because all the
 // reserved sample instances are currently used.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_play_sample
 func (s *Sample) Play(gain, pan, speed float32, loop PlayMode) (*SampleID, error) {
 	var id SampleID
 	ok := bool(C.al_play_sample(
@@ -287,36 +353,50 @@ func (s *Sample) Play(gain, pan, speed float32, loop PlayMode) (*SampleID, error
 }
 
 // Return the channel configuration of the sample.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_channels
 func (s *Sample) Channels() ChannelConf {
 	return ChannelConf(C.al_get_sample_channels((*C.ALLEGRO_SAMPLE)(s)))
 }
 
 // Return the audio depth of the sample.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_depth
 func (s *Sample) Depth() Depth {
 	return Depth(C.al_get_sample_depth((*C.ALLEGRO_SAMPLE)(s)))
 }
 
 // Return the frequency (in Hz) of the sample.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_frequency
 func (s *Sample) Frequency() uint {
 	return uint(C.al_get_sample_frequency((*C.ALLEGRO_SAMPLE)(s)))
 }
 
 // Return the length of the sample in sample values.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_length
 func (s *Sample) Length() uint {
 	return uint(C.al_get_sample_length((*C.ALLEGRO_SAMPLE)(s)))
 }
 
 // Return a pointer to the raw sample data.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_sample_data
 func (s *Sample) Data() uintptr {
 	return uintptr(C.al_get_sample_data((*C.ALLEGRO_SAMPLE)(s)))
 }
 
 // Stop the sample started by al_play_sample.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_stop_sample
 func (s *SampleID) Stop() {
 	C.al_stop_sample((*C.ALLEGRO_SAMPLE_ID)(s))
 }
 
 // Stop all samples started by al_play_sample.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_stop_samples
 func StopSamples() {
 	C.al_stop_samples()
 }

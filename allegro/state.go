@@ -32,6 +32,8 @@ func (e *Error) Error() string {
 
 // Stores part of the state of the current thread in the given ALLEGRO_STATE
 // object. The flags parameter can take any bit-combination of these flags:
+//
+// See https://liballeg.org/a5docs/5.2.6/state.html#al_store_state
 func StoreState(flags StateFlags) *State {
 	var state C.ALLEGRO_STATE
 	C.al_store_state(&state, C.int(flags))
@@ -40,6 +42,8 @@ func StoreState(flags StateFlags) *State {
 
 // Restores part of the state of the current thread from the given
 // ALLEGRO_STATE object.
+//
+// See https://liballeg.org/a5docs/5.2.6/state.html#al_restore_state
 func RestoreState(state *State) {
 	C.al_restore_state((*C.ALLEGRO_STATE)(state))
 }
@@ -47,11 +51,15 @@ func RestoreState(state *State) {
 // Some Allegro functions will set an error number as well as returning an
 // error code. Call this function to retrieve the last error number set for the
 // calling thread.
+//
+// See https://liballeg.org/a5docs/5.2.6/state.html#al_get_errno
 func LastError() error {
 	return &Error{int(C.al_get_errno())}
 }
 
 // Set the error number for the calling thread.
+//
+// See https://liballeg.org/a5docs/5.2.6/state.html#al_set_errno
 func SetLastError(e *Error) {
 	C.al_set_errno(C.int(e.Errno))
 }

@@ -19,6 +19,8 @@ const (
 
 // Return the size of a sample, in bytes, for the given format. The format is
 // one of the values listed under ALLEGRO_AUDIO_DEPTH.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_audio_depth_size
 func (depth Depth) Size() uint {
 	return uint(C.al_get_audio_depth_size(C.ALLEGRO_AUDIO_DEPTH(depth)))
 }
@@ -37,6 +39,8 @@ const (
 
 // Return the number of channels for the given channel configuration, which is
 // one of the values listed under ALLEGRO_CHANNEL_CONF.
+//
+// See https://liballeg.org/a5docs/5.2.6/audio.html#al_get_channel_count
 func (conf ChannelConf) ChannelCount() uint {
 	return uint(C.al_get_channel_count(C.ALLEGRO_CHANNEL_CONF(conf)))
 }

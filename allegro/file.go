@@ -41,12 +41,16 @@ func (m FileMode) String() string {
 // Convert a path to its string representation, i.e. optional drive, followed
 // by directory components separated by 'delim', followed by an optional
 // filename.
+//
+// See https://liballeg.org/a5docs/5.2.6/path.html#al_path_cstr
 func pathStr(path *C.ALLEGRO_PATH) string {
 	return C.GoString(C.al_path_cstr(path, C.ALLEGRO_NATIVE_PATH_SEP))
 }
 
 // Creates and opens a file (real or virtual) given the path and mode. The
 // current file interface is used to open the file.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fopen
 func OpenFile(path string, mode FileMode) (*File, error) {
 	path_ := C.CString(path)
 	mode_ := C.CString(mode.String())
@@ -60,6 +64,8 @@ func OpenFile(path string, mode FileMode) (*File, error) {
 }
 
 // Make a temporary randomly named file given a filename 'template'.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_make_temp_file
 func MakeTempFile(template string) string {
 	template_ := C.CString(template)
 	defer freeString(template_)
@@ -69,6 +75,8 @@ func MakeTempFile(template string) string {
 }
 
 // Close the given file, writing any buffered output data (if any).
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fclose
 func (f *File) Close() error {
 	C.al_fclose((*C.ALLEGRO_FILE)(f))
 	if f.HasError() {
@@ -79,6 +87,8 @@ func (f *File) Close() error {
 
 // Returns true if the end-of-file indicator has been set on the file, i.e. we
 // have attempted to read past the end of the file.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_feof
 func (f *File) Eof() bool {
 	return bool(C.al_feof((*C.ALLEGRO_FILE)(f)))
 }
@@ -86,16 +96,22 @@ func (f *File) Eof() bool {
 // Returns non-zero if the error indicator is set on the given file, i.e. there
 // was some sort of previous error. The error code may be system or file
 // interface specific.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_ferror
 func (f *File) HasError() bool {
 	return C.al_ferror((*C.ALLEGRO_FILE)(f)) != 0
 }
 
 // Clear the error indicator for the given file.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fclearerr
 func (f *File) ClearError() {
 	C.al_fclearerr((*C.ALLEGRO_FILE)(f))
 }
 
 // Read 'size' bytes into the buffer pointed to by 'ptr', from the given file.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fread
 func (f *File) Read(b []byte) (n int, err error) {
 	size := len(b)
 	if size == 0 {
@@ -114,6 +130,8 @@ func (f *File) Read(b []byte) (n int, err error) {
 }
 
 // Write 'size' bytes from the buffer pointed to by 'ptr' into the given file.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fwrite
 func (f *File) Write(b []byte) (n int, err error) {
 	size := len(b)
 	written := int(C.al_fwrite((*C.ALLEGRO_FILE)(f),
@@ -128,6 +146,8 @@ func (f *File) Write(b []byte) (n int, err error) {
 
 // Read and return next byte in the given file. Returns EOF on end of file or
 // if an error occurred.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fgetc
 func (f *File) Getc() (byte, error) {
 	b := byte(C.al_fgetc((*C.ALLEGRO_FILE)(f)))
 	if f.Eof() {
@@ -141,17 +161,23 @@ func (f *File) Getc() (byte, error) {
 
 // Ungets a single byte from a file. Pushed-back bytes are not written to the
 // file, only made available for subsequent reads, in reverse order.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fungetc
 func (f *File) Ungetc(b byte) byte {
 	return byte(C.al_fungetc((*C.ALLEGRO_FILE)(f), C.int(b)))
 }
 
 // Write a single byte to the given file. The byte written is the value of c
 // cast to an unsigned char.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fputc
 func (f *File) Putc(b byte) byte {
 	return byte(C.al_fputc((*C.ALLEGRO_FILE)(f), C.int(b)))
 }
 
 // Flush any pending writes to the given file.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fflush
 func (f *File) Flush() error {
 	ok := bool(C.al_fflush((*C.ALLEGRO_FILE)(f)))
 	if !ok {
@@ -162,6 +188,8 @@ func (f *File) Flush() error {
 
 // Returns the current position in the given file, or -1 on error. errno is set
 // to indicate the error.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_ftell
 func (f *File) Tell() (int64, error) {
 	pos := int64(C.al_ftell((*C.ALLEGRO_FILE)(f)))
 	if pos == -1 {
@@ -172,6 +200,8 @@ func (f *File) Tell() (int64, error) {
 
 // Set the current position of the given file to a position relative to that
 // specified by 'whence', plus 'offset' number of bytes.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fseek
 func (f *File) Seek(offset int64, whence int) (ret int64, err error) {
 	var whence_ C.int
 	switch whence {
@@ -196,6 +226,8 @@ func (f *File) Seek(offset int64, whence int) (ret int64, err error) {
 }
 
 // Return the size of the file, if it can be determined, or -1 otherwise.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fsize
 func (f *File) Size() (int64, error) {
 	size := int64(C.al_fsize((*C.ALLEGRO_FILE)(f)))
 	if size == -1 {
@@ -207,6 +239,8 @@ func (f *File) Size() (int64, error) {
 // Opens a slice (subset) of an already open random access file as if it were a
 // stand alone file. While the slice is open, the parent file handle must not
 // be used in any way.
+//
+// See https://liballeg.org/a5docs/5.2.6/file.html#al_fopen_slice
 func (f *File) Slice(initial_size int, mode FileMode) (*File, error) {
 	mode_ := C.CString(mode.String())
 	defer freeString(mode_)

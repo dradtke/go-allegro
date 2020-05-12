@@ -125,6 +125,8 @@ const (
 )
 
 // Initializes the primitives addon.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_init_primitives_addon
 func Install() error {
 	ok := bool(C.al_init_primitives_addon())
 	if !ok {
@@ -134,18 +136,24 @@ func Install() error {
 }
 
 // Returns true if the primitives addon is initialized, otherwise returns false.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_is_primitives_addon_initialized
 func Installed() bool {
 	return bool(C.al_is_primitives_addon_initialized())
 }
 
 // Shut down the primitives addon. This is done automatically at program exit,
 // but can be called any time the user wishes as well.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_shutdown_primitives_addon
 func Uninstall() {
 	C.al_shutdown_primitives_addon()
 }
 
 // Returns the (compiled) version of the addon, in the same format as
 // al_get_allegro_version.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_get_allegro_primitives_version
 func Version() (major, minor, revision, release uint8) {
 	v := uint32(C.al_get_allegro_primitives_version())
 	major = uint8(v >> 24)
@@ -156,6 +164,8 @@ func Version() (major, minor, revision, release uint8) {
 }
 
 // Draws a line segment between two points.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_line
 func DrawLine(p1, p2 Point, color allegro.Color, thickness float32) {
 	C.al_draw_line(
 		C.float(p1.X),
@@ -167,6 +177,8 @@ func DrawLine(p1, p2 Point, color allegro.Color, thickness float32) {
 }
 
 // Draws an outlined triangle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_triangle
 func DrawTriangle(p1, p2, p3 Point, color allegro.Color, thickness float32) {
 	C.al_draw_triangle(
 		C.float(p1.X),
@@ -180,6 +192,8 @@ func DrawTriangle(p1, p2, p3 Point, color allegro.Color, thickness float32) {
 }
 
 // Draws a filled triangle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_triangle
 func DrawFilledTriangle(p1, p2, p3 Point, color allegro.Color) {
 	C.al_draw_filled_triangle(
 		C.float(p1.X),
@@ -192,6 +206,8 @@ func DrawFilledTriangle(p1, p2, p3 Point, color allegro.Color) {
 }
 
 // Draws an outlined rectangle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_rectangle
 func DrawRectangle(p1, p2 Point, color allegro.Color, thickness float32) {
 	C.al_draw_rectangle(
 		C.float(p1.X),
@@ -203,6 +219,8 @@ func DrawRectangle(p1, p2 Point, color allegro.Color, thickness float32) {
 }
 
 // Draws a filled rectangle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_rectangle
 func DrawFilledRectangle(p1, p2 Point, color allegro.Color) {
 	C.al_draw_filled_rectangle(
 		C.float(p1.X),
@@ -213,6 +231,8 @@ func DrawFilledRectangle(p1, p2 Point, color allegro.Color) {
 }
 
 // Draws an outlined rounded rectangle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_rounded_rectangle
 func DrawRoundedRectangle(p1, p2 Point, rx, ry float32, color allegro.Color, thickness float32) {
 	C.al_draw_rounded_rectangle(
 		C.float(p1.X),
@@ -226,6 +246,8 @@ func DrawRoundedRectangle(p1, p2 Point, rx, ry float32, color allegro.Color, thi
 }
 
 // Draws an filled rounded rectangle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_rounded_rectangle
 func DrawFilledRoundedRectangle(p1, p2 Point, rx, ry float32, color allegro.Color) {
 	C.al_draw_filled_rounded_rectangle(
 		C.float(p1.X),
@@ -247,6 +269,8 @@ func DrawFilledRoundedRectangle(p1, p2 Point, rx, ry float32, color allegro.Colo
 // the first pair of points will be collinear with the arc center, the first
 // point of the pair will be farther from the center than the second point; the
 // next pair will also be collinear, but at a different angle and so on).
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_calculate_arc
 func CalculateArc(center Point, rx, ry, start_theta, delta_theta, thickness float32, num_points int) []Point {
 	if num_points == 0 {
 		return make([]Point, 0)
@@ -275,6 +299,8 @@ func CalculateArc(center Point, rx, ry, start_theta, delta_theta, thickness floa
 }
 
 // Draws a pieslice (outlined circular sector).
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_pieslice
 func DrawPieslice(center Point, r, start_theta, delta_theta float32, color allegro.Color, thickness float32) {
 	C.al_draw_pieslice(
 		C.float(center.X),
@@ -287,6 +313,8 @@ func DrawPieslice(center Point, r, start_theta, delta_theta float32, color alleg
 }
 
 // Draws a filled pieslice (filled circular sector).
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_pieslice
 func DrawFilledPieslice(center Point, r, start_theta, delta_theta float32, color allegro.Color) {
 	C.al_draw_filled_pieslice(
 		C.float(center.X),
@@ -298,6 +326,8 @@ func DrawFilledPieslice(center Point, r, start_theta, delta_theta float32, color
 }
 
 // Draws an outlined ellipse.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_ellipse
 func DrawEllipse(center Point, rx, ry float32, color allegro.Color, thickness float32) {
 	C.al_draw_ellipse(
 		C.float(center.X),
@@ -309,6 +339,8 @@ func DrawEllipse(center Point, rx, ry float32, color allegro.Color, thickness fl
 }
 
 // Draws a filled ellipse.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_ellipse
 func DrawFilledEllipse(center Point, rx, ry float32, color allegro.Color) {
 	C.al_draw_filled_ellipse(
 		C.float(center.X),
@@ -319,6 +351,8 @@ func DrawFilledEllipse(center Point, rx, ry float32, color allegro.Color) {
 }
 
 // Draws an outlined circle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_circle
 func DrawCircle(center Point, r float32, color allegro.Color, thickness float32) {
 	C.al_draw_circle(
 		C.float(center.X),
@@ -329,6 +363,8 @@ func DrawCircle(center Point, r float32, color allegro.Color, thickness float32)
 }
 
 // Draws a filled circle.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_circle
 func DrawFilledCircle(center Point, r float32, color allegro.Color) {
 	C.al_draw_filled_circle(
 		C.float(center.X),
@@ -338,6 +374,8 @@ func DrawFilledCircle(center Point, r float32, color allegro.Color) {
 }
 
 // Draws an arc.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_arc
 func DrawArc(center Point, r, start_theta, delta_theta float32, color allegro.Color, thickness float32) {
 	C.al_draw_arc(
 		C.float(center.X),
@@ -350,6 +388,8 @@ func DrawArc(center Point, r, start_theta, delta_theta float32, color allegro.Co
 }
 
 // Draws an elliptical arc.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_elliptical_arc
 func DrawEllipticalArc(center Point, rx, ry, start_theta, delta_theta float32, color allegro.Color, thickness float32) {
 	C.al_draw_elliptical_arc(
 		C.float(center.X),
@@ -367,6 +407,8 @@ func DrawEllipticalArc(center Point, rx, ry, start_theta, delta_theta float32, c
 // many are needed. The destination buffer should consist of regularly spaced
 // (by distance of stride bytes) doublets of floats, corresponding to x and y
 // coordinates of the vertices.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_calculate_spline
 func CalculateSpline(points [4]Point, thickness float32, num_segments int) []Point {
 	if num_segments == 0 {
 		return make([]Point, 0)
@@ -396,6 +438,8 @@ func CalculateSpline(points [4]Point, thickness float32, num_segments int) []Poi
 }
 
 // Draws a Bézier spline given 4 control points.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_spline
 func DrawSpline(points [4]Point, color allegro.Color, thickness float32) {
 	cpoints := []C.float{
 		C.float(points[0].X), C.float(points[0].Y),
@@ -414,6 +458,8 @@ func DrawSpline(points [4]Point, color allegro.Color, thickness float32) {
 // required in the destination buffer, otherwise twice as many are needed. The
 // destination and the points buffer should consist of regularly spaced
 // doublets of floats, corresponding to x and y coordinates of the vertices.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_calculate_ribbon
 func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num_segments int) []Point {
 	if num_segments == 0 {
 		return make([]Point, 0)
@@ -446,6 +492,8 @@ func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num
 // Draws a ribbon given an array of points. The ribbon will go through all of
 // the passed points. The points buffer should consist of regularly spaced
 // doublets of floats, corresponding to x and y coordinates of the vertices.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_ribbon
 func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segments int) {
 	cpoints := make([]C.float, len(points)*2)
 	for i := 0; i < len(points)*2; i += 2 {
@@ -461,6 +509,8 @@ func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segm
 }
 
 // Draws a subset of the passed vertex array.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_prim
 func DrawPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, start, end int, prim_type PrimType) int {
 	vertices_ := cVertices(vertices)
 	drawn := C.al_draw_prim(unsafe.Pointer(&vertices_[0]),
@@ -474,6 +524,8 @@ func DrawPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, star
 
 // Draws a subset of the passed vertex array. This function uses an index array
 // to specify which vertices to use.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_indexed_prim
 func DrawIndexedPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitmap, indices []int, num_vertices int, prim_type PrimType) int {
 	vertices_ := cVertices(vertices)
 	indices_ := cInts(indices)
@@ -487,6 +539,8 @@ func DrawIndexedPrim(vertices []Vertex, decl *VertexDecl, texture *allegro.Bitma
 }
 
 // Creates a vertex declaration, which describes a custom vertex format.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_create_vertex_decl
 func CreateVertexDecl(elements []VertexElement, stride int) *VertexDecl {
 	elements_ := make([]C.ALLEGRO_VERTEX_ELEMENT, len(elements))
 	for i, element := range elements {
@@ -498,12 +552,16 @@ func CreateVertexDecl(elements []VertexElement, stride int) *VertexDecl {
 }
 
 // Destroys a vertex declaration.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_destroy_vertex_decl
 func (v *VertexDecl) Destroy() {
 	C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
 }
 
 // Draw an unfilled polygon. This is the same as passing
 // ALLEGRO_LINE_CAP_CLOSED to al_draw_polyline.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_polygon
 func DrawPolygon(vertices []Point, vertexCount int, joinStyle LineJoin, color allegro.Color, thickness float32, miterLimit float32) {
 	vertices_ := make([]float32, 0, len(vertices)*2)
 	for _, vertex := range vertices {
@@ -521,6 +579,8 @@ func DrawPolygon(vertices []Point, vertexCount int, joinStyle LineJoin, color al
 
 // Draw a filled, simple polygon. Simple means it does not have to be convex
 // but must not be self-overlapping.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_polygon
 func DrawFilledPolygon(vertices []Point, vertexCount int, color allegro.Color) {
 	vertices_ := make([]float32, 0, len(vertices)*2)
 	for _, vertex := range vertices {
@@ -536,6 +596,8 @@ func DrawFilledPolygon(vertices []Point, vertexCount int, color allegro.Color) {
 // Draws a filled simple polygon with zero or more other simple polygons
 // subtracted from it - the holes. The holes cannot touch or intersect with the
 // outline of the filled polygon.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_polygon_with_holes
 func DrawFilledPolygonWithHoles(vertices []Point, vertexCounts []int, color allegro.Color) {
 	vertices_ := make([]float32, 0, len(vertices)*2)
 	for _, vertex := range vertices {

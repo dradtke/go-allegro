@@ -254,6 +254,8 @@ func Parse(href string, sources map[string]*list.List, wg *sync.WaitGroup) {
 				commentLine, rest := TrimTo(text, 77)
 				lines.InsertBefore("// "+commentLine, e)
 				if rest == "" {
+					lines.InsertBefore("//", e)
+					lines.InsertBefore("// See "+ROOT_URL+VERSION+"/"+href+"#"+id, e)
 					break
 				} else {
 					text = rest
