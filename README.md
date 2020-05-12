@@ -19,7 +19,7 @@ Installation
 
 Before installation, be sure to get the source by running `go get -d github.com/dradtke/go-allegro`.
 
-*Nix
+\*Nix
 ----
 
 Install Allegro 5 through your favorite package manager, ensure that it's registered with `pkg-config`, then run `go install github.com/dradtke/go-allegro/allegro`.
@@ -32,3 +32,13 @@ Download the Allegro 5 binaries [here](https://www.allegro.cc/files/) and extrac
 Set the `ALLEGRO_HOME` environment variable to this folder's absolute path, and set `ALLEGRO_VERSION` to the version of Allegro downloaded, e.g. 5.0.10. You can also optionally set `ALLEGRO_LIB` to reflect which version you want to link against; the default value is `monolith-static-mt-debug`.
 
 Once that's done, run the included `setenv.bat`, and if no errors were reported, then you can then build and install the library as usual.
+
+Unstable APIs
+=============
+
+A number of Allegro's functions are defined as [unstable](https://liballeg.org/a5docs/trunk/getting_started.html#unstable-api), and so in the Go library, they live behind the `unstable` build flag:
+
+```bash
+$ go build ./allegro                 # no unstable APIs available
+$ go build -tags=unstable ./allegro  # unstable APIs now available
+```
