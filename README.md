@@ -42,3 +42,8 @@ A number of Allegro's functions are defined as [unstable](https://liballeg.org/a
 $ go build ./allegro                 # no unstable APIs available
 $ go build -tags=unstable ./allegro  # unstable APIs now available
 ```
+
+Function Callbacks
+==================
+
+This library now includes an initial example of passing Go functions to an Allegro function requiring a callback (see `primitives.TriangulatePolygon`), using the technique outlined in the Go wiki [here](https://github.com/golang/go/wiki/cgo#function-variables). Initial testing suggests that it works, but has not been stress-tested, so please open an issue, or even better a pull request, if you encounter any issues.

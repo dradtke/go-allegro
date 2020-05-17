@@ -576,6 +576,9 @@ func (v *VertexDecl) Destroy() {
 	C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
 }
 
+// Draw a series of line segments.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_polyline
 func DrawPolyline(p Polyline, joinStyle LineJoin, capStyle LineCap, color allegro.Color, thickness float32, miterLimit float32) {
 	vertices := p.vertices()
 	C.al_draw_polyline(
@@ -668,6 +671,12 @@ func trangulage_polygon_callback(x, y, z C.int, data unsafe.Pointer) {
 	f(int(x), int(y), int(z))
 }
 
+// Divides a simple polygon into triangles, with zero or more other simple
+// polygons subtracted from it - the holes. The holes cannot touch or intersect
+// with the outline of the main polygon. Simple means the polygon does not have
+// to be convex but must not be self-overlapping.
+//
+// See https://liballeg.org/a5docs/5.2.6/primitives.html#al_triangulate_polygon
 func TriangulatePolygon(p Polyline, holes []Polyline, callback func(x, y, z int)) {
 	vertexCounts := make([]C.int, 0, len(holes)+2)
 	vertexCounts = append(vertexCounts, C.int(len(p)))
