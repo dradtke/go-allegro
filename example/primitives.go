@@ -25,11 +25,27 @@ func render() {
 		3,
 	)
 
-	primitives.DrawPolygon([]primitives.Point{
+	poly := []primitives.Point{
 		{X: 300, Y: 300},
-		{X: 280, Y: 320},
-		{X: 220, Y: 350},
-	}, primitives.LINE_JOIN_BEVEL, color.ForName(color.GHOST_WHITE), 3, 0)
+		{X: 250, Y: 350},
+		{X: 270, Y: 400},
+		{X: 330, Y: 400},
+		{X: 350, Y: 350},
+	}
+	holes := []primitives.Polyline{
+		[]primitives.Point{
+			{X: 300, Y: 320},
+			{X: 330, Y: 350},
+			{X: 270, Y: 350},
+		},
+	}
+
+	primitives.DrawFilledPolygonWithHoles(poly, holes, color.ForName(color.CHARTREUSE))
+	primitives.DrawRibbon(primitives.Polyline{
+		{X: 300, Y: 100},
+		{X: 400, Y: 50},
+		{X: 500, Y: 100},
+	}, color.ForName(color.DARK_MAGENTA), 3)
 
 	allegro.FlipDisplay()
 

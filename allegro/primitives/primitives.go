@@ -50,6 +50,16 @@ type Point struct {
 	Y float32
 }
 
+type Polyline []Point
+
+func (p Polyline) vertices() []C.float {
+	v := make([]C.float, 0, len(p)*2)
+	for _, point := range p {
+		v = append(v, C.float(point.X), C.float(point.Y))
+	}
+	return v
+}
+
 type Vertex struct {
 	X, Y, Z float32
 	Color   allegro.Color
@@ -288,7 +298,7 @@ func DrawFilledRoundedRectangle(p1, p2 Point, rx, ry float32, color allegro.Colo
 // next pair will also be collinear, but at a different angle and so on).
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_calculate_arc
-func CalculateArc(center Point, rx, ry, start_theta, delta_theta, thickness float32, num_points int) []Point {
+func CalculateArc(center Point, rx, ry, start_theta, delta_theta, thickness float32, num_points int) Polyline {
 	if num_points == 0 {
 		return make([]Point, 0)
 	}
@@ -426,7 +436,7 @@ func DrawEllipticalArc(center Point, rx, ry, start_theta, delta_theta float32, c
 // coordinates of the vertices.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_calculate_spline
-func CalculateSpline(points [4]Point, thickness float32, num_segments int) []Point {
+func CalculateSpline(points [4]Point, thickness float32, num_segments int) Polyline {
 	if num_segments == 0 {
 		return make([]Point, 0)
 	}
@@ -477,7 +487,7 @@ func DrawSpline(points [4]Point, color allegro.Color, thickness float32) {
 // doublets of floats, corresponding to x and y coordinates of the vertices.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_calculate_ribbon
-func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num_segments int) []Point {
+func CalculateRibbon(p Polyline, color allegro.Color, thickness float32, num_segments int) Polyline {
 	if num_segments == 0 {
 		return make([]Point, 0)
 	}
@@ -485,17 +495,12 @@ func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num
 	if thickness <= 0 {
 		buffer_length *= 2
 	}
-	cpoints := []C.float{
-		C.float(points[0].X), C.float(points[0].Y),
-		C.float(points[1].X), C.float(points[1].Y),
-		C.float(points[2].X), C.float(points[2].Y),
-		C.float(points[3].X), C.float(points[3].Y),
-	}
+	points := p.vertices()
 	cbuf := make([]C.float, buffer_length*2)
 	C.al_calculate_ribbon(
 		(*C.float)(unsafe.Pointer(&cbuf[0])),
 		C.get_stride(),
-		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		(*C.float)(unsafe.Pointer(&points[0])),
 		C.get_stride(),
 		C.float(thickness),
 		C.int(num_segments))
@@ -511,18 +516,14 @@ func CalculateRibbon(points []Point, color allegro.Color, thickness float32, num
 // doublets of floats, corresponding to x and y coordinates of the vertices.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_ribbon
-func DrawRibbon(points []Point, color allegro.Color, thickness float32, num_segments int) {
-	cpoints := make([]C.float, len(points)*2)
-	for i := 0; i < len(points)*2; i += 2 {
-		cpoints[i] = C.float(points[i/2].X)
-		cpoints[i+1] = C.float(points[i/2].Y)
-	}
+func DrawRibbon(p Polyline, color allegro.Color, thickness float32) {
+	points := p.vertices()
 	C.al_draw_ribbon(
-		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		(*C.float)(unsafe.Pointer(&points[0])),
 		C.get_stride(),
 		col(color),
 		C.float(thickness),
-		C.int(num_segments))
+		C.int(len(p)))
 }
 
 // Draws a subset of the passed vertex array.
@@ -575,15 +576,12 @@ func (v *VertexDecl) Destroy() {
 	C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
 }
 
-func DrawPolyline(points []Point, joinStyle LineJoin, capStyle LineCap, color allegro.Color, thickness float32, miterLimit float32) {
-	points_ := make([]float32, 0, len(points)*2)
-	for _, point := range points {
-		points_ = append(points_, point.X, point.Y)
-	}
+func DrawPolyline(p Polyline, joinStyle LineJoin, capStyle LineCap, color allegro.Color, thickness float32, miterLimit float32) {
+	vertices := p.vertices()
 	C.al_draw_polyline(
-		(*C.float)(unsafe.Pointer(&points_[0])),
+		(*C.float)(unsafe.Pointer(&vertices[0])),
 		C.get_stride(),
-		C.int(len(points)),
+		C.int(len(p)),
 		C.int(joinStyle),
 		C.int(capStyle),
 		col(color),
@@ -596,14 +594,11 @@ func DrawPolyline(points []Point, joinStyle LineJoin, capStyle LineCap, color al
 // ALLEGRO_LINE_CAP_CLOSED to al_draw_polyline.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_polygon
-func DrawPolygon(points []Point, joinStyle LineJoin, color allegro.Color, thickness float32, miterLimit float32) {
-	points_ := make([]C.float, 0, len(points)*2)
-	for _, point := range points {
-		points_ = append(points_, C.float(point.X), C.float(point.Y))
-	}
+func DrawPolygon(p Polyline, joinStyle LineJoin, color allegro.Color, thickness float32, miterLimit float32) {
+	vertices := p.vertices()
 	C.al_draw_polygon(
-		(*C.float)(unsafe.Pointer(&points_[0])),
-		C.int(len(points)),
+		(*C.float)(unsafe.Pointer(&vertices[0])),
+		C.int(len(p)),
 		C.int(joinStyle),
 		col(color),
 		C.float(thickness),
@@ -615,14 +610,11 @@ func DrawPolygon(points []Point, joinStyle LineJoin, color allegro.Color, thickn
 // but must not be self-overlapping.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_polygon
-func DrawFilledPolygon(points []Point, color allegro.Color) {
-	points_ := make([]C.float, 0, len(points)*2)
-	for _, point := range points {
-		points_ = append(points_, C.float(point.X), C.float(point.Y))
-	}
+func DrawFilledPolygon(p Polyline, color allegro.Color) {
+	vertices := p.vertices()
 	C.al_draw_filled_polygon(
-		(*C.float)(unsafe.Pointer(&points_[0])),
-		C.int(len(points)),
+		(*C.float)(unsafe.Pointer(&vertices[0])),
+		C.int(len(p)),
 		col(color),
 	)
 }
@@ -632,18 +624,18 @@ func DrawFilledPolygon(points []Point, color allegro.Color) {
 // outline of the filled polygon.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_polygon_with_holes
-func DrawFilledPolygonWithHoles(points []Point, vertexCounts []int, color allegro.Color) {
-	points_ := make([]float32, 0, len(points)*2)
-	for _, point := range points {
-		points_ = append(points_, point.X, point.Y)
+func DrawFilledPolygonWithHoles(p Polyline, holes []Polyline, color allegro.Color) {
+	vertexCounts := make([]C.int, 0, len(holes)+2)
+	vertexCounts = append(vertexCounts, C.int(len(p)))
+	vertices := p.vertices()
+	for _, hole := range holes {
+		vertices = append(vertices, hole.vertices()...)
+		vertexCounts = append(vertexCounts, C.int(len(hole)))
 	}
-	if vertexCounts[len(vertexCounts)-1] != 0 {
-		vertexCounts = append(vertexCounts, 0)
-	}
-	vertexCounts_ := cInts(vertexCounts)
+	vertexCounts = append(vertexCounts, 0)
 	C.al_draw_filled_polygon_with_holes(
-		(*C.float)(unsafe.Pointer(&points_[0])),
-		(*C.int)(unsafe.Pointer(&vertexCounts_[0])),
+		(*C.float)(unsafe.Pointer(&vertices[0])),
+		(*C.int)(unsafe.Pointer(&vertexCounts[0])),
 		col(color),
 	)
 }
@@ -676,21 +668,20 @@ func trangulage_polygon_callback(x, y, z C.int, data unsafe.Pointer) {
 	f(int(x), int(y), int(z))
 }
 
-func TriangulatePolygon(points []Point, vertexCounts []int, callback func(x, y, z int)) {
-	cpoints := make([]C.float, len(points)*2)
-	for i := 0; i < len(points)*2; i += 2 {
-		cpoints[i] = C.float(points[i/2].X)
-		cpoints[i+1] = C.float(points[i/2].Y)
+func TriangulatePolygon(p Polyline, holes []Polyline, callback func(x, y, z int)) {
+	vertexCounts := make([]C.int, 0, len(holes)+2)
+	vertexCounts = append(vertexCounts, C.int(len(p)))
+	vertices := p.vertices()
+	for _, hole := range holes {
+		vertices = append(vertices, hole.vertices()...)
+		vertexCounts = append(vertexCounts, C.int(len(hole)))
 	}
-	if vertexCounts[len(vertexCounts)-1] != 0 {
-		vertexCounts = append(vertexCounts, 0)
-	}
-	vertexCounts_ := cInts(vertexCounts)
+	vertexCounts = append(vertexCounts, 0)
 	callbackIndex := registerTriangulatePolygonCallback(callback)
 	C.al_triangulate_polygon(
-		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		(*C.float)(unsafe.Pointer(&vertices[0])),
 		C.size_t(C.get_stride()),
-		(*C.int)(unsafe.Pointer(&vertexCounts_[0])),
+		(*C.int)(unsafe.Pointer(&vertexCounts[0])),
 		C.emit_triangle_callback_t(C.trangulage_polygon_callback),
 		unsafe.Pointer(uintptr(callbackIndex)),
 	)
