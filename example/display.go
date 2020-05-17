@@ -6,7 +6,7 @@ import (
 	"github.com/dradtke/go-allegro/allegro"
 )
 
-const FPS int = 60
+const FPS = 60
 
 func main() {
 	allegro.Run(func() {

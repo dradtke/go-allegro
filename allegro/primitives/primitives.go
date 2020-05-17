@@ -4,13 +4,20 @@ package primitives
 // #include <allegro5/allegro.h>
 // #include <allegro5/allegro_primitives.h>
 /*
-int get_stride() {
+static inline int get_stride() {
 	return 2 * sizeof(float);
 }
+
+extern void trangulage_polygon_callback(int x, int y, int z, void *userdata);
+
+// This is a workaround for a compilation type error.
+// See https://github.com/golang/go/issues/19835
+typedef void (*emit_triangle_callback_t)(int, int, int, void*);
 */
 import "C"
 import (
 	"errors"
+	"sync"
 	"unsafe"
 
 	"github.com/dradtke/go-allegro/allegro"
@@ -122,6 +129,16 @@ const (
 	LINE_JOIN_BEVEL          = C.ALLEGRO_LINE_JOIN_BEVEL
 	LINE_JOIN_ROUND          = C.ALLEGRO_LINE_JOIN_ROUND
 	LINE_JOIN_MITER          = C.ALLEGRO_LINE_JOIN_MITER
+)
+
+type LineCap int
+
+const (
+	LINE_CAP_NONE     LineCap = C.ALLEGRO_LINE_CAP_NONE
+	LINE_CAP_SQUARE           = C.ALLEGRO_LINE_CAP_SQUARE
+	LINE_CAP_ROUND            = C.ALLEGRO_LINE_CAP_ROUND
+	LINE_CAP_TRIANGLE         = C.ALLEGRO_LINE_CAP_TRIANGLE
+	LINE_CAP_CLOSED           = C.ALLEGRO_LINE_CAP_CLOSED
 )
 
 // Initializes the primitives addon.
@@ -558,18 +575,35 @@ func (v *VertexDecl) Destroy() {
 	C.al_destroy_vertex_decl((*C.ALLEGRO_VERTEX_DECL)(v))
 }
 
+func DrawPolyline(points []Point, joinStyle LineJoin, capStyle LineCap, color allegro.Color, thickness float32, miterLimit float32) {
+	points_ := make([]float32, 0, len(points)*2)
+	for _, point := range points {
+		points_ = append(points_, point.X, point.Y)
+	}
+	C.al_draw_polyline(
+		(*C.float)(unsafe.Pointer(&points_[0])),
+		C.get_stride(),
+		C.int(len(points)),
+		C.int(joinStyle),
+		C.int(capStyle),
+		col(color),
+		C.float(thickness),
+		C.float(miterLimit),
+	)
+}
+
 // Draw an unfilled polygon. This is the same as passing
 // ALLEGRO_LINE_CAP_CLOSED to al_draw_polyline.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_polygon
-func DrawPolygon(vertices []Point, vertexCount int, joinStyle LineJoin, color allegro.Color, thickness float32, miterLimit float32) {
-	vertices_ := make([]float32, 0, len(vertices)*2)
-	for _, vertex := range vertices {
-		vertices_ = append(vertices_, vertex.X, vertex.Y)
+func DrawPolygon(points []Point, joinStyle LineJoin, color allegro.Color, thickness float32, miterLimit float32) {
+	points_ := make([]C.float, 0, len(points)*2)
+	for _, point := range points {
+		points_ = append(points_, C.float(point.X), C.float(point.Y))
 	}
 	C.al_draw_polygon(
-		(*C.float)(unsafe.Pointer(&vertices_[0])),
-		C.int(vertexCount),
+		(*C.float)(unsafe.Pointer(&points_[0])),
+		C.int(len(points)),
 		C.int(joinStyle),
 		col(color),
 		C.float(thickness),
@@ -581,14 +615,14 @@ func DrawPolygon(vertices []Point, vertexCount int, joinStyle LineJoin, color al
 // but must not be self-overlapping.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_polygon
-func DrawFilledPolygon(vertices []Point, vertexCount int, color allegro.Color) {
-	vertices_ := make([]float32, 0, len(vertices)*2)
-	for _, vertex := range vertices {
-		vertices_ = append(vertices_, vertex.X, vertex.Y)
+func DrawFilledPolygon(points []Point, color allegro.Color) {
+	points_ := make([]C.float, 0, len(points)*2)
+	for _, point := range points {
+		points_ = append(points_, C.float(point.X), C.float(point.Y))
 	}
 	C.al_draw_filled_polygon(
-		(*C.float)(unsafe.Pointer(&vertices_[0])),
-		C.int(vertexCount),
+		(*C.float)(unsafe.Pointer(&points_[0])),
+		C.int(len(points)),
 		col(color),
 	)
 }
@@ -598,18 +632,66 @@ func DrawFilledPolygon(vertices []Point, vertexCount int, color allegro.Color) {
 // outline of the filled polygon.
 //
 // See https://liballeg.org/a5docs/5.2.6/primitives.html#al_draw_filled_polygon_with_holes
-func DrawFilledPolygonWithHoles(vertices []Point, vertexCounts []int, color allegro.Color) {
-	vertices_ := make([]float32, 0, len(vertices)*2)
-	for _, vertex := range vertices {
-		vertices_ = append(vertices_, vertex.X, vertex.Y)
+func DrawFilledPolygonWithHoles(points []Point, vertexCounts []int, color allegro.Color) {
+	points_ := make([]float32, 0, len(points)*2)
+	for _, point := range points {
+		points_ = append(points_, point.X, point.Y)
 	}
 	if vertexCounts[len(vertexCounts)-1] != 0 {
 		vertexCounts = append(vertexCounts, 0)
 	}
 	vertexCounts_ := cInts(vertexCounts)
 	C.al_draw_filled_polygon_with_holes(
-		(*C.float)(unsafe.Pointer(&vertices_[0])),
+		(*C.float)(unsafe.Pointer(&points_[0])),
 		(*C.int)(unsafe.Pointer(&vertexCounts_[0])),
 		col(color),
+	)
+}
+
+// This technique was borrowed from https://github.com/golang/go/wiki/cgo#function-variables
+
+var (
+	tpcMu    sync.Mutex
+	tpcIndex int
+	tpcFns   = make(map[int]func(x, y, z int))
+)
+
+func registerTriangulatePolygonCallback(f func(x, y, z int)) int {
+	tpcMu.Lock()
+	defer tpcMu.Unlock()
+	tpcIndex++
+	for tpcFns[tpcIndex] != nil {
+		tpcIndex++
+	}
+	tpcFns[tpcIndex] = f
+	return tpcIndex
+}
+
+//export trangulage_polygon_callback
+func trangulage_polygon_callback(x, y, z C.int, data unsafe.Pointer) {
+	tpcMu.Lock()
+	defer tpcMu.Unlock()
+	index := int(uintptr(data))
+	f := tpcFns[int(index)]
+	f(int(x), int(y), int(z))
+}
+
+func TriangulatePolygon(points []Point, vertexCounts []int, callback func(x, y, z int)) {
+	cpoints := make([]C.float, len(points)*2)
+	for i := 0; i < len(points)*2; i += 2 {
+		cpoints[i] = C.float(points[i/2].X)
+		cpoints[i+1] = C.float(points[i/2].Y)
+	}
+	if vertexCounts[len(vertexCounts)-1] != 0 {
+		vertexCounts = append(vertexCounts, 0)
+	}
+	vertexCounts_ := cInts(vertexCounts)
+	callbackIndex := registerTriangulatePolygonCallback(callback)
+	C.al_triangulate_polygon(
+		(*C.float)(unsafe.Pointer(&cpoints[0])),
+		C.size_t(C.get_stride()),
+		(*C.int)(unsafe.Pointer(&vertexCounts_[0])),
+		C.emit_triangle_callback_t(C.trangulage_polygon_callback),
+		unsafe.Pointer(uintptr(callbackIndex)),
 	)
 }

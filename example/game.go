@@ -235,7 +235,6 @@ func main() {
 
 		var event allegro.Event
 		for running {
-			eventQueue.WaitForEvent(&event)
 			switch eventQueue.WaitForEvent(&event).(type) {
 			case allegro.TimerEvent:
 				redraw = true

@@ -250,3 +250,15 @@ func YuvToRgb(y, u, v float32) (red, green, blue float32) {
 		&cblue)
 	return float32(cred), float32(cgreen), float32(cblue)
 }
+
+// ForName returns the Color associated with the given name by mapping it to an
+// RGB Value, and then mapping that to a color. It is equivalent to calling
+// color.NameToRgb followed by allegro.MapRGBf, except that this method panics
+// if an error occurs.
+func ForName(name Name) allegro.Color {
+	r, g, b, err := NameToRgb(name)
+	if err != nil {
+		panic(err)
+	}
+	return allegro.MapRGBf(r, g, b)
+}
